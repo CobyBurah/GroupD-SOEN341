@@ -10,7 +10,7 @@
 <li> CareerConnect is a web application that benefits people who are looking for jobs and allows users to manage their profiles. </li>
 
 # Identified Problem 
-<li> identified problem </li>
+<li> Job seekers often apply to multiple positions across different websites, making it difficult to keep their job-search information organized. Important details, such as application deadlines, submitted resume versions, interview dates, and application statuses, can easily be forgotten or lost. Applicants may also struggle to determine whether their resumes match a job’s requirements. Recruiters similarly need an organized way to publish job opportunities and manage received applications. Therefore, there is a need for a centralized platform that simplifies job searching, application tracking, and communication between job seekers and recruiters.</li>
 
 # Proposed Solution
 <li> proposed solution </li>
