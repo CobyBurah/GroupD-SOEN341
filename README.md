@@ -20,6 +20,6 @@
 <li> Deployment: Vercel</li>
 
 # Setup Instructions
-
+<li> Requires a </li>
 # Proposed Features 
 
