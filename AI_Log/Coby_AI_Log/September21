@@ -68,3 +68,5 @@ Keep an AI_USAGE.md or a PR template field to log AI-generated content and how i
 When to pick something else
 
 If the course expects a separate backend (e.g., a layered architecture or specific design patterns), or most of the team is stronger in Java, use React (Vite) + Spring Boot + PostgreSQL, with JUnit/Mockito for tests. It's more setup, but it gives a clearer frontend/backend separation for architecture diagrams and grading.
+
+Setup the first PR: https://claude.ai/code/session_012TC1ZUeLPc5jppQU3fHYRe
