@@ -20,6 +20,13 @@
 <li> Deployment: Vercel</li>
 
 # Setup Instructions
-<li> Requires a </li>
+<li> To Access CareerConnect: </li>
+<li> - A web browser such as Safari, Google Chrome, safari, or Microsoft </li>
+<li> - Create a Registered CareerConnect account</li>
+<li> Running the Application: </li>
+<li> - Click the link and open the CareerConnect website </li>
+<li> - Click "Register" to create an account and enter the required information </li>
+<li> - </li>
+
 # Proposed Features 
 
