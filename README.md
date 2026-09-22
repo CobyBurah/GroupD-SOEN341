@@ -24,6 +24,7 @@ CareerConnect will provide a single online platform where job seekers can create
 To Access CareerConnect Application, the following is required:
 <li> A web browser such as Safari, Google Chrome, or Microsoft etc. </li>
 <li> Internet connection </li>
+
 Running and Accessing the Application: 
 <li> Click the link and open the CareerConnect website </li>
 <li> Click "Register" to create an account and enter the required information </li>
