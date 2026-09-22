@@ -7,13 +7,13 @@
 <li>Sabrina Marsillo sm3339</li>
 
 # Project Description 
-CareerConnect is a web application made to simplify the job search process for all job seekers. They can create and manage their own profile, search and apply for job opportunities, and keep track of their application process. The platform's goal is to help both applicants and recruiters stay organized by keeping everything they need in one place.
+CareerConnect is a web application designed to make job searching easier for everyone. Users can create and manage their profiles, search and apply for jobs, and track their applications. The goal is to help both job seekers and recruiters stay organized by keeping everything in one place. 
 
 # Identified Problem 
-Job seekers often apply to multiple positions across different websites, making it difficult to keep their job-search information organized. Important details, such as application deadlines, submitted resume versions, interview dates, and application statuses, can easily be forgotten or lost. Applicants may also struggle to determine whether their resumes match a job’s requirements. Recruiters similarly need an organized way to publish job opportunities and manage received applications. Therefore, there is a need for a centralized platform that simplifies job searching, application tracking, and communication between job seekers and recruiters.
+It is difficult for job seekers to keep an account of their job search activities when they apply for a number of positions on various websites. Application deadlines, which resume version was sent, the dates of interviews, and the status of each application can be easy hard to keep track of. It can also be challenging for applicants to know if their resumes fit a job's requirements. Recruiters have similar challenges and problems, and they need a simple way to post job openings and track applications. Given these problems, 1 platform that can help organize job searches, track applications and improve communication between job seekers and recruiters would be much more beneficial. 
 
 # Proposed Solution
-CareerConnect will provide a centralized web-based platform where job seekers can create profiles, manage resumes, search for job opportunities, submit applications, and monitor their progress. Recruiters will be able to publish job postings and manage applicants. The platform will also include reminders, application tracking, and AI-assisted features to help users stay organized and improve their job-search experience.
+CareerConnect will provide a single online platform where job seekers can create profiles, manage resumes, look for job openings, easily apply for jobs, and keep track of their progress. Recruiters will be able to post job listing and track the job applicants being received. This platform will also be able to have reminders and AI-powered tools to help users stay organized and make their job search much simpler. 
 
 # Technologies 
 <li> Programming Language: JavaScript
@@ -21,13 +21,14 @@ CareerConnect will provide a centralized web-based platform where job seekers ca
 <li> Deployment: Vercel</li>
 
 # Setup Instructions
-<li> To Access CareerConnect: </li>
-<li> - A web browser such as Safari, Google Chrome, safari, or Microsoft </li>
-<li> - Create a Registered CareerConnect account</li>
-<li> Running the Application: </li>
+<li> To Access CareerConnect Application, the following is required: </li>
+<li> - A web browser such as Safari, Google Chrome, or Microsoft etc. </li>
+<li> - Internet connection </li>
+<li> Running and Accessing the Application: </li>
 <li> - Click the link and open the CareerConnect website </li>
 <li> - Click "Register" to create an account and enter the required information </li>
-<li> - </li>
+<li> - Login using the registered email address and password that was previously created </li>
+
 
 # Proposed Features
 ## Job Seeker Features
