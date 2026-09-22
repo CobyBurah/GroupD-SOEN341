@@ -21,13 +21,13 @@ CareerConnect will provide a single online platform where job seekers can create
 <li> Deployment: Vercel</li>
 
 # Setup Instructions
-<li> To Access CareerConnect Application, the following is required: </li>
-<li> - A web browser such as Safari, Google Chrome, or Microsoft etc. </li>
-<li> - Internet connection </li>
-<li> Running and Accessing the Application: </li>
-<li> - Click the link and open the CareerConnect website </li>
-<li> - Click "Register" to create an account and enter the required information </li>
-<li> - Login using the registered email address and password that was previously created </li>
+To Access CareerConnect Application, the following is required:
+<li> A web browser such as Safari, Google Chrome, or Microsoft etc. </li>
+<li> Internet connection </li>
+Running and Accessing the Application: 
+<li> Click the link and open the CareerConnect website </li>
+<li> Click "Register" to create an account and enter the required information </li>
+<li> Login using the registered email address and password that was previously created </li>
 
 
 # Proposed Features
