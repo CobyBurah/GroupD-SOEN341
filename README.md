@@ -16,7 +16,7 @@ It is difficult for job seekers to keep track of their job search activities whe
 CareerConnect will provide a single online platform where job seekers can create profiles, manage resumes, look for job openings, easily apply for jobs, and keep track of their progress. Recruiters will be able to post job listing and track the job applicants being received. This platform will also be able to have reminders and AI-powered tools to help users stay organized and make their job search much easier. 
 
 # Technologies 
-<li> Programming Language: JavaScript
+<li> Programming Language: TypeScript</li>
 <li> Database: Supabase</li>
 <li> Deployment: Vercel</li>
 
