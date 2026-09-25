@@ -1,4 +1,14 @@
-// TODO: guard these routes with supabase.auth.getClaims() in the auth UI task.
-export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
+import { redirect } from 'next/navigation'
+
+import { createClient } from '@/lib/supabase/server'
+
+export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient()
+  const { data } = await supabase.auth.getClaims()
+
+  if (!data?.claims) {
+    redirect('/login')
+  }
+
   return <>{children}</>
 }
