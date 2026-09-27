@@ -1,9 +1,9 @@
 ﻿# GroupD-SOEN341-Team Members 
 <li>Noah Dahan noah11dahan-cpu </li>
 <li>Nour Belkacemi NourBelka</li>
-<li>Eldar Sadeghi</li>
+<li>Eldar Sadeghi EldarSadeghi</li>
 <li>Coby Burah CobyBurah</li>
-<li>Parsa Morshedlou</li>
+<li>Parsa Morshedlou bluwine </li>
 <li>Sabrina Marsillo sm3339</li>
 
 # Project Description 
@@ -17,18 +17,50 @@ CareerConnect will provide a single online platform where job seekers can create
 
 # Technologies 
 <li> Programming Language: TypeScript</li>
+<li> Framework: Next.js </li>
 <li> Database: Supabase</li>
 <li> Deployment: Vercel</li>
 
 # Setup Instructions
-## To Access CareerConnect Application:
-<li> A web browser is required such as Safari, Google Chrome, or Microsoft etc. </li>
-<li> Internet connection is also required</li>
+## Accessing CareerConnect
 
-## To Run and Utilize CareerConnect:  
-<li> Click the link and open the CareerConnect website </li>
-<li> Click "Register" to create an account and enter the required information </li>
-<li> Login using the registered email address and password that was previously created </li>
+CareerConnect will be deployed online using Vercel.
+
+To access the application:
+1. Open the CareerConnect website using a modern web browser such as Google Chrome, Safari, Microsoft Edge, or Firefox.
+2. Click **Register** to create an account and enter the required information.
+3. Log in using the email address and password associated with the account.
+4. Once logged in, users can access the available CareerConnect features.
+
+## Running CareerConnect Locally
+
+### Requirements
+Before running the project locally, make sure the following are installed:
+- Node.js
+- npm
+- Git
+
+### Installation
+
+1. Clone the GitHub repository:
+   ```bash
+   git clone https://github.com/CobyBurah/GroupD-SOEN341.git
+
+2. Navigate into the project folder:
+```bash
+cd GroupD-SOEN341
+```
+
+3. Install the project dependencies:
+``` bash
+npm install
+```
+4. Create a `.env.local` file in the root of the project and use `.env.example` as a template.
+5. Fill in the required environment variables.
+6. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
 
 # Proposed Features
