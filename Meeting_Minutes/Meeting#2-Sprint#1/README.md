@@ -1,4 +1,4 @@
-_September 24 7:00-7:30_
+_September 24 7:00-7:30pm_
 
 ## Attendees: 
 | Member | Present | 
