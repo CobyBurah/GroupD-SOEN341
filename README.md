@@ -39,6 +39,7 @@ Before running the project locally, make sure the following are installed:
 - Node.js
 - npm
 - Git
+- Access to the Supabase project
 
 ### Installation
 
