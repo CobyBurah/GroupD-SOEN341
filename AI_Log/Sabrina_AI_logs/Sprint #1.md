@@ -1,4 +1,4 @@
-# AI Log - Sprint 1 
+# AI Log #1 - Sprint 1 
 September 27, 2026
 
 **Task ID/Title:** 
@@ -36,3 +36,32 @@ even if those weren't my tasks to complete for sprint 1, I wanted to understand 
 **Responsible Person:** 
 - Sabrina who conducted the interaction and fixed and completed the task along side Nour (meeting minutes + Readme information documentation)
 
+---
+
+# AI Log #2 - Sprint 1 
+September 28, 2026
+
+**Task ID/Title:** 
+- Help with organizing the Team Process
+  
+**Purpose of AI Use:** 
+- Helping provide me information need for the Team process and how it organizes it
+  
+**Claude Link to conversation:**
+https://claude.ai/share/f0eb405e-6f34-48cd-9035-636e67c84f6a
+
+**AI-Suggested Content:** 
+- Briefly gave me step by step of all the required information like workflow, branching strategy, pull request process, code review, definition of Ready and Definition of Done and i formulated it to how my team will go about it. It provided me an example template.
+
+**Validation:** 
+- Manual review 
+- Also peer review with my other teamate Nour, I put her as reviewing the documentation
+
+**Decision:** 
+- The AI output inregards to Team process was partially Accepted - it added things we had already mentioned in other sections and added other things that I believed wasn't necessary 
+
+**Reflection:** 
+- AI help me conduct the documentation efficiently and help me organize the information required for the team process description
+
+**Responsible Person:** 
+- Sabrina who conducted the interaction and completed the task. (Team Process)
