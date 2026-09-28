@@ -1,7 +1,5 @@
 ## Appendix A
 
-Statuses reflect the team's initial Sprint 1 planning state established around the first team meeting.
-
 | Issue # | Issue Title | Issue Type | Responsible Member | Target Completion Date | Priority | Current Status |
 |---------|-------------|------------|--------------------|------------------------|----------|----------------|
 | #8 | GitHub Setup & Initialization | Task | All Members | Sept. 21 | High | Completed |
