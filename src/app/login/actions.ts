@@ -24,3 +24,13 @@ export async function login(formData: FormData) {
   // TODO: redirect to /dashboard once it's a real, protected page.
   redirect('/')
 }
+
+export async function signout() {
+  const supabase = await createClient()
+
+  // Clears the session cookies via the server client's setAll.
+  await supabase.auth.signOut()
+
+  revalidatePath('/', 'layout')
+  redirect('/login')
+}
