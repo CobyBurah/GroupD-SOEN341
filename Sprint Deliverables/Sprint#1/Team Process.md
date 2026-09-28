@@ -72,10 +72,12 @@ We as a team consider an issue Done when the following are concluded:
 
 ## 7. Communication
 
+Our location of communication is through WhatsApp
+
 - We meet as a team at least once a week and if need be 2 times a week. All meetings are logged in the meeting minutes which are saved in `Meeting_Minutes/`.
 - We also meet weekly with the TA during our lab section.
 - If someone can't make it to a meeting, they let the team or a team member head of time
-- If someone is stuck or has a problem, they share it in our group chat on Whats app or comment on the issue.
+- If someone is stuck or has a problem, they share it in our group chat or comment on the issue.
 
 
 ## 8. AI Usage
