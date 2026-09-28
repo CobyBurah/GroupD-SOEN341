@@ -15,3 +15,4 @@
 | #7 | User Profile Management | User Story | Noah | Sept. 27 | High | In Progress |
 | #14 | Meeting Minutes | Task | Sabrina & Nour | Sept. 27 | Medium | In Progress |
 | #34 | Sprint 1 Submission Document | Task | Nour | Sept. 27 | High | In Progress |
+| #35 | Team Process Definition | Task | Sabrina | Sept. 28 | Medium | In Progress | 
