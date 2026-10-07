@@ -30,6 +30,7 @@ export async function updateProfile(
     return { message: 'You must be signed in to update your profile.', values }
   }
 
+  // The on_profile_name_updated trigger copies full_name into auth.users user_metadata.
   const { error } = await supabase
     .from('profiles')
     .update({ full_name: fullName, updated_at: new Date().toISOString() })
