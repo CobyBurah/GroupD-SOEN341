@@ -29,7 +29,7 @@ During this meeting, we discussed the following topics:
 | UI design | Sabrina & Nour | Oct. 17 | not started |
 | Job Search & Job listing Interface | Sabrina & Nour | Oct. 17 | not started |
 | Job Application Submission & Tracking | Coby & Noah | Oct. 17 | not started |
-| Recruiter Dashboard & Posting Management | Eldar & Parsa | Oct. 25 | not started|
+| Recruiter Dashboard & Posting Management (start) | Eldar & Parsa | Oct. 25 | not started|
 
 
 
