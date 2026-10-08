@@ -19,7 +19,7 @@ During this meeting, we discussed the following topics:
  
 
 ## Decisions 
-* Each memeber will be taken on one of the following features required for sprint 2
+* Each memeber will be working on one of the following 4 features required for sprint 2
 
 ## Action Items 
 | Action Item | Responsible | Deadline | Status | 
