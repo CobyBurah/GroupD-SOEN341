@@ -1,6 +1,6 @@
 # Meeting #2
 
-_September 24 7:00-7:30pm_
+_October 8 3:30-4:00pm_
 
 ## Attendees: 
 | Member | Present | 
