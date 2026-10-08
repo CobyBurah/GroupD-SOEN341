@@ -24,6 +24,8 @@ During this meeting, we discussed the following topics:
 ## Action Items 
 | Action Item | Responsible | Deadline | Status | 
 |-------------|-------------|----------|--------| 
+| Meeting Minutes logging | Sabrina | - | in progress |
+| Sprint Planning | Nour | Oct. 25 | not started |
 | User Stories as separated issues | Eldar & Parsa | Oct. 11 | not started |
 | Resume Management | Noah & Coby | Oct. 17 | not started |
 | UI design | Sabrina & Nour | Oct. 17 | not started |
