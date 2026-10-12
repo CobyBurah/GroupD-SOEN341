@@ -3,12 +3,14 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+import { PROFILE_LIMITS } from '@/lib/profiles'
+import { RESUME_BUCKET } from '@/lib/resumes'
 import { createClient } from '@/lib/supabase/server'
 
 export type ProfileState = {
-  errors?: { fullName?: string }
+  errors?: { fullName?: string; headline?: string; location?: string; bio?: string }
   message?: string
-  values?: { fullName: string }
+  values?: { fullName: string; headline: string; location: string; bio: string }
 }
 
 export async function updateProfile(
@@ -16,10 +18,25 @@ export async function updateProfile(
   formData: FormData
 ): Promise<ProfileState> {
   const fullName = String(formData.get('fullName') ?? '').trim()
-  const values = { fullName }
+  const headline = String(formData.get('headline') ?? '').trim()
+  const location = String(formData.get('location') ?? '').trim()
+  const bio = String(formData.get('bio') ?? '').trim()
+  const values = { fullName, headline, location, bio }
 
-  if (!fullName) {
-    return { errors: { fullName: 'Enter your full name.' }, values }
+  const errors: ProfileState['errors'] = {}
+  if (!fullName) errors.fullName = 'Enter your full name.'
+  if (headline.length > PROFILE_LIMITS.headline) {
+    errors.headline = `Headline must be ${PROFILE_LIMITS.headline} characters or fewer.`
+  }
+  if (location.length > PROFILE_LIMITS.location) {
+    errors.location = `Location must be ${PROFILE_LIMITS.location} characters or fewer.`
+  }
+  if (bio.length > PROFILE_LIMITS.bio) {
+    errors.bio = `Bio must be ${PROFILE_LIMITS.bio} characters or fewer.`
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return { errors, values }
   }
 
   const supabase = await createClient()
@@ -30,11 +47,23 @@ export async function updateProfile(
     return { message: 'You must be signed in to update your profile.', values }
   }
 
-  // The on_profile_name_updated trigger copies full_name into auth.users user_metadata.
-  const { error } = await supabase
+  const { data: profile } = await supabase
     .from('profiles')
-    .update({ full_name: fullName, updated_at: new Date().toISOString() })
+    .select('role')
     .eq('id', userId)
+    .single()
+
+  // Headline/location/bio are job-seeker fields. Leave them out of the update
+  // for recruiters so a submit never clobbers columns their form doesn't show.
+  const update: Record<string, string> = { full_name: fullName, updated_at: new Date().toISOString() }
+  if (profile?.role === 'job_seeker') {
+    update.headline = headline
+    update.location = location
+    update.bio = bio
+  }
+
+  // The on_profile_name_updated trigger copies full_name into auth.users user_metadata.
+  const { error } = await supabase.from('profiles').update(update).eq('id', userId)
 
   if (error) {
     return { message: error.message, values }
@@ -117,6 +146,18 @@ export async function deleteAccount(
   }
 
   const supabase = await createClient()
+  const { data: claimsData } = await supabase.auth.getClaims()
+  const userId = claimsData?.claims.sub
+
+  // The cascade on auth.users deletes the resumes rows but not the files in
+  // storage, so remove those first while the session can still access them.
+  if (userId) {
+    const { data: files } = await supabase.storage.from(RESUME_BUCKET).list(userId)
+    if (files && files.length > 0) {
+      await supabase.storage.from(RESUME_BUCKET).remove(files.map((file) => `${userId}/${file.name}`))
+    }
+  }
+
   const { error } = await supabase.rpc('delete_own_account')
 
   if (error) {
