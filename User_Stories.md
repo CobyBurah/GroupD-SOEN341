@@ -70,7 +70,7 @@ Acceptance criteria:
 
 Suggested tasks: Design job-posting database schema; implement CRUD endpoints; develop recruiter UI; test ownership and authorization.
 
-### US-06 — Job search and filtering
+### US-06 — Job search filtering, and Job listing interface
 
 User story: As a job seeker, I want to search and filter available jobs so that I can find opportunities relevant to my qualifications and preferences.
 
