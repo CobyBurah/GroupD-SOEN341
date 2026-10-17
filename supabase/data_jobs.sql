@@ -1,6 +1,5 @@
 -- Random Sample Jobs for the job listings, job details, search and filters
--- for now the jobs are atached to 1 existing account so when the recruiter is then created then they can reassign them to a real recruiter 
--- since each job needs a recruiter as it's owner
+   -- Each job needs a recruiter as its owner, so the jobs are now assigned to the test recruiter account.
 
 insert into public.jobs  -- add rows to the jobs table
     (recruiter_id, title, company, location, category, employment_type, salary, description, created_at)
