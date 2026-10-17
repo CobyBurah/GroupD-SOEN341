@@ -37,3 +37,38 @@ https://claude.ai/share/f15a9475-49e9-4435-b206-9cca29a6e26d
 
 ---
 # AI Log #2 - Sprint 2 
+Friday October 17th, 2026
+
+**Task ID/Title:**
+- Task: Sample job data for the Job Listing display (US-06 Job Search, Filtering and Job Listing Interface)
+
+**Purpose of AI Use:**
+- Generate fake/sample job listing data to test the job display while I code the feature myself
+- Reformat the sample data to match the columns of our jobs table in Supabase (recruiter_id, title, company, location, category, employment_type, salary, description, created_at)
+- Get test data with enough variety (locations, categories, employment types, remote jobs) to also test searching and filtering
+- Get a second opinion on how to handle recruiter_id since recruiter accounts haven't yet been created
+
+**Claude Link to conversation:**
+- https://claude.ai/share/a18c4215-8b17-47a5-87c3-42272bd04888
+
+**AI-Suggested Content:**
+- First gave me a list of 12 fake jobs in JSON format with fields like id, title, company, location, category, type, salary, postedDate, description and requirements
+- After I gave it the exact columns from our jobs table, it reformatted the 12 jobs to match: recruiter_id, title, company, location, category, employment_type, salary, description, created_at
+- When I asked whether attaching all jobs to the first existing account (until teammates build recruiter accounts) was a good approach, it said yes as a temporary fix, and suggested: using a dedicated placeholder recruiter account instead of a real teammate's account and putting the data in a script/migration so it can be updated in one place
+
+**Validation:**
+- Checked that every field matched the column names and types in our jobs table
+- Inserted the data into Supabase and the rows appeared in the Table Editor
+
+**Decision:**
+- Only used the AI for generating fake test data and I wrote all the code for displaying the jobs myself
+- The first version didn't match our database columns, so I asked for it to be reformatted to our exact table fields and used that version
+- Temporarily attached all jobs to the first existing account; my teammates working on the recruiter account feature will reassign them later
+- Did not take the suggestion to put the data in a script/migration; I inserted the data directly in Supabase since it's only temporary test data 
+
+**Reflection:**
+- Saved time writing realistic test data by hand, so I could focus on coding the job display feature itself
+
+**Responsible Person:**
+- Sabrina, who conducted the interaction and is completing the 2. Add jobs data (US-06 Job Search, Filtering and Job Listing Interface)
+
