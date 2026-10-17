@@ -5,7 +5,7 @@
 insert into public.jobs  -- add rows to the jobs table
     (recruiter_id, title, company, location, category, employment_type, salary, description, created_at)
     select 
-        (select id from public.profiles limit 1), -- temporary owner: first account until recruiter finalized
+        'b7198249-22d3-4187-8d7b-284476c8a656'::uuid, -- sample jobs are assigned to the test recruiter account
         sample_jobs.title,
         sample_jobs.company,
         sample_jobs.location,
