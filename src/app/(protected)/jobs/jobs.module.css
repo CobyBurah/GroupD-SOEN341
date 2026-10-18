@@ -1,0 +1,25 @@
+.page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.jobList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.jobCard {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.detailsButton {
+  margin-top: 12px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
