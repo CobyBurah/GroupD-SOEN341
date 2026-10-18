@@ -72,3 +72,33 @@ Friday October 17th, 2026
 **Responsible Person:**
 - Sabrina, who conducted the interaction and is completing the 2. Add jobs data (US-06 Job Search, Filtering and Job Listing Interface)
 
+
+---
+# AI Log #3 - Sprint 2 
+Saturday October 18th, 2026
+
+**Task ID/Title:**
+- Continuation of the AI_log 1 conversation
+
+
+**Purpose of AI Use:**
+
+
+**Claude Link to conversation:**
+
+**AI-Suggested Content:**
+
+**Validation:**
+
+
+**Decision:**
+
+
+**Reflection:**
+
+
+**Responsible Person:**
+
+
+
+
