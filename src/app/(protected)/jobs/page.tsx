@@ -1,4 +1,4 @@
-// Job listings page (basic version).
+// Job listings page no style is added it just a basic page for now to show the jobs on the website
 import { getJobs } from '@/lib/jobs' //take the getJobs function from the job.ts file
 
 export default async function JobsPage() { //this is the page where Next.js shows it 
