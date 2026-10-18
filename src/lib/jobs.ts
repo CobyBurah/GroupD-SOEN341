@@ -48,7 +48,7 @@ export async function getJob(id: string) {
   const supabase = await createClient()
 
   // Ask for the job with this id (or nothing if it doesn't exist)
-  // methods from Supabase lib that gives back 1 job 
+  // methods from Supabase lib
   const result = await supabase
     .from('jobs')
     .select('*')
