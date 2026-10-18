@@ -1,5 +1,4 @@
-// Get jobs from the Supabase "jobs" table.
-// Pages use these functions instead of talking to Supabase directly.
+// Get jobs from the Supabase "jobs" table
 
 import { createClient } from '@/lib/supabase/server'
 
