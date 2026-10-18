@@ -30,7 +30,7 @@ export async function getJobs() {
     .select('*')
     .order('created_at', { ascending: false })
 
-  // If something goes wrong, stop and put an error message
+  // If something goes wrong, put a message
   if (result.error) {
     throw new Error('Could not load jobs: ' + result.error.message)
   }
