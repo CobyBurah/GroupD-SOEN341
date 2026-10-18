@@ -75,30 +75,42 @@ Friday October 17th, 2026
 
 ---
 # AI Log #3 - Sprint 2 
-Saturday October 18th, 2026
+Sunday October 18th, 2026
 
 **Task ID/Title:**
-- Continuation of the AI_log 1 conversation
-
+- Task: Load jobs from the Supabase jobs table and display them on the Job Listing page (US-06 Job Search, Filtering and Job Listing Interface)
 
 **Purpose of AI Use:**
-
+- Get guidance (not code) on how to load data from our Supabase jobs table into a Next.js server component using TypeScript
+- Learn TypeScript basics, since I know JavaScript but am new to TypeScript (learning alongside W3Schools)
+- Understand async/await and why the data loading functions need it
+- Get my own code reviewed for the getJobs() and getJob(id) functions in src/lib/
 
 **Claude Link to conversation:**
+https://claude.ai/share/9bd7fa2f-67b3-45c0-a3c3-9fa4e890d7b3
 
 **AI-Suggested Content:**
+- Explained the overall: Supabase jobs table → data loading function in src/lib/ → async server component page that awaits the data and renders it
+- Explained TypeScript concepts as they applied to my task
+- Explained async/await (Promises, why await is needed for network requests, and that forgetting await is a common bug)
+- Walked me through how to build the query in steps without giving me the code
+- Reviewed my getJobs() code: confirmed the query, Job type, and error handling were correct; pointed out the missing return statement, missing return type annotation, and suggested the ?? operator to fall back to an empty array when data is null
+- Reviewed my getJob(id) code: confirmed .eq() and .maybeSingle() were good choices; corrected my comment about Postgres error code 22P02 (it means the input isn't valid for the column type, e.g. the id isn't a valid UUID); suggested adding the return type
 
 **Validation:**
-
+- Compared my Job type with the columns and types in our jobs table migration
+- validated my learning with online resourches like W3schools, PostgreSQL.org documentation for the error codes list https://www.postgresql.org/docs/current/errcodes-appendix.html
 
 **Decision:**
-
+- Asked for guidance only, not code; I wrote all the code for getJobs() and getJob(id) myself
+- Used .order('created_at', { ascending: false }) to sort newest first
+- Used ?? [] so the page always receives an array, as suggested
 
 **Reflection:**
-
+- Learned TypeScript concepts directly in the context of my feature instead of only through generic examples, which made them easier to understand
+- Getting my code reviewed step by step caught a missing return statement before it caused a bug on the page
 
 **Responsible Person:**
-
-
+- Sabrina, who conducted the interaction and is completing 3.Displaying the jobs from supabase to website display for US-06 Job Search, Filtering and Job Listing Interface
 
 
