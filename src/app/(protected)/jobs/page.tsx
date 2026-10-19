@@ -1,10 +1,16 @@
 // Job listings page: shows every active job posting as a card.
+import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
 import { getJobs } from '@/lib/jobs' //take the getJobs function from the job.ts file
 import { EMPLOYMENT_TYPES } from '@/lib/job-posting'
 import styles from '@/app/ui.module.css'
 
 export default async function JobsPage() { //this is the page where Next.js shows it 
   const jobs = await getJobs() // ask Supabase for all jobs awaits = wait for answer/loading
+
+  const supabase = await createClient()
+  const { data: claims } = await supabase.auth.getClaims()
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', claims?.claims.sub ?? '').maybeSingle()
 
   return ( //this is what is shown on the website screen basically like html
     <main>
@@ -29,6 +35,11 @@ export default async function JobsPage() { //this is the page where Next.js show
                 {job.salary ? ` · ${job.salary}` : ''}
               </p>
               <p className={styles.description}>{job.description.length > 220 ? `${job.description.slice(0, 220)}…` : job.description}</p>
+              {profile?.role === 'job_seeker' && (
+                <div className={styles.actions}>
+                  <Link className={styles.primary} href={`/jobs/${job.id}/apply`} aria-label={`Apply for ${job.title}`}>Apply</Link>
+                </div>
+              )}
             </li>
           ))}
         </ul>
