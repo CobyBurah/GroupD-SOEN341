@@ -43,6 +43,7 @@ export async function startPreview() {
       return res.end(JSON.stringify({ id: user.id, role: user.id === seekerId ? 'job_seeker' : 'recruiter', full_name: user.id === seekerId ? 'Demo Job Seeker' : 'Demo Recruiter', headline: '', location: '', bio: '' }))
     }
     if (url.pathname === '/rest/v1/resumes') return res.end('[]')
+    if (url.pathname === '/rest/v1/applications') return res.end('[]')
     if (url.pathname !== '/rest/v1/jobs') { res.statusCode = 404; return res.end('{}') }
     const matches = job => ['id', 'recruiter_id'].every(field => !url.searchParams.has(field) || url.searchParams.get(field) === `eq.${job[field]}`)
       && (url.searchParams.get('deleted_at') !== 'is.null' || job.deleted_at === null)
