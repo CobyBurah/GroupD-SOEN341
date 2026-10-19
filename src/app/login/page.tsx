@@ -21,6 +21,9 @@ export default function LoginPage() {
         <button formAction={login}>Log in</button>
       </form>
       <p>
+        <Link href="/forgot-password">Forgot your password?</Link>
+      </p>
+      <p>
         Don&apos;t have an account? <Link href="/signup">Sign up</Link>
       </p>
     </main>

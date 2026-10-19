@@ -34,9 +34,27 @@ export async function startPreview() {
     if (url.pathname === '/auth/v1/token') {
       let body = ''; for await (const chunk of req) body += chunk
       const input = JSON.parse(body || '{}')
+      if (url.searchParams.get('grant_type') === 'pkce') {
+        // Default-template email links: /auth/callback exchanges the code for a session.
+        if (input.auth_code === 'expired' || !input.code_verifier) {
+          res.statusCode = 400
+          return res.end(JSON.stringify({ code: 400, error_code: 'flow_state_not_found', msg: 'invalid flow state' }))
+        }
+        return res.end(JSON.stringify(sessionFor(seeker)))
+      }
       return res.end(JSON.stringify(sessionFor(input.email === seeker.email ? seeker : owner)))
     }
     if (url.pathname === '/auth/v1/logout') { res.statusCode = 204; return res.end() }
+    if (url.pathname === '/auth/v1/recover') return res.end('{}')
+    if (url.pathname === '/auth/v1/verify') {
+      // Recovery email links: any token_hash except "expired" signs in the demo job seeker.
+      let body = ''; for await (const chunk of req) body += chunk
+      if (JSON.parse(body || '{}').token_hash === 'expired') {
+        res.statusCode = 403
+        return res.end(JSON.stringify({ code: 403, error_code: 'otp_expired', msg: 'Email link is invalid or has expired' }))
+      }
+      return res.end(JSON.stringify(sessionFor(seeker)))
+    }
     if (url.pathname === '/auth/v1/user') return res.end(JSON.stringify(requestUser(req)))
     if (url.pathname === '/rest/v1/profiles') {
       const user = requestUser(req)

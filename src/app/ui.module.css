@@ -38,7 +38,7 @@
 .shell input:not([type=checkbox]):not([type=radio]):not([type=file]), .shell textarea, .shell select { box-sizing: border-box; width: 100%; border: 1px solid #8b9da8; border-radius: 5px; padding: 11px; font: inherit; background: white; color: #172c3d; }
 .shell input[type=file] { font: inherit; max-width: 100%; }
 .shell [aria-invalid=true] { border-color: #a52a2a; }
-.shell form [role=alert] { color: #982727; margin: 5px 0; }
+.shell form [role=alert], .shell .auth > [role=alert] { color: #982727; margin: 5px 0; }
 .shell form button { justify-self: start; }
 .shell fieldset { border: 1px solid #d9e1e6; border-radius: 6px; padding: 12px 16px; margin: 0; }
 .shell legend { font-weight: 600; padding: 0 6px; }

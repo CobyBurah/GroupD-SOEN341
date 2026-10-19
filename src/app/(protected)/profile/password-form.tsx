@@ -2,7 +2,9 @@
 
 import { useActionState } from 'react'
 
-import { updatePassword, type PasswordState } from './actions'
+import type { PasswordState } from '@/lib/passwords'
+
+import { updatePassword } from './actions'
 
 const initialState: PasswordState = {}
 
