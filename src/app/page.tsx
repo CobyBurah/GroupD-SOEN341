@@ -21,21 +21,30 @@ export default async function Home() {
         </div>
       </header>
       {claims ? (
-        <ul className={`${styles.list} ${styles.grid}`}>
-          <li className={styles.card}>
-            <h2>Dashboard</h2>
-            <p>See your workspace at a glance.</p>
-            <Link href="/dashboard">Go to dashboard</Link>
+        <ul className={styles.list}>
+          <li className={styles.row}>
+            <h2 className={styles.rowTitle}>Dashboard</h2>
+            <p className={styles.meta}>See your workspace at a glance.</p>
+            <div className={styles.bottomRow}>
+              <span />
+              <Link className={styles.primary} href="/dashboard">Go to dashboard <span className={styles.arrow}>→</span></Link>
+            </div>
           </li>
-          <li className={styles.card}>
-            <h2>Browse jobs</h2>
-            <p>Explore the latest opportunities.</p>
-            <Link href="/jobs">View jobs</Link>
+          <li className={styles.row}>
+            <h2 className={styles.rowTitle}>Browse jobs</h2>
+            <p className={styles.meta}>Explore the latest opportunities.</p>
+            <div className={styles.bottomRow}>
+              <span />
+              <Link className={styles.primary} href="/jobs">View jobs <span className={styles.arrow}>→</span></Link>
+            </div>
           </li>
-          <li className={styles.card}>
-            <h2>Your profile</h2>
-            <p>Keep your details up to date.</p>
-            <Link href="/profile">Edit profile</Link>
+          <li className={styles.row}>
+            <h2 className={styles.rowTitle}>Your profile</h2>
+            <p className={styles.meta}>Keep your details up to date.</p>
+            <div className={styles.bottomRow}>
+              <span />
+              <Link className={styles.primary} href="/profile">Edit profile <span className={styles.arrow}>→</span></Link>
+            </div>
           </li>
         </ul>
       ) : (

@@ -1,1 +1,16 @@
-html, body { margin: 0; background: #fff; }
+/* Colour palette taken from the job listings page design. */
+:root {
+  --cc-ink: #072422;
+  --cc-text: #26423f;
+  --cc-soft: #9fc3bb;
+  --cc-bg: #fbfcf8;
+  --cc-pill: #dcebe7;
+  --cc-line: #d5e5e1;
+  --cc-danger: #9b2828;
+  --cc-focus: #cf8c17;
+}
+
+html, body { margin: 0; background: var(--cc-bg); }
+
+/* Page headers bleed to the viewport edges; clip the extra scrollbar width. */
+body { overflow-x: clip; }
