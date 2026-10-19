@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react'
 import { deleteJob, type DeleteState } from './actions'
-import styles from './recruiter.module.css'
+import styles from '@/app/ui.module.css'
 
 export function DeleteForm({ id }: { id: string }) {
   const [state, action, pending] = useActionState(deleteJob.bind(null, id), {} as DeleteState)

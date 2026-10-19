@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { requireRecruiter } from '@/lib/recruiter'
 import { EMPLOYMENT_TYPES } from '@/lib/job-posting'
 import type { Job } from '@/lib/jobs'
-import styles from './recruiter.module.css'
+import styles from '@/app/ui.module.css'
 
 const notices: Record<string, string> = { created: 'Posting published.', updated: 'Posting updated.', deleted: 'Posting deleted from active listings.' }
 

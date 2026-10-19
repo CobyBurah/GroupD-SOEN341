@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useActionState } from 'react'
 import { EMPLOYMENT_TYPES, EMPTY_JOB, JOB_LIMITS, type JobValues } from '@/lib/job-posting'
 import { saveJob, type JobState } from './actions'
-import styles from './recruiter.module.css'
+import styles from '@/app/ui.module.css'
 
 const labels = { title: 'Job title', company: 'Company', location: 'Location', category: 'Category', salary: 'Salary', description: 'Job description' }
 

@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
 
+import styles from '../ui.module.css'
+
 import { SignupForm } from './signup-form'
 
 export default async function SignupPage() {
@@ -14,7 +16,8 @@ export default async function SignupPage() {
   }
 
   return (
-    <main>
+    <main className={`${styles.card} ${styles.auth}`}>
+      <p className={styles.eyebrow}>Get started</p>
       <h1>Create an account</h1>
       <SignupForm />
       <p>

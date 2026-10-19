@@ -1,15 +1,8 @@
 import Link from 'next/link'
-import { revalidatePath } from 'next/cache'
 
 import { createClient } from '@/lib/supabase/server'
 
-async function signOut() {
-  'use server'
-
-  const supabase = await createClient()
-  await supabase.auth.signOut()
-  revalidatePath('/', 'layout')
-}
+import styles from './ui.module.css'
 
 export default async function Home() {
   const supabase = await createClient()
@@ -18,24 +11,38 @@ export default async function Home() {
 
   return (
     <main>
-      <h1>CareerConnect</h1>
-      <p>{claims ? `Signed in as ${claims.email}` : 'Not signed in'}</p>
+      <header className={styles.header}>
+        <div>
+          <p className={styles.eyebrow}>CareerConnect</p>
+          <h1>Find your next role, or your next hire</h1>
+          <p className={styles.muted}>
+            {claims ? `Signed in as ${claims.email}` : 'Browse opportunities, manage applications, and connect with recruiters.'}
+          </p>
+        </div>
+      </header>
       {claims ? (
-        <>
-          <p>
-            <Link href="/profile">Your profile</Link>
-          </p>
-          <p>
-            <Link href="/dashboard">Dashboard</Link>
-          </p>
-          <form action={signOut}>
-            <button type="submit">Log out</button>
-          </form>
-        </>
+        <ul className={`${styles.list} ${styles.grid}`}>
+          <li className={styles.card}>
+            <h2>Dashboard</h2>
+            <p>See your workspace at a glance.</p>
+            <Link href="/dashboard">Go to dashboard</Link>
+          </li>
+          <li className={styles.card}>
+            <h2>Browse jobs</h2>
+            <p>Explore the latest opportunities.</p>
+            <Link href="/jobs">View jobs</Link>
+          </li>
+          <li className={styles.card}>
+            <h2>Your profile</h2>
+            <p>Keep your details up to date.</p>
+            <Link href="/profile">Edit profile</Link>
+          </li>
+        </ul>
       ) : (
-        <p>
-          <Link href="/login">Log in</Link> or <Link href="/signup">sign up</Link>
-        </p>
+        <div className={styles.actions}>
+          <Link href="/signup" className={styles.primary}>Create an account</Link>
+          <Link href="/login" className={styles.secondary}>Log in</Link>
+        </div>
       )}
     </main>
   )
