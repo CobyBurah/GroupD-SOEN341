@@ -1,26 +1,31 @@
 import Link from 'next/link'
 
-import type { Job } from '@/lib/jobs'
-import styles from './jobs-card.module.css'
+import type { Job } from '@/lib/jobs' // imports the Job structure/type already defined for Supabase jobs
+import styles from './jobs-card.module.css' // styles specifically for each job card
 
 type JobCardProps = {
-  job: Job
+  job: Job // each JobCard receives one job from the jobs list
 }
 
-function MapPinIcon() {
+function MapPinIcon() { // outlined location icon used inside the location pill
   return (
     <svg
       className={styles.icon}
       viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true" // screen readers can ignore the icon because the text already explains it
     >
-      <path d="M12 2C7.9 2 4.5 5.3 4.5 9.5c0 5.6 7.5 12.5 7.5 12.5s7.5-6.9 7.5-12.5C19.5 5.3 16.1 2 12 2Zm0 10.2a2.7 2.7 0 1 1 0-5.4 2.7 2.7 0 0 1 0 5.4Z" />
+      <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" />
+      <circle cx="12" cy="10" r="2.5" />
     </svg>
   )
 }
 
-function ClockIcon() {
+function ClockIcon() { // outlined clock icon used inside the employment type pill
   return (
     <svg
       className={styles.icon}
@@ -38,16 +43,22 @@ function ClockIcon() {
   )
 }
 
-function formatEmploymentType(type: string) {
+function formatEmploymentType(type: string) { // changes values such as full_time into Full Time
   return type
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
 export function JobCard({ job }: JobCardProps) {
+  const detailsUrl = `/jobs/${job.id}` // both the title and button lead to the same job details page
+
   return (
     <article className={styles.jobCard}>
-      <h2 className={styles.jobTitle}>{job.title}</h2>
+      <h2 className={styles.jobTitle}>
+        <Link href={detailsUrl} className={styles.jobTitleLink}>
+          {job.title}
+        </Link>
+      </h2>
 
       <p className={styles.companyLine}>
         <span>{job.company}</span>
@@ -85,7 +96,7 @@ export function JobCard({ job }: JobCardProps) {
 
         {/* To be changed to actual job details page when implemented */}
         <Link
-          href={`/jobs/${job.id}`}
+          href={detailsUrl}
           className={styles.detailsButton}
         >
           View Details

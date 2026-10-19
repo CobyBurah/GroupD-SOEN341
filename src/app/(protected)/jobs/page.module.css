@@ -22,7 +22,7 @@
   max-width: 1600px;
   margin: 0 auto;
 
-  padding: 46px 0 38px;
+  padding: 80px 0 72px;
 
   box-sizing: border-box;
 }
@@ -54,9 +54,6 @@
 @media (max-width: 750px) {
   .headerContent {
     width: 90vw;
-
-    padding: 34px 0 30px;
-
     text-align: center;
   }
 
