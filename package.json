@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node --test tests/recruiter.test.mjs tests/passwords.test.mjs",
+    "test": "node --test tests/*.test.mjs",
     "test:browser": "playwright test",
     "preview:recruiter": "node tests/fixtures/recruiter-preview.mjs --serve"
   },
