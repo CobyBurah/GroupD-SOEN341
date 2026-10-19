@@ -13,7 +13,7 @@ export function EmailForm({ email }: { email: string }) {
   return (
     // key remounts the form after each submit so defaultValue picks up the echoed values.
     <form action={formAction} key={JSON.stringify(values)} noValidate>
-      <label htmlFor="email">Email:</label>
+      <label htmlFor="email">Email</label>
       <input
         id="email"
         name="email"
