@@ -61,9 +61,9 @@ export default async function ProfilePage() {
         <section>
           <h2>Resumes</h2>
           {resumes && resumes.length > 0 ? (
-            <ul className={styles.muted}>
+            <ul className={styles.pills}>
               {resumes.map((resume) => (
-                <li key={resume.id}>
+                <li key={resume.id} className={styles.pill}>
                   {resume.file_name} — {formatFileSize(resume.size_bytes)}
                 </li>
               ))}
@@ -71,7 +71,9 @@ export default async function ProfilePage() {
           ) : (
             <p>No resumes uploaded yet.</p>
           )}
-          <Link href="/resumes" className={styles.secondary}>Manage resumes</Link>
+          <Link href="/resumes" className={styles.secondary}>
+            Manage resumes <span className={styles.arrow}>→</span>
+          </Link>
         </section>
       )}
 

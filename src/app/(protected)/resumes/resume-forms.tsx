@@ -74,11 +74,16 @@ export function ResumeRow({ resume }: { resume: Resume }) {
   const [replaceClientError, setReplaceClientError] = useState<string | null>(null)
 
   return (
-    <li>
-      <a href={`/resumes/${resume.id}/view`} target="_blank" rel="noopener noreferrer">
-        {resume.file_name}
-      </a>{' '}
-      — {formatFileSize(resume.size_bytes)} — {new Date(resume.created_at).toLocaleDateString()}
+    <li className={`${styles.row} ${styles.resume}`}>
+      <h2 className={styles.rowTitle}>
+        <a href={`/resumes/${resume.id}/view`} target="_blank" rel="noopener noreferrer">
+          {resume.file_name}
+        </a>
+      </h2>
+      <div className={styles.pills}>
+        <span className={styles.pill}>{formatFileSize(resume.size_bytes)}</span>
+        <span className={styles.pill}>{new Date(resume.created_at).toLocaleDateString()}</span>
+      </div>
       <form
         action={replaceAction}
         key={replaceState.token ?? 'initial'}

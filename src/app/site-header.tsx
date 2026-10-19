@@ -20,31 +20,33 @@ export async function SiteHeader() {
 
   return (
     <header className={styles.topbar}>
-      <nav aria-label="Workspace navigation" className={styles.nav}>
-        <Link href="/" className={styles.brand}>CareerConnect</Link>
-        {claims && (
-          <>
-            <Link href={recruiter ? '/recruiter' : '/dashboard'}>{recruiter ? 'My postings' : 'Dashboard'}</Link>
-            <Link href="/jobs">Browse jobs</Link>
-            {!recruiter && <Link href="/resumes">Resumes</Link>}
-            <Link href="/profile">My profile</Link>
-          </>
-        )}
-      </nav>
-      <div className={styles.account}>
-        {claims ? (
-          <>
-            {claims.email && <span className={styles.who}>{claims.email}</span>}
-            <form action={signOut}>
-              <button type="submit" className={styles.secondary}>Log out</button>
-            </form>
-          </>
-        ) : (
-          <>
-            <Link href="/login">Log in</Link>
-            <Link href="/signup" className={styles.primary}>Sign up</Link>
-          </>
-        )}
+      <div className={styles.topbarInner}>
+        <nav aria-label="Workspace navigation" className={styles.nav}>
+          <Link href="/" className={styles.brand}>CareerConnect</Link>
+          {claims && (
+            <>
+              <Link href={recruiter ? '/recruiter' : '/dashboard'}>{recruiter ? 'My postings' : 'Dashboard'}</Link>
+              <Link href="/jobs">Browse jobs</Link>
+              {!recruiter && <Link href="/resumes">Resumes</Link>}
+              <Link href="/profile">My profile</Link>
+            </>
+          )}
+        </nav>
+        <div className={styles.account}>
+          {claims ? (
+            <>
+              {claims.email && <span className={styles.who}>{claims.email}</span>}
+              <form action={signOut}>
+                <button type="submit" className={styles.secondary}>Log out</button>
+              </form>
+            </>
+          ) : (
+            <>
+              <Link href="/login">Log in</Link>
+              <Link href="/signup" className={styles.primary}>Sign up</Link>
+            </>
+          )}
+        </div>
       </div>
     </header>
   )
