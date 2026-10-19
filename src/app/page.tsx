@@ -25,6 +25,9 @@ export default async function Home() {
           <p>
             <Link href="/profile">Your profile</Link>
           </p>
+          <p>
+            <Link href="/dashboard">Dashboard</Link>
+          </p>
           <form action={signOut}>
             <button type="submit">Log out</button>
           </form>
