@@ -47,3 +47,50 @@ Thursday October 19th, 2026
 
 **Responsible Person:**
 - Noah, who conducted the interaction and is completing Sprint 2 Feature 1 - User Profile and Resume Management (#39 US-04)
+
+# AI Log #2 - Sprint 2
+Monday October 19th, 2026
+
+**Task ID/Title:**
+- Task: Implement and test the recruiter side of application review - recruiters view applicants to their job postings and update each application's status
+
+**Purpose of AI Use:**
+- Build the page where a recruiter sees who applied to one of their postings (name, headline, location, submitted resume)
+- Let the recruiter move an application between Applied, Interview, Offered and Rejected
+- Write the database security rules so recruiters can only see and change applications to their own jobs
+- Add tests for the feature and update the existing browser test that changed
+
+**AI Tool and Link to conversation:**
+- Tool: Claude Code
+- Link: https://claude.ai/code/session_015W6CTBK3u4v63xvzwhZTjB
+
+**AI-Suggested Content:**
+- src/lib/applications.ts: list of the four allowed statuses (matching the check constraint in migration 0008) and a function to validate a status
+- updateApplicationStatus Server Action in recruiter/actions.ts: checks the recruiter session, validates the job id, application id and status, updates the existing row instead of creating a new one, and filters on both the application id and the job id so a forged id from another posting cannot match
+- Status form component (status-form.tsx) using useActionState, and an updated applications page listing each applicant with their profile info and a link to the resume they submitted
+- Migration 0009:
+  - Security definer helper functions (owns_job, applied_to_my_jobs, resume_in_my_applications, resume_file_in_my_applications) so the policies on applications, profiles and resumes can check each other without RLS recursion
+  - Policies so recruiters can read and update applications only to their own jobs, and column grants so only the status column can be updated
+  - Policies so recruiters can view the profile, resume row and resume file of people who applied to their jobs
+- tests/application-review.test.mjs: checks that recruiters review and update status only for applications to their own jobs
+- Updated the recruiter Playwright test and preview fixture since the empty state now reads "No applications yet"
+
+**Validation:**
+- Reviewed every file the AI changed before committing
+- Checked that the status values match the constraint already defined in migration 0008
+- Ran npm test and the Playwright browser tests (npm run test:browser)
+- Checked the policies only allow updating the status column and only for the recruiter's own postings, and that job seekers still have no update access
+
+**Decision:**
+- Kept the AI's approach of updating the existing application row instead of inserting a new status history
+- Kept the security definer helpers since plain policies on profiles/resumes that query applications would recurse through each other's RLS
+- Limited what recruiters see of an applicant to their public profile fields and the one resume submitted with the application
+- Committed the feature myself on the feature/recruiter-application-review branch
+
+**Reflection:**
+- The AI pointed out security problems I would likely have missed, such as needing the job id filter on the update and needing column-level grants so recruiters cannot edit other fields
+- Writing the RLS policies with the AI showed me how policies on different tables can depend on each other and why helper functions are needed
+- Having tests written alongside the feature made it easier to check the access rules actually work
+
+**Responsible Person:**
+- Noah, who conducted the interaction and implemented the recruiter application review feature
