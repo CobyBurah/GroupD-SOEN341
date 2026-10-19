@@ -12,7 +12,7 @@ export function PasswordForm() {
 
   return (
     <form action={formAction} key={state.message} noValidate>
-      <label htmlFor="password">New password:</label>
+      <label htmlFor="password">New password</label>
       <input
         id="password"
         name="password"
@@ -23,7 +23,7 @@ export function PasswordForm() {
       />
       {errors.password && <p role="alert">{errors.password}</p>}
 
-      <label htmlFor="confirmPassword">Confirm new password:</label>
+      <label htmlFor="confirmPassword">Confirm new password</label>
       <input
         id="confirmPassword"
         name="confirmPassword"

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 
 import { isRole } from '@/lib/profiles'
 import { createClient } from '@/lib/supabase/server'
+import styles from '@/app/ui.module.css'
 
 import { ResumeRow, ResumeUploadForm } from './resume-forms'
 
@@ -20,8 +21,16 @@ export default async function ResumesPage() {
   if (role !== 'job_seeker') {
     return (
       <main>
-        <h1>Resumes</h1>
-        <p>Only job seekers can manage resumes.</p>
+        <header className={styles.header}>
+          <div>
+            <p className={styles.eyebrow}>Account</p>
+            <h1>Resumes</h1>
+          </div>
+        </header>
+        <section className={styles.card}>
+          <h2>Not available for this account</h2>
+          <p>Only job seekers can manage resumes.</p>
+        </section>
       </main>
     )
   }
@@ -33,15 +42,31 @@ export default async function ResumesPage() {
 
   return (
     <main>
-      <h1>Resumes</h1>
+      <header className={styles.header}>
+        <div>
+          <p className={styles.eyebrow}>Job Seeker workspace</p>
+          <h1>Resumes</h1>
+          <p>Upload the resumes you want to apply with. PDF or DOCX, up to 5 MB each.</p>
+        </div>
+      </header>
 
-      <ResumeUploadForm />
+      <section>
+        <h2>Upload a new resume</h2>
+        <ResumeUploadForm />
+      </section>
 
-      <ul>
-        {(resumes ?? []).map((resume) => (
-          <ResumeRow key={resume.id} resume={resume} />
-        ))}
-      </ul>
+      {resumes && resumes.length > 0 ? (
+        <>
+          <p>{resumes.length} {resumes.length === 1 ? 'resume' : 'resumes'}</p>
+          <ul className={styles.list}>
+            {resumes.map((resume) => (
+              <ResumeRow key={resume.id} resume={resume} />
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p className={styles.muted}>No resumes uploaded yet.</p>
+      )}
     </main>
   )
 }

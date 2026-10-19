@@ -3,6 +3,7 @@
 import { useActionState, useState } from 'react'
 
 import { MAX_RESUME_SIZE_BYTES, formatFileSize } from '@/lib/resumes'
+import styles from '@/app/ui.module.css'
 
 import {
   deleteResume,
@@ -40,7 +41,7 @@ export function ResumeUploadForm() {
       key={state.token ?? 'initial'}
       onSubmit={(event) => setClientError(rejectOversizedFile(event))}
     >
-      <label htmlFor="file">Upload a resume (PDF or DOCX, up to 5 MB):</label>
+      <label htmlFor="file">Upload a resume (PDF or DOCX, up to 5 MB)</label>
       <input id="file" name="file" type="file" accept=".pdf,.docx" required />
 
       {clientError && <p role="alert">{clientError}</p>}
@@ -73,25 +74,32 @@ export function ResumeRow({ resume }: { resume: Resume }) {
   const [replaceClientError, setReplaceClientError] = useState<string | null>(null)
 
   return (
-    <li>
-      <a href={`/resumes/${resume.id}/view`} target="_blank" rel="noopener noreferrer">
-        {resume.file_name}
-      </a>{' '}
-      — {formatFileSize(resume.size_bytes)} — {new Date(resume.created_at).toLocaleDateString()}
+    <li className={`${styles.row} ${styles.resume}`}>
+      <h2 className={styles.rowTitle}>
+        <a href={`/resumes/${resume.id}/view`} target="_blank" rel="noopener noreferrer">
+          {resume.file_name}
+        </a>
+      </h2>
+      <div className={styles.pills}>
+        <span className={styles.pill}>{formatFileSize(resume.size_bytes)}</span>
+        <span className={styles.pill}>{new Date(resume.created_at).toLocaleDateString()}</span>
+      </div>
       <form
         action={replaceAction}
         key={replaceState.token ?? 'initial'}
         onSubmit={(event) => setReplaceClientError(rejectOversizedFile(event))}
       >
         <input type="hidden" name="resumeId" value={resume.id} />
-        <label htmlFor={`replace-${resume.id}`}>Replace file:</label>
-        <input id={`replace-${resume.id}`} name="file" type="file" accept=".pdf,.docx" required />
+        <div>
+          <label htmlFor={`replace-${resume.id}`}>Replace file</label>
+          <input id={`replace-${resume.id}`} name="file" type="file" accept=".pdf,.docx" required />
+        </div>
         {replaceClientError && <p role="alert">{replaceClientError}</p>}
         {!replaceClientError && replaceState.error && <p role="alert">{replaceState.error}</p>}
         {!replaceClientError && replaceState.message && (
           <p aria-live="polite">{replaceState.message}</p>
         )}
-        <button type="submit" disabled={replacePending}>
+        <button type="submit" className={styles.secondary} disabled={replacePending}>
           {replacePending ? 'Replacing…' : 'Replace'}
         </button>
       </form>
@@ -106,7 +114,7 @@ export function ResumeRow({ resume }: { resume: Resume }) {
       >
         <input type="hidden" name="resumeId" value={resume.id} />
         {deleteState.error && <p role="alert">{deleteState.error}</p>}
-        <button type="submit" disabled={deletePending}>
+        <button type="submit" className={styles.danger} disabled={deletePending}>
           {deletePending ? 'Deleting…' : 'Delete'}
         </button>
       </form>

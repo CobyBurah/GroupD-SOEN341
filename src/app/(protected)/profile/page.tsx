@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { ROLE_LABELS, isRole } from '@/lib/profiles'
 import { formatFileSize } from '@/lib/resumes'
 import { createClient } from '@/lib/supabase/server'
+import styles from '@/app/ui.module.css'
 
 import { DeleteAccountForm } from './delete-account-form'
 import { EmailForm } from './email-form'
@@ -37,8 +38,13 @@ export default async function ProfilePage() {
 
   return (
     <main>
-      <h1>Your profile</h1>
-      <p>Account type: {ROLE_LABELS[role]}</p>
+      <header className={styles.header}>
+        <div>
+          <p className={styles.eyebrow}>{ROLE_LABELS[role]} account</p>
+          <h1>Your profile</h1>
+          <p>Manage your personal details, sign-in settings and account.</p>
+        </div>
+      </header>
 
       <section>
         <h2>Name</h2>
@@ -55,9 +61,9 @@ export default async function ProfilePage() {
         <section>
           <h2>Resumes</h2>
           {resumes && resumes.length > 0 ? (
-            <ul>
+            <ul className={styles.pills}>
               {resumes.map((resume) => (
-                <li key={resume.id}>
+                <li key={resume.id} className={styles.pill}>
                   {resume.file_name} — {formatFileSize(resume.size_bytes)}
                 </li>
               ))}
@@ -65,7 +71,9 @@ export default async function ProfilePage() {
           ) : (
             <p>No resumes uploaded yet.</p>
           )}
-          <Link href="/resumes">Manage resumes</Link>
+          <Link href="/resumes" className={styles.secondary}>
+            Manage resumes <span className={styles.arrow}>→</span>
+          </Link>
         </section>
       )}
 

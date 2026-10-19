@@ -2,6 +2,8 @@
 
 import { useActionState } from 'react'
 
+import styles from '@/app/ui.module.css'
+
 import { deleteAccount, type DeleteAccountState } from './actions'
 
 const initialState: DeleteAccountState = {}
@@ -18,7 +20,7 @@ export function DeleteAccountForm() {
 
       {state.message && <p role="alert">{state.message}</p>}
 
-      <button type="submit" disabled={pending}>
+      <button type="submit" className={styles.danger} disabled={pending}>
         {pending ? 'Deleting…' : 'Delete my account'}
       </button>
     </form>

@@ -1,10 +1,12 @@
 import Link from 'next/link'
 
 import type { Job } from '@/lib/jobs' // imports the Job structure/type already defined for Supabase jobs
-import styles from './jobs-card.module.css' // styles specifically for each job card
+import styles from '@/app/ui.module.css' // shared theme styles (row, pills, buttons, etc.)
 
 type JobCardProps = {
   job: Job // each JobCard receives one job from the jobs list
+  href?: string // where the title/button link to; defaults to the job's details page
+  children?: React.ReactNode // optional custom actions (recruiter pages pass edit/delete links here)
 }
 
 function MapPinIcon() { // outlined location icon used inside the location pill
@@ -49,60 +51,56 @@ function formatEmploymentType(type: string) { // changes values such as full_tim
     .replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
-export function JobCard({ job }: JobCardProps) {
-  const detailsUrl = `/jobs/${job.id}` // both the title and button lead to the same job details page
-
+export function JobCard({ job, href = `/jobs/${job.id}`, children }: JobCardProps) {
   return (
-    <article className={styles.jobCard}>
-      <h2 className={styles.jobTitle}>
-        <Link href={detailsUrl} className={styles.jobTitleLink}>
-          {job.title}
-        </Link>
+    <li className={styles.row}>
+      <h2 className={styles.rowTitle}>
+        <Link href={href}>{job.title}</Link>
       </h2>
 
-      <p className={styles.companyLine}>
+      <p className={styles.meta}>
         <span>{job.company}</span>
 
         {job.category && (
           <>
-            <span className={styles.companySeparator}>|</span>
+            <span>|</span>
             <span>{job.category}</span>
           </>
         )}
       </p>
 
       <div className={styles.bottomRow}>
-        <div className={styles.detailsRow}>
+        <div className={styles.pills}>
           {job.location && (
-            <div className={styles.infoPill}>
+            <div className={styles.pill}>
               <MapPinIcon />
               <span>{job.location}</span>
             </div>
           )}
 
           {job.employment_type && (
-            <div className={styles.infoPill}>
+            <div className={styles.pill}>
               <ClockIcon />
               <span>{formatEmploymentType(job.employment_type)}</span>
             </div>
           )}
 
           {job.salary && (
-            <div className={styles.infoPill}>
+            <div className={styles.pill}>
               <span>{job.salary}</span>
             </div>
           )}
         </div>
 
-        {/* To be changed to actual job details page when implemented */}
-        <Link
-          href={detailsUrl}
-          className={styles.detailsButton}
-        >
-          View Details
-          <span className={styles.arrow}>→</span>
-        </Link>
+        {children ? (
+          // Recruiter pages pass their own edit/delete/applications links here.
+          <div className={styles.actions} style={{ marginTop: 0 }}>{children}</div>
+        ) : (
+          <Link href={href} className={styles.primary}>
+            View Details <span className={styles.arrow}>→</span>
+          </Link>
+        )}
       </div>
-    </article>
+    </li>
   )
 }
