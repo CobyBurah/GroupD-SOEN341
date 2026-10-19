@@ -14,10 +14,31 @@ export default async function DashboardPage() {
       <div><p className={styles.eyebrow}>Job Seeker workspace</p><h1>Your dashboard</h1><p>Explore job opportunities and keep your professional profile up to date.</p></div>
       <Link className={styles.primary} href="/jobs">Browse jobs</Link>
     </header>
-    <ul className={`${styles.list} ${styles.grid}`}>
-      <li className={styles.card}><h2>Browse jobs</h2><p>See the latest postings from recruiters.</p><Link href="/jobs">View open roles</Link></li>
-      <li className={styles.card}><h2>Your profile</h2><p>Update your headline, location and bio.</p><Link href="/profile">Your profile</Link></li>
-      <li className={styles.card}><h2>Resumes</h2><p>Upload and manage the resumes you apply with.</p><Link href="/resumes">Manage resumes</Link></li>
+    <ul className={styles.list}>
+      <li className={styles.row}>
+        <h2 className={styles.rowTitle}>Browse jobs</h2>
+        <p className={styles.meta}>See the latest postings from recruiters.</p>
+        <div className={styles.bottomRow}>
+          <span />
+          <Link className={styles.primary} href="/jobs">View open roles <span className={styles.arrow}>→</span></Link>
+        </div>
+      </li>
+      <li className={styles.row}>
+        <h2 className={styles.rowTitle}>Your profile</h2>
+        <p className={styles.meta}>Update your headline, location and bio.</p>
+        <div className={styles.bottomRow}>
+          <span />
+          <Link className={styles.primary} href="/profile">Your profile <span className={styles.arrow}>→</span></Link>
+        </div>
+      </li>
+      <li className={styles.row}>
+        <h2 className={styles.rowTitle}>Resumes</h2>
+        <p className={styles.meta}>Upload and manage the resumes you apply with.</p>
+        <div className={styles.bottomRow}>
+          <span />
+          <Link className={styles.primary} href="/resumes">Manage resumes <span className={styles.arrow}>→</span></Link>
+        </div>
+      </li>
     </ul>
   </main>
 }

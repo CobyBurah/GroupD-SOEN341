@@ -39,7 +39,8 @@ test('recruiter creates, validates, edits, views pending applications and delete
   await expect(page.getByRole('status')).toHaveText('Posting deleted from active listings.')
   await expect(page.getByRole('heading', { name: 'No postings yet' })).toBeVisible()
   await page.goto(base + '/jobs')
-  await expect(page.getByRole('heading', { name: 'Available Jobs (0)' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Available Jobs For You' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'No jobs posted yet' })).toBeVisible()
 
   await page.goto(base + '/recruiter/jobs/not-a-uuid/edit')
   await expect(page.getByRole('heading', { name: 'Posting unavailable' })).toBeVisible()

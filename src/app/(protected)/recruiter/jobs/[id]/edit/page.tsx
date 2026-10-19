@@ -7,5 +7,10 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
   const job = await ownedJob(id)
   const values = { ...EMPTY_JOB }
   for (const field of Object.keys(values) as (keyof typeof values)[]) values[field] = job[field] ?? ''
-  return <main><p className={styles.eyebrow}>Recruiter workspace</p><h1>Edit posting</h1><JobForm id={id} initialValues={values} /></main>
+  return <main>
+    <header className={styles.header}>
+      <div><p className={styles.eyebrow}>Recruiter workspace</p><h1>Edit posting</h1></div>
+    </header>
+    <JobForm id={id} initialValues={values} />
+  </main>
 }

@@ -31,7 +31,7 @@ export function JobForm({ id = null, initialValues = EMPTY_JOB }: { id?: string 
     </div>
     <div className={styles.actions}>
       <button type="submit" disabled={pending}>{pending ? 'Saving…' : id ? 'Save changes' : 'Publish posting'}</button>
-      <Link href="/recruiter">Cancel</Link>
+      <Link className={styles.secondary} href="/recruiter">Cancel</Link>
     </div>
   </form>
 }
