@@ -77,6 +77,10 @@
 .pills { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; list-style: none; padding: 0; margin: 0; max-width: 100%; }
 ul.pills { margin: 12px 0 20px; }
 .pill { display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 9px 18px; border-radius: 999px; background: var(--cc-pill); color: var(--cc-text); font-size: 15px; white-space: nowrap; max-width: 100%; }
+
+/* Slight horizontal adjustment so job pill content looks visually centered. */
+.jobPill { padding-left: 14px; padding-right: 18px; }
+
 .icon { width: 19px; height: 19px; flex-shrink: 0; color: var(--cc-ink); }
 
 /* Boxed panels for empty states and the narrow auth screens. */

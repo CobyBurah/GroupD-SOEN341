@@ -98,21 +98,21 @@ export function JobCard({
       <div className={styles.bottomRow}>
         <div className={styles.pills}>
           {job.location && (
-            <div className={styles.pill}>
+            <div className={`${styles.pill} ${styles.jobPill}`}>
               <MapPinIcon />
               <span>{job.location}</span>
             </div>
           )}
 
           {job.employment_type && (
-            <div className={styles.pill}>
+            <div className={`${styles.pill} ${styles.jobPill}`}>
               <ClockIcon />
               <span>{formatEmploymentType(job.employment_type)}</span>
             </div>
           )}
 
           {job.salary && (
-            <div className={styles.pill}>
+            <div className={`${styles.pill} ${styles.jobPill}`}>
               <DollarIcon />
               {/* Remove the original $ because the icon already displays it */}
               <span>{job.salary.replace(/\$/g, '')}</span>
