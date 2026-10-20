@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
-import { ROLE_LABELS, isRole } from '@/lib/profiles'
+import { isRole } from '@/lib/profiles'
 import { formatFileSize } from '@/lib/resumes'
 import { createClient } from '@/lib/supabase/server'
 import styles from '@/app/ui.module.css'
@@ -40,7 +40,6 @@ export default async function ProfilePage() {
     <main>
       <header className={styles.header}>
         <div>
-          <p className={styles.eyebrow}>{ROLE_LABELS[role]} account</p>
           <h1>Your profile</h1>
           <p>Manage your personal details, sign-in settings and account.</p>
         </div>

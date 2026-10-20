@@ -17,7 +17,6 @@ export default async function SignupPage() {
 
   return (
     <main className={`${styles.card} ${styles.auth}`}>
-      <p className={styles.eyebrow}>Get started</p>
       <h1>Create an account</h1>
       <SignupForm />
       <p>

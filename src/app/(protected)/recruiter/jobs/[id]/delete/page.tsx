@@ -7,7 +7,7 @@ export default async function DeletePostingPage({ params }: { params: Promise<{ 
   const job = await ownedJob(id)
   return <main>
     <header className={styles.header}>
-      <div><p className={styles.eyebrow}>Recruiter workspace</p><h1>Delete posting</h1></div>
+      <div><h1>Delete posting</h1></div>
     </header>
     <div className={styles.card}><h2>{job.title}</h2><p>{job.company}</p>
       <p>This removes the job from active listings. Its record is retained to preserve application history.</p>

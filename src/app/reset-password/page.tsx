@@ -29,7 +29,6 @@ export default async function ResetPasswordPage() {
 
   return (
     <main className={`${styles.card} ${styles.auth}`}>
-      <p className={styles.eyebrow}>Account recovery</p>
       <h1>Choose a new password</h1>
       <ResetPasswordForm />
     </main>

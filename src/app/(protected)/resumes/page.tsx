@@ -23,7 +23,6 @@ export default async function ResumesPage() {
       <main>
         <header className={styles.header}>
           <div>
-            <p className={styles.eyebrow}>Account</p>
             <h1>Resumes</h1>
           </div>
         </header>
@@ -44,7 +43,6 @@ export default async function ResumesPage() {
     <main>
       <header className={styles.header}>
         <div>
-          <p className={styles.eyebrow}>Job Seeker workspace</p>
           <h1>Resumes</h1>
           <p>Upload the resumes you want to apply with, several at once. PDF or DOCX, up to 5 MB each.</p>
         </div>

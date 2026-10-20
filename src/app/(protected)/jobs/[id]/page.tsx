@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { getJob } from '@/lib/jobs'
+import styles from '@/app/ui.module.css'
 
 type JobDetailsPageProps = {
   params: Promise<{
@@ -11,7 +12,7 @@ type JobDetailsPageProps = {
 export default async function JobDetailsPage({
   params,
 }: JobDetailsPageProps) {
-  // Get the id from the URL. Example: /jobs/123 means id = 123
+  // Get the id from the URL
   const { id } = await params
 
   // Ask Supabase for the job that has this id
@@ -22,52 +23,96 @@ export default async function JobDetailsPage({
     return (
       <main>
         <h1>Job not found</h1>
-        <Link href="/jobs">Back to Jobs</Link>
+
+        <p>
+          <strong>
+            <Link href="/jobs">← Back to Jobs</Link>
+          </strong>
+        </p>
       </main>
     )
   }
 
-  // Display the full information for the selected job
+  // Only display Job Information when at least one field exists
+  const hasJobInformation = Boolean(
+    job.category ||
+    job.employment_type ||
+    job.salary
+  )
+
   return (
     <main>
-      <Link href="/jobs">← Back to Jobs</Link>
+      {/* Main job header */}
+      <header className={styles.header}>
+        <div>
+          <h1>{job.title}</h1>
 
-      <h1>{job.title}</h1>
+          <p>
+            {job.company}
+            {job.location ? ` · ${job.location}` : ''}
+          </p>
+        </div>
 
-      <p>{job.company}</p>
+        <Link
+          href={`/jobs/${job.id}/apply`}
+          className={styles.primary}
+        >
+          Apply Now
+        </Link>
+      </header>
 
-      {job.location && (
-        <p>
-          <strong>Location:</strong> {job.location}
-        </p>
+      {/* Navigation back to the job listings */}
+      <p className={styles.backLink}>
+        <Link href="/jobs">
+          ← Back to Jobs
+        </Link>
+      </p>
+
+      {/* Only show the section if there is job information to display */}
+      {hasJobInformation && (
+        <section>
+          <h2>Job Information</h2>
+
+          {job.category && (
+            <p>
+              <strong>Category:</strong> {job.category}
+            </p>
+          )}
+
+          {job.employment_type && (
+            <p>
+              <strong>Employment Type:</strong>{' '}
+              {job.employment_type
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, (letter) => letter.toUpperCase())}
+            </p>
+          )}
+
+          {job.salary && (
+            <p>
+              <strong>Salary:</strong> {job.salary}
+            </p>
+          )}
+        </section>
       )}
 
-      {job.category && (
-        <p>
-          <strong>Category:</strong> {job.category}
+      <section>
+        <h2>Job Description</h2>
+
+        <p className={styles.description}>
+          {job.description}
         </p>
-      )}
+      </section>
 
-      {job.employment_type && (
-        <p>
-          <strong>Employment Type:</strong>{' '}
-          {job.employment_type.replace(/_/g, ' ')}
-        </p>
-      )}
-
-      {job.salary && (
-        <p>
-          <strong>Salary:</strong> {job.salary}
-        </p>
-      )}
-
-      <h2>Job Description</h2>
-      <p>{job.description}</p>
-
-      {/* Application functionality will be implemented separately */}
-      <button type="button">
-        Apply to Job
-      </button>
+      {/* Second application option below the final divider */}
+      <div className={styles.actions}>
+        <Link
+          href={`/jobs/${job.id}/apply`}
+          className={styles.primary}
+        >
+          Apply Now
+        </Link>
+      </div>
     </main>
   )
 }

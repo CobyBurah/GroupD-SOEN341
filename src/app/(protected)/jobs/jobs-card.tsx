@@ -6,7 +6,7 @@ import styles from '@/app/ui.module.css' // shared theme styles (row, pills, but
 type JobCardProps = {
   job: Job // each JobCard receives one job from the jobs list
   href?: string // where the title/button link to; defaults to the job's details page
-  children?: React.ReactNode // optional custom actions (recruiter pages pass edit/delete links here)
+  children?: React.ReactNode // optional custom actions such as View Details / Apply
 }
 
 function MapPinIcon() { // outlined location icon used inside the location pill
@@ -45,17 +45,43 @@ function ClockIcon() { // outlined clock icon used inside the employment type pi
   )
 }
 
+function DollarIcon() { // outlined dollar icon used inside the salary pill
+  return (
+    <svg
+      className={styles.icon}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 6v12" />
+      <path d="M15 8.5c-.8-1-1.8-1.5-3-1.5-1.7 0-3 1-3 2.5S10.3 12 12 12s3 1 3 2.5-1.3 2.5-3 2.5c-1.2 0-2.3-.5-3-1.5" />
+    </svg>
+  )
+}
+
 function formatEmploymentType(type: string) { // changes values such as full_time into Full Time
   return type
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
-export function JobCard({ job, href = `/jobs/${job.id}`, children }: JobCardProps) {
+export function JobCard({
+  job,
+  href = `/jobs/${job.id}`,
+  children,
+}: JobCardProps) {
   return (
     <li className={styles.row}>
       <h2 className={styles.rowTitle}>
-        <Link href={href}>{job.title}</Link>
+        {/* Job title leads to the same page as View Details */}
+        <Link href={href}>
+          {job.title}
+        </Link>
       </h2>
 
       <p className={styles.meta}>
@@ -87,17 +113,30 @@ export function JobCard({ job, href = `/jobs/${job.id}`, children }: JobCardProp
 
           {job.salary && (
             <div className={styles.pill}>
-              <span>{job.salary}</span>
+              <DollarIcon />
+              {/* Remove the original $ because the icon already displays it */}
+              <span>{job.salary.replace(/\$/g, '')}</span>
             </div>
           )}
         </div>
 
         {children ? (
-          // Recruiter pages pass their own edit/delete/applications links here.
-          <div className={styles.actions} style={{ marginTop: 0 }}>{children}</div>
+          // Job seeker page can pass View Details + Apply here.
+          // Recruiter pages can also pass their own actions.
+          <div
+            className={styles.actions}
+            style={{ marginTop: 0 }}
+          >
+            {children}
+          </div>
         ) : (
-          <Link href={href} className={styles.primary}>
-            View Details <span className={styles.arrow}>→</span>
+          // Default action if no custom buttons were provided
+          <Link
+            href={href}
+            className={styles.primary}
+          >
+            View Details
+            <span className={styles.arrow}>→</span>
           </Link>
         )}
       </div>
