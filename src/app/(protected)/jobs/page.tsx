@@ -21,6 +21,7 @@ export default async function JobsPage() { //this is the page where Next.js show
 
   return ( //this is what is shown on the website screen basically like html
     <main
+      data-full-width
       className={`${styles.page} ${montserrat.variable} ${inter.variable}`}
     >
       <section className={styles.header}>

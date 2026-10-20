@@ -6,19 +6,22 @@
   color: #072422;
   font-family: var(--font-inter);
 
-  /* Removes the browser's default body spacing for this page only */
-  margin: -8px;
+  margin: 0;
 }
 
 /* Dark green header */
 
-.header {
+.page > .header {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
   width: 100%;
   background-color: #072422;
 }
 
 .headerContent {
-  width: 90vw;
+  width: 90%;
   max-width: 1600px;
   margin: 0 auto;
 
@@ -27,7 +30,7 @@
   box-sizing: border-box;
 }
 
-.header h1 {
+.page .header h1 {
   margin: 0;
   color: white;
 
@@ -39,8 +42,11 @@
 
 /* Job listing area */
 
-.jobsSection {
-  width: 90vw;
+.page > .jobsSection {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  width: 90%;
   max-width: 1600px;
   margin: 0 auto;
 
@@ -53,17 +59,17 @@
 
 @media (max-width: 750px) {
   .headerContent {
-    width: 90vw;
+    width: 90%;
     text-align: center;
   }
 
-  .header h1 {
+  .page .header h1 {
     font-size: 27px;
     text-align: center;
   }
 
-  .jobsSection {
-    width: 90vw;
+  .page > .jobsSection {
+    width: 90%;
 
     padding: 8px 0 40px;
   }

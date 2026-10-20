@@ -1,5 +1,9 @@
 import type { Metadata } from 'next'
 
+import './globals.css'
+import { SiteHeader } from './site-header'
+import styles from './ui.module.css'
+
 export const metadata: Metadata = {
   title: 'CareerConnect',
   description: 'Find jobs, manage applications, and connect with recruiters.',
@@ -12,7 +16,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <div className={styles.shell}>
+          <SiteHeader />
+          {children}
+        </div>
+      </body>
     </html>
   )
 }

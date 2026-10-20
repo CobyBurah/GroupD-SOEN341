@@ -23,7 +23,7 @@ export function ProfileForm({ role, fullName, headline, location, bio }: Profile
   return (
     // key remounts the form after each submit so defaultValue picks up the echoed values.
     <form action={formAction} key={JSON.stringify(values)} noValidate>
-      <label htmlFor="fullName">Full name:</label>
+      <label htmlFor="fullName">Full name</label>
       <input
         id="fullName"
         name="fullName"
@@ -36,7 +36,7 @@ export function ProfileForm({ role, fullName, headline, location, bio }: Profile
 
       {role === 'job_seeker' && (
         <>
-          <label htmlFor="headline">Headline:</label>
+          <label htmlFor="headline">Headline</label>
           <input
             id="headline"
             name="headline"
@@ -46,7 +46,7 @@ export function ProfileForm({ role, fullName, headline, location, bio }: Profile
           />
           {errors.headline && <p role="alert">{errors.headline}</p>}
 
-          <label htmlFor="location">Location:</label>
+          <label htmlFor="location">Location</label>
           <input
             id="location"
             name="location"
@@ -56,7 +56,7 @@ export function ProfileForm({ role, fullName, headline, location, bio }: Profile
           />
           {errors.location && <p role="alert">{errors.location}</p>}
 
-          <label htmlFor="bio">Bio:</label>
+          <label htmlFor="bio">Bio</label>
           <textarea id="bio" name="bio" maxLength={PROFILE_LIMITS.bio} defaultValue={values.bio} />
           {errors.bio && <p role="alert">{errors.bio}</p>}
         </>
