@@ -27,6 +27,7 @@ test('recruiters review and update status only for applications to their own job
     // Supabase's default table privileges, which 0009 narrows for updates.
     await db.exec('grant select, insert, update on applications to authenticated')
     await db.exec(await readFile(new URL('../supabase/migrations/0009_recruiter_application_review.sql', import.meta.url), 'utf8'))
+    await db.exec(await readFile(new URL('../supabase/migrations/0010_under_review_status.sql', import.meta.url), 'utf8'))
     await db.query('insert into auth.users values ($1), ($2), ($3), ($4)', [seeker, recruiter, otherRecruiter, otherSeeker])
     await db.query("insert into profiles values ($1, 'job_seeker', 'Sam Seeker'), ($2, 'recruiter', 'Rae'), ($3, 'recruiter', 'Other'), ($4, 'job_seeker', 'Not Applied')", [seeker, recruiter, otherRecruiter, otherSeeker])
     await db.query('insert into jobs values ($1, $2, null), ($3, $4, null)', [id(10), recruiter, id(11), otherRecruiter])
@@ -46,6 +47,8 @@ test('recruiters review and update status only for applications to their own job
       assert.deepEqual((await rows('select full_name from profiles order by full_name')).map(r => r.full_name), ['Rae', 'Sam Seeker'])
       assert.deepEqual((await rows('select id from resumes')).map(r => r.id), [id(20)])
       assert.deepEqual((await rows('select name from storage.objects')).map(r => r.name), ['seeker/cv.pdf'])
+      await db.query("update applications set status = 'Under Review' where id = $1", [id(30)])
+      assert.deepEqual((await rows('select status from applications')).map(r => r.status), ['Under Review'])
       await db.query("update applications set status = 'Interview' where id = $1", [id(30)])
       // Another recruiter's application is invisible, so the update matches nothing.
       assert.equal((await db.query("update applications set status = 'Offered' where id = $1", [id(31)])).affectedRows, 0)

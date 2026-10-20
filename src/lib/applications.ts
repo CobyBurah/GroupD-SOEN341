@@ -1,5 +1,5 @@
-// Must match the status check constraint in supabase/migrations/0008_applications.sql.
-export const APPLICATION_STATUSES = ['Applied', 'Interview', 'Offered', 'Rejected'] as const
+// Must match the status check constraint in supabase/migrations/0010_under_review_status.sql.
+export const APPLICATION_STATUSES = ['Applied', 'Under Review', 'Interview', 'Offered', 'Rejected'] as const
 export type ApplicationStatus = typeof APPLICATION_STATUSES[number]
 
 export function isApplicationStatus(value: unknown): value is ApplicationStatus {
