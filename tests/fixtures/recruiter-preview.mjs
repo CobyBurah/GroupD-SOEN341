@@ -140,6 +140,7 @@ export async function startPreview() {
     }
     if (url.pathname === '/rest/v1/resumes') return handleResumes(req, res, url)
     if (url.pathname.startsWith('/storage/v1/object/')) return handleStorage(req, res, url)
+    if (url.pathname === '/rest/v1/applications') return res.end('[]')
     if (url.pathname !== '/rest/v1/jobs') { res.statusCode = 404; return res.end('{}') }
     const matches = job => ['id', 'recruiter_id'].every(field => !url.searchParams.has(field) || url.searchParams.get(field) === `eq.${job[field]}`)
       && (url.searchParams.get('deleted_at') !== 'is.null' || job.deleted_at === null)

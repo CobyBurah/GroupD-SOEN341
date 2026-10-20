@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { recruiterSession } from '@/lib/recruiter'
 import { isJobId, validateJob, type JobValues, type JobErrors } from '@/lib/job-posting'
+import { isApplicationStatus, type ApplicationStatus } from '@/lib/applications'
 
 export type JobState = { values?: JobValues; errors?: JobErrors; message?: string }
 export type DeleteState = { message?: string }
@@ -60,4 +61,27 @@ export async function deleteJob(id: string, _state: DeleteState, formData: FormD
   if (!result.data) return { message: 'Posting not found or unavailable.' }
   invalidateJobs(id)
   redirect('/recruiter?notice=deleted')
+}
+
+export type StatusState = { status?: ApplicationStatus; message?: string; saved?: boolean }
+
+export async function updateApplicationStatus(jobId: string, applicationId: string, _state: StatusState, formData: FormData): Promise<StatusState> {
+  const session = await recruiterSession()
+  if (!session.ok) return { message: session.message }
+  const status = formData.get('status')
+  if (!isJobId(jobId) || !isJobId(applicationId)) return { message: 'Application not found or unavailable.' }
+  if (!isApplicationStatus(status)) return { message: 'Choose a valid status.' }
+  let result
+  try {
+    // RLS limits this to applications on the recruiter's own postings; the job filter
+    // keeps a forged application id from another posting from matching.
+    result = await session.supabase.from('applications').update({ status })
+      .eq('id', applicationId).eq('job_id', jobId).select('status').maybeSingle()
+  } catch {
+    return { message: 'Could not update the status. Check your connection and try again.' }
+  }
+  if (result.error) return { message: 'Could not update the status. Please try again.' }
+  if (!result.data) return { message: 'Application not found or unavailable.' }
+  revalidatePath(`/recruiter/jobs/${jobId}/applications`)
+  return { status: result.data.status, saved: true }
 }

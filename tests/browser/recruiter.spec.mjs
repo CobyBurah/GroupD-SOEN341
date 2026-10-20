@@ -28,7 +28,7 @@ test('recruiter creates, validates, edits, views pending applications and delete
   await page.getByRole('button', { name: 'Save changes' }).click()
   await expect(page.getByRole('status')).toHaveText('Posting updated.')
   await page.getByRole('link', { name: 'Applications for Senior Frontend Developer' }).click()
-  await expect(page.getByRole('heading', { name: 'Applications are not available yet' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'No applications yet' })).toBeVisible()
   await page.getByRole('link', { name: 'Back to your postings' }).click()
   await page.setViewportSize({ width: 390, height: 844 })
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
