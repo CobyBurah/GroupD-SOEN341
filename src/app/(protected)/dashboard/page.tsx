@@ -11,7 +11,7 @@ export default async function DashboardPage() {
   if (profile?.role === 'recruiter') redirect('/recruiter')
   return <main>
     <header className={styles.header}>
-      <div><p className={styles.eyebrow}>Job Seeker workspace</p><h1>Your dashboard</h1><p>Explore job opportunities and keep your professional profile up to date.</p></div>
+      <div><h1>Your dashboard</h1><p>Explore job opportunities and keep your professional profile up to date.</p></div>
       <Link className={styles.primary} href="/jobs">Browse jobs</Link>
     </header>
     <ul className={styles.list}>

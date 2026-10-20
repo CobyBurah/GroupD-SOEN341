@@ -26,7 +26,7 @@ export default async function ApplicationsPage({ params }: { params: Promise<{ i
   const resumeNames = new Map(((resumes.data ?? []) as Resume[]).map(r => [r.id, r.file_name]))
   return <main>
     <header className={styles.header}>
-      <div><p className={styles.eyebrow}>Recruiter workspace</p><h1>Applications for {job.title}</h1><p>{job.company}</p></div>
+      <div><h1>Applications for {job.title}</h1><p>{job.company}</p></div>
     </header>
     {error ? <section role="alert" className={styles.card}><h2>Could not load applications</h2><p>Please try again.</p></section>
       : applications.length === 0 ? <section className={styles.card}><h2>No applications yet</h2><p>Applications from job seekers will appear here.</p></section>

@@ -63,6 +63,20 @@ npm install
    npm run dev
    ```
 
+### Checks and Continuous Integration
+
+Every pull request and every push to `main` runs the GitHub Actions workflow in `.github/workflows/ci.yml`. None of these checks need Supabase credentials, so you can run the same ones locally before pushing:
+
+```bash
+npm run lint        # ESLint (Next.js core-web-vitals + TypeScript rules)
+npm run typecheck   # tsc --noEmit
+npm test            # unit tests (in-process PostgreSQL via PGlite)
+npm run build       # production build
+npm run test:browser  # Playwright browser tests (run `npm run build` first; first time: npx playwright install chromium)
+```
+
+The browser tests point the built app at a local fake Supabase API. `next build` inlines `NEXT_PUBLIC_SUPABASE_URL` from `.env`/`.env.local`, so build without those files (as CI does) before running `npm run test:browser`, or the app will talk to the real project instead.
+
 
 # Proposed Features
 ## Job Seeker Features

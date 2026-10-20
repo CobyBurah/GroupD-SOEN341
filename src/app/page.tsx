@@ -13,7 +13,6 @@ export default async function Home() {
     <main>
       <header className={styles.header}>
         <div>
-          <p className={styles.eyebrow}>CareerConnect</p>
           <h1>Find your next role, or your next hire</h1>
           <p className={styles.muted}>
             {claims ? `Signed in as ${claims.email}` : 'Browse opportunities, manage applications, and connect with recruiters.'}

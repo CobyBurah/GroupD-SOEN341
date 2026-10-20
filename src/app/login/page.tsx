@@ -7,7 +7,6 @@ import { login } from './actions'
 export default function LoginPage() {
   return (
     <main className={`${styles.card} ${styles.auth}`}>
-      <p className={styles.eyebrow}>Welcome back</p>
       <h1>Log in</h1>
       <form className={styles.form}>
         <div>
@@ -20,6 +19,9 @@ export default function LoginPage() {
         </div>
         <button formAction={login}>Log in</button>
       </form>
+      <p>
+        <Link href="/forgot-password">Forgot your password?</Link>
+      </p>
       <p>
         Don&apos;t have an account? <Link href="/signup">Sign up</Link>
       </p>
