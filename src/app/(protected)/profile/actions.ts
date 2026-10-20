@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+import { validateNewPassword, type PasswordState } from '@/lib/passwords'
 import { PROFILE_LIMITS } from '@/lib/profiles'
 import { RESUME_BUCKET } from '@/lib/resumes'
 import { createClient } from '@/lib/supabase/server'
@@ -73,23 +74,13 @@ export async function updateProfile(
   return { message: 'Profile updated.', values }
 }
 
-export type PasswordState = {
-  errors?: { password?: string; confirmPassword?: string }
-  message?: string
-}
-
 export async function updatePassword(
   _prevState: PasswordState,
   formData: FormData
 ): Promise<PasswordState> {
-  const password = String(formData.get('password') ?? '')
-  const confirmPassword = String(formData.get('confirmPassword') ?? '')
+  const { password, errors, valid } = validateNewPassword(formData)
 
-  const errors: PasswordState['errors'] = {}
-  if (password.length < 8) errors.password = 'Password must be at least 8 characters.'
-  if (password !== confirmPassword) errors.confirmPassword = 'Passwords do not match.'
-
-  if (Object.keys(errors).length > 0) {
+  if (!valid) {
     return { errors }
   }
 

@@ -28,6 +28,7 @@ export async function getJobs() {
   const result = await supabase
     .from('jobs')
     .select('*')
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
   // If something goes wrong, put a message
@@ -51,6 +52,7 @@ export async function getJob(id: string) {
   const result = await supabase
     .from('jobs')
     .select('*')
+    .is('deleted_at', null)
     .eq('id', id)
     .maybeSingle()
 
