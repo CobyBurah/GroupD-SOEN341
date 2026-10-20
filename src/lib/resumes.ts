@@ -1,6 +1,9 @@
 // Must match the bucket config in supabase/migrations/0005_resumes.sql.
 export const RESUME_BUCKET = 'resumes'
 export const MAX_RESUME_SIZE_BYTES = 5 * 1024 * 1024
+export const MAX_RESUMES_PER_UPLOAD = 10
+// Must stay below serverActions.bodySizeLimit in next.config.ts.
+export const MAX_UPLOAD_TOTAL_BYTES = 25 * 1024 * 1024
 
 const RESUME_TYPES = {
   pdf: {
@@ -56,6 +59,28 @@ export async function validateResume(file: File | null | undefined): Promise<Res
   }
 
   return { ok: true, extension, mimeType }
+}
+
+export const MAX_RESUME_NAME_LENGTH = 120
+
+export type ResumeNameValidation = { ok: true; name: string } | { ok: false; error: string }
+
+export function validateResumeName(raw: unknown): ResumeNameValidation {
+  const name = typeof raw === 'string' ? raw.trim() : ''
+
+  if (!name) {
+    return { ok: false, error: 'Enter a name for the resume.' }
+  }
+
+  if (name.length > MAX_RESUME_NAME_LENGTH) {
+    return { ok: false, error: `Name must be ${MAX_RESUME_NAME_LENGTH} characters or fewer.` }
+  }
+
+  if (/[\u0000-\u001f\u007f/\\]/.test(name)) {
+    return { ok: false, error: 'Name cannot contain slashes or control characters.' }
+  }
+
+  return { ok: true, name }
 }
 
 export function formatFileSize(bytes: number): string {
