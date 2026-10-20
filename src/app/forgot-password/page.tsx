@@ -13,7 +13,6 @@ export default async function ForgotPasswordPage({
 
   return (
     <main className={`${styles.card} ${styles.auth}`}>
-      <p className={styles.eyebrow}>Account recovery</p>
       <h1>Forgot your password?</h1>
       {error === 'expired' && (
         <p role="alert">

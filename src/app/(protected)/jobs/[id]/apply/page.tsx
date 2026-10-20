@@ -19,7 +19,7 @@ export default async function ApplyPage({ params }: { params: Promise<{ id: stri
   const { data: resumes, error: resumeError } = await supabase.from('resumes').select('id, file_name').eq('user_id', userId).order('created_at', { ascending: false })
   return <main>
     <Link href="/jobs">Back to jobs</Link>
-    <header className={styles.header}><div><p className={styles.eyebrow}>Job application</p><h1>Apply for {job.title}</h1><p>{job.company}{job.location ? ` · ${job.location}` : ''}</p></div></header>
+    <header className={styles.header}><div><h1>Apply for {job.title}</h1><p>{job.company}{job.location ? ` · ${job.location}` : ''}</p></div></header>
     <p className={styles.description}>{job.description}</p>
     <section><h2>Your application</h2>
       {existing ? <p className={styles.notice} role="status">You have applied for this job. Status: {existing.status}.</p>

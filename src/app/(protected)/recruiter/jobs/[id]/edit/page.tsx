@@ -9,7 +9,7 @@ export default async function EditPostingPage({ params }: { params: Promise<{ id
   for (const field of Object.keys(values) as (keyof typeof values)[]) values[field] = job[field] ?? ''
   return <main>
     <header className={styles.header}>
-      <div><p className={styles.eyebrow}>Recruiter workspace</p><h1>Edit posting</h1></div>
+      <div><h1>Edit posting</h1></div>
     </header>
     <JobForm id={id} initialValues={values} />
   </main>

@@ -14,7 +14,7 @@ export default async function RecruiterPage({ searchParams }: { searchParams: Pr
   const jobs = (data ?? []) as Job[]
   return <main>
     <header className={styles.header}>
-      <div><p className={styles.eyebrow}>Recruiter workspace</p><h1>Your job postings</h1><p>Create opportunities and manage your current listings.</p></div>
+      <div><h1>Your job postings</h1><p>Create opportunities and manage your current listings.</p></div>
       <Link className={styles.primary} href="/recruiter/jobs/new">Create posting</Link>
     </header>
     {notice && Object.hasOwn(notices, notice) && <p role="status" className={styles.notice}>{notices[notice]}</p>}

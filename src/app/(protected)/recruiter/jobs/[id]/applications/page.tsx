@@ -6,7 +6,7 @@ export default async function ApplicationsPage({ params }: { params: Promise<{ i
   const job = await ownedJob(id)
   return <main>
     <header className={styles.header}>
-      <div><p className={styles.eyebrow}>Recruiter workspace</p><h1>Applications for {job.title}</h1><p>{job.company}</p></div>
+      <div><h1>Applications for {job.title}</h1><p>{job.company}</p></div>
     </header>
     <section aria-labelledby="applications-status"><h2 id="applications-status">Applications are not available yet</h2>
       <p>Receiving and reviewing applications will be available when application submission is connected.</p>
