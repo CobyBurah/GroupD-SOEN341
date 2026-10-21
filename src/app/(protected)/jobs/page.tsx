@@ -6,9 +6,17 @@ import { getJobs } from '@/lib/jobs' // take the getJobs function from the job.t
 import { JobCard } from './jobs-card'
 import styles from '@/app/ui.module.css' // shared theme (header band, rows, pills, buttons)
 
-export default async function JobsPage() { // this is the page where Next.js shows it
-  const jobs = await getJobs() // ask Supabase for all jobs, await = wait for answer/loading
+// The page receives the URL's search words
+type JobsPageProps = {
+  searchParams: Promise<{ keyword?: string }>
+}
 
+export default async function JobsPage({ searchParams }: JobsPageProps) { // this is the page where Next.js shows it
+  // Read the search word from the URL. If there isn't one, use '' (empty = show all jobs)
+  const params = await searchParams
+  const keyword = params.keyword ?? ''
+
+  const jobs = await getJobs(keyword) // ask Supabase for the jobs that match the search
   // Get the current user's role so job seekers can see the Apply button
   const supabase = await createClient()
   const { data: claims } = await supabase.auth.getClaims()
@@ -29,6 +37,17 @@ export default async function JobsPage() { // this is the page where Next.js sho
           <p>{jobs.length === 1 ? '1 open role' : `${jobs.length} open roles`}</p>
         </div>
       </header>
+      {/* Search bar: clicking search puts the word in the url */}
+      <form action = "/jobs" className = {styles.actiosn}>
+        <input 
+          type = "text"
+          name = "keyword"
+          placeholder = "Search by title, category or location"
+          defaultValue = {keyword}
+          aria-label= "Search Jobs"
+          />
+          <button type = "submit">Search</button>
+      </form>
 
       {jobs.length === 0 ? ( // nothing posted yet, so show a friendly empty state
         <section className={styles.card}>
