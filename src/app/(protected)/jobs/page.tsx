@@ -44,7 +44,7 @@ const employmentType = params.employmentType ?? ''
         <input 
           type = "text"
           name = "keyword"
-          placeholder = "Search by title, company, category..."
+          placeholder = "Search by title, company, category, location..."
           defaultValue = {keyword}
           aria-label= "Search Jobs"
           />

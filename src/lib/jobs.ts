@@ -26,23 +26,23 @@ export async function getJobs(keyword = '', location = '', category='', employme
   //only jobs that haven't been deleted
   let query = supabase.from('jobs').select('*').is('deleted_at', null)
 
-  //if there's a keyword, only keep jobs whose title contains it 
+  //if there's a keyword, only keep jobs whose title, category, location, employement type, contains it 
   if(keyword !== ''){
     const search = '"%' + keyword + '%"' // the quotes let the keyword contain comas, like "Montreal,QC"
     //.or() means that it matchs any of the title or category or location
-    query = query.or('title.ilike.' + search + ',company.ilike.' + search + ',category.ilike.' + search + ',location.ilike.' + search) //ilike means "contains" while ignoring the captial letters
+    query = query.or('title.ilike.' + search + ',company.ilike.' + search + ',category.ilike.' + search + ',location.ilike.' + search + ',employment_type.ilike.') //ilike means "contains" while ignoring the captial letters
   }
   
   //if there's a location, only keep jobs who's location is in that exact location
   if(location !== ''){
-    query = query.eq('location', location)
+    query = query.ilike('location', location)
   }
 if (employmentType !== '') {
-  query = query.eq('employment_type', employmentType)
+  query = query.ilike('employment_type', employmentType)
 }
   //if there's a category, only keep the jobs who's in that exact category
   if(category !== ''){
-    query = query.eq('category', category)
+    query = query.ilike('category', category)
   }
 
   //sorting the newest first and send the question to Supabase
