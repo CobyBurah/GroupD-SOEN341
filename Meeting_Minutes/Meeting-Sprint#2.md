@@ -54,7 +54,7 @@ During this meeting, we went over the progress of our work individually so far f
  
 
 ## Decisions 
-No new decisions where made.
+We decided to come up with a new orginal feature to add which is users can save Jobs as 'Favourites' 
 
 ## Action Items 
 | Action Item | Responsible | Deadline | Status | 
@@ -67,6 +67,7 @@ No new decisions where made.
 | Job Search & Job listing Interface | Sabrina & Nour | Oct. 17 | in progress |
 | Job Application Submission & Tracking | Coby & Noah | Oct. 17 | in progress |
 | Recruiter Dashboard & Posting Management (start) | Eldar & Parsa | Oct. 25 | completed |
+| Jobs Saved (Favourites) | Noah | Oct. 25 | not started |
 
 
 
