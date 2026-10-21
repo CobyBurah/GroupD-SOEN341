@@ -46,7 +46,19 @@ const employmentType = params.employmentType ?? ''
           defaultValue = {keyword}
           aria-label= "Search Jobs"
           />
-          <button type = "submit">Search</button>
+         <select
+  name="employmentType"
+  defaultValue={employmentType}
+  aria-label="Filter by employment type"
+>
+  <option value="">All employment types</option>
+  <option value="full_time">Full time</option>
+  <option value="part_time">Part time</option>
+  <option value="contract">Contract</option>
+  <option value="internship">Internship</option>
+</select>
+
+<button type="submit">Search</button>
       </form>
 
       {jobs.length === 0 ? ( // nothing posted yet, so show a friendly empty state
