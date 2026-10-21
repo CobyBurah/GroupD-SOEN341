@@ -8,6 +8,7 @@ const userId = '00000000-0000-0000-0000-000000000001'
 const owner = { id: userId, aud: 'authenticated', role: 'authenticated', email: 'recruiter@example.test', app_metadata: { provider: 'email' }, user_metadata: {}, created_at: '2026-10-18T00:00:00Z' }
 let jobs = []
 let resumes = [], resumeSeq = 0
+let favourites = []
 const storedFiles = new Map()
 let server, app, appOutput = ''
 let apiPort, appPort
@@ -104,8 +105,28 @@ async function handleStorage(req, res, url) {
   res.statusCode = 404; res.end(JSON.stringify({ statusCode: '404', error: 'not_found', message: 'Object not found' }))
 }
 
+// Favourites rows are scoped to the requesting user to mimic RLS; select=job:jobs(*) embeds the active job.
+async function handleFavourites(req, res, url) {
+  const user = requestUser(req)
+  const filters = [...url.searchParams].filter(([key, value]) => ['user_id', 'job_id'].includes(key) && value.startsWith('eq.'))
+  const matches = row => row.user_id === user.id && filters.every(([key, value]) => row[key] === value.slice(3))
+  if (req.method === 'POST') {
+    const fields = JSON.parse((await readBody(req)).toString() || '{}')
+    const job = jobs.find(j => j.id === fields.job_id && j.deleted_at === null)
+    if (user.id !== seekerId || fields.user_id !== user.id || !job) { res.statusCode = 403; return res.end(JSON.stringify({ code: '42501', message: 'new row violates row-level security policy for table "favourites"' })) }
+    if (favourites.some(row => row.user_id === user.id && row.job_id === job.id)) { res.statusCode = 409; return res.end(JSON.stringify({ code: '23505', message: 'duplicate key value violates unique constraint "favourites_pkey"' })) }
+    favourites.push({ user_id: user.id, job_id: job.id, created_at: new Date(Date.now() + favourites.length).toISOString() })
+    res.statusCode = 201; return res.end()
+  }
+  if (req.method === 'DELETE') { favourites = favourites.filter(row => !matches(row)); res.statusCode = 204; return res.end() }
+  const embed = (url.searchParams.get('select') ?? '').includes('jobs(')
+  const rows = favourites.filter(matches).sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
+    .map(row => embed ? { created_at: row.created_at, job: jobs.find(j => j.id === row.job_id && j.deleted_at === null) ?? null } : row)
+  res.end(JSON.stringify(rows))
+}
+
 export async function startPreview() {
-  jobs = []; resumes = []; resumeSeq = 0; storedFiles.clear()
+  jobs = []; resumes = []; resumeSeq = 0; favourites = []; storedFiles.clear()
   server = createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost')
     res.setHeader('content-type', 'application/json')
@@ -141,6 +162,7 @@ export async function startPreview() {
     if (url.pathname === '/rest/v1/resumes') return handleResumes(req, res, url)
     if (url.pathname.startsWith('/storage/v1/object/')) return handleStorage(req, res, url)
     if (url.pathname === '/rest/v1/applications') return res.end('[]')
+    if (url.pathname === '/rest/v1/favourites') return handleFavourites(req, res, url)
     if (url.pathname !== '/rest/v1/jobs') { res.statusCode = 404; return res.end('{}') }
     const matches = job => ['id', 'recruiter_id'].every(field => !url.searchParams.has(field) || url.searchParams.get(field) === `eq.${job[field]}`)
       && (url.searchParams.get('deleted_at') !== 'is.null' || job.deleted_at === null)

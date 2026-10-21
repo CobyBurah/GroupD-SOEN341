@@ -3,7 +3,9 @@ import Link from 'next/link'
 
 import { createClient } from '@/lib/supabase/server'
 import { getJobs } from '@/lib/jobs' // take the getJobs function from the job.ts file
+import { getFavouriteJobIds } from '@/lib/favourites'
 import { JobCard } from './jobs-card'
+import { FavouriteButton } from '../favourites/favourite-button'
 import styles from '@/app/ui.module.css' // shared theme (header band, rows, pills, buttons)
 
 // The page receives the URL's search words
@@ -28,6 +30,11 @@ const employmentType = params.employmentType ?? ''
     .select('role')
     .eq('id', claims?.claims.sub ?? '')
     .maybeSingle()
+
+  // Job seekers see a heart on each job; fill it in for the ones they already saved
+  const favouriteIds = profile?.role === 'job_seeker'
+    ? await getFavouriteJobIds(claims?.claims.sub ?? '')
+    : new Set<string>()
 
   return ( // this is what is shown on the website screen basically like html
     <main>
@@ -89,6 +96,13 @@ const employmentType = params.employmentType ?? ''
             >
               {profile?.role === 'job_seeker' && (
                 <>
+                  {/* Save the job to the seeker's favourites list */}
+                  <FavouriteButton
+                    jobId={job.id}
+                    jobTitle={job.title}
+                    favourited={favouriteIds.has(job.id)}
+                  />
+
                   {/* Secondary action: go directly to the existing application flow */}
                   <Link
                     className={styles.secondary}
