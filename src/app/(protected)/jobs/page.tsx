@@ -7,6 +7,7 @@ import { getFavouriteJobIds } from '@/lib/favourites'
 import { JobCard } from './jobs-card'
 import { JobSearch } from './job-search'
 import { JobFilters } from './job-filters'
+import { ActiveFilters } from './active-filters'
 import { FavouriteButton } from '../favourites/favourite-button'
 import styles from '@/app/ui.module.css'
 
@@ -78,6 +79,8 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
         <JobFilters keyword={keyword} locations={locations} categories={categories} employmentTypes={employmentTypes} filterOptions={filterOptions} />
 
         <div className={styles.jobResults}>
+             <ActiveFilters keyword={keyword} locations={locations} categories={categories} employmentTypes={employmentTypes} />
+
           {jobs.length === 0 ? (
             <section className={styles.card}>
               {hasActiveSearch ? (

@@ -50,7 +50,7 @@ export function JobFilters({
                   type="checkbox"
                   name="category"
                   value={option}
-                  defaultChecked={categories.includes(option)}
+                  checked={categories.includes(option)}
                   onChange={(event) => event.currentTarget.form?.requestSubmit()}
                 />
                 {option}
@@ -69,7 +69,7 @@ export function JobFilters({
                   type="checkbox"
                   name="location"
                   value={option}
-                  defaultChecked={locations.includes(option)}
+                  checked={locations.includes(option)}
                   onChange={(event) => event.currentTarget.form?.requestSubmit()}
                 />
                 {option}
@@ -88,7 +88,7 @@ export function JobFilters({
                   type="checkbox"
                   name="employmentType"
                   value={value}
-                  defaultChecked={employmentTypes.includes(value)}
+                  checked={employmentTypes.includes(value)}
                   onChange={(event) => event.currentTarget.form?.requestSubmit()}
                 />
                 {label}
