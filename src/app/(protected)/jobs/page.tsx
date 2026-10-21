@@ -16,7 +16,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) { // thi
   const params = await searchParams
   const keyword = params.keyword ?? ''
 const employmentType = params.employmentType ?? ''
-  const jobs = await getJobs(keyword) // ask Supabase for the jobs that match the search
+ const jobs = await getJobs(keyword, '', '', employmentType) // ask Supabase for the jobs that match the search
   // Get the current user's role so job seekers can see the Apply button
   const supabase = await createClient()
   const { data: claims } = await supabase.auth.getClaims()
