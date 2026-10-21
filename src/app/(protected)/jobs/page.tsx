@@ -51,9 +51,20 @@ export default async function JobsPage({ searchParams }: JobsPageProps) { // thi
 
       {jobs.length === 0 ? ( // nothing posted yet, so show a friendly empty state
         <section className={styles.card}>
-          <h2>No jobs posted yet</h2>
-          <p>Check back soon for new opportunities.</p>
-        </section>
+          {keyword !== '' ? (
+            //The user searched, but nothing matched the jobs posted from the location, title or category .
+          <>
+           <h2>No jobs match your search</h2>
+           <p> Try a different search of jobs, location or category, or <a href = "/jobs">see all jobs</a>.</p>
+          </>
+      ) : (
+        //No search, and there's no jobs posted at all
+        <>
+          <h2> No jobs posted yet </h2>
+          <p>Check back in soon for new posting and opportunities</p>
+        </>
+      )}
+    </section>
       ) : ( // otherwise list every job as a row, newest first
         <ul className={styles.list}>
           {jobs.map((job) => (
