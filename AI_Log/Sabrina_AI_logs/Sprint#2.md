@@ -49,7 +49,7 @@ Friday October 17th, 2026
 - Get a second opinion on how to handle recruiter_id since recruiter accounts haven't yet been created
 
 **Claude Link to conversation:**
-- https://claude.ai/share/a18c4215-8b17-47a5-87c3-42272bd04888
+https://claude.ai/share/a18c4215-8b17-47a5-87c3-42272bd04888
 
 **AI-Suggested Content:**
 - First gave me a list of 12 fake jobs in JSON format with fields like id, title, company, location, category, type, salary, postedDate, description and requirements
