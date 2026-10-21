@@ -37,7 +37,9 @@ export async function getJobs(keyword = '', location = '', category='', employme
   if(location !== ''){
     query = query.eq('location', location)
   }
-
+if (employmentType !== '') {
+  query = query.eq('employment_type', employmentType)
+}
   //if there's a category, only keep the jobs who's in that exact category
   if(category !== ''){
     query = query.eq('category', category)
