@@ -17,30 +17,47 @@ export type Job = {
   created_at: string
   updated_at: string
 }
-
-// Get all the jobs, going by the newest first.
-// Used by the job listings page.
-export async function getJobs() {
-  // Connect to Supabase
+//what the user will be able to SEARCH OR FILTER by
+//if a part is empty it will just ignore it 
+export async function getJobs(keyword = '', location = '', category='', employmentType = ''){
+  //connecting to the supabase
   const supabase = await createClient()
 
-  // Ask for all jobs, sorted by the newest date posted
-  const result = await supabase
-    .from('jobs')
-    .select('*')
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false })
+  //only jobs that haven't been deleted
+  let query = supabase.from('jobs').select('*').is('deleted_at', null)
 
-  // If something goes wrong, put a message
-  if (result.error) {
-    throw new Error('Could not load jobs: ' + result.error.message)
+  //if there's a keyword, only keep jobs whose title, category, location, employement type, contains it 
+  if(keyword !== ''){
+    const search = '"%' + keyword + '%"' // the quotes let the keyword contain comas, like "Montreal,QC"
+    //.or() means that it matchs any of the title or category or location
+    query = query.or('title.ilike.' + search + ',company.ilike.' + search + ',category.ilike.' + search + ',location.ilike.' + search + ',employment_type.ilike.') //ilike means "contains" while ignoring the captial letters
+  }
+  
+  //if there's a location, only keep jobs who's location is in that exact location
+  if(location !== ''){
+    query = query.ilike('location', location)
+  }
+if (employmentType !== '') {
+  query = query.ilike('employment_type', employmentType)
+}
+  //if there's a category, only keep the jobs who's in that exact category
+  if(category !== ''){
+    query = query.ilike('category', category)
   }
 
-  // Give back the list of jobs
-  const jobs: Job[] = result.data ?? []
-  return jobs
-}
+  //sorting the newest first and send the question to Supabase
+  const result = await query.order('created_at', {ascending: false})
 
+  //If something goes wrong, then output an error message and stop
+  if(result.error){
+    throw new Error('Could not load job:' + result.error.message)
+
+  }
+  //giving back the list of jobs or an empty list if nothing matches what the user is searching
+  const jobs: Job[] = result.data ?? []
+  return jobs 
+
+}
 // Get one job using its id.
 // Used by the job details page.
 export async function getJob(id: string) {
