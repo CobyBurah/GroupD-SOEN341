@@ -55,7 +55,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) { // thi
             //The user searched, but nothing matched the jobs posted from the location, title or category .
           <>
            <h2>No jobs match your search</h2>
-           <p> Try a different search of jobs, location or category, or <a href = "/jobs">see all jobs</a>.</p>
+           <p> Try a different search of jobs, location or category, or <Link href = "/jobs">see all jobs</Link>.</p>
           </>
       ) : (
         //No search, and there's no jobs posted at all
