@@ -17,6 +17,46 @@ export type Job = {
   created_at: string
   updated_at: string
 }
+
+export type JobFilterOptions = {
+  locations: string[]
+  categories: string[]
+}
+
+// Get the location and category choices used by the filtering sidebar.
+export async function getJobFilterOptions(): Promise<JobFilterOptions> {
+  const supabase = await createClient()
+
+  const result = await supabase
+    .from('jobs')
+    .select('location, category')
+    .is('deleted_at', null)
+
+  if (result.error) {
+    throw new Error('Could not load job filters: ' + result.error.message)
+  }
+
+  const jobs = result.data ?? []
+
+  const locations = Array.from(
+    new Set(
+      jobs
+        .map((job) => job.location)
+        .filter((value): value is string => Boolean(value))
+    )
+  ).sort()
+
+  const categories = Array.from(
+    new Set(
+      jobs
+        .map((job) => job.category)
+        .filter((value): value is string => Boolean(value))
+    )
+  ).sort()
+
+  return { locations, categories }
+}
+
 //what the user will be able to SEARCH OR FILTER by
 //if a part is empty it will just ignore it 
 export async function getJobs(keyword = '', location = '', category='', employmentType = ''){
