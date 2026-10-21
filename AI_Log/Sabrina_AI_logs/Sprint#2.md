@@ -87,6 +87,7 @@ Sunday October 18th, 2026
 - Get my own code reviewed for the getJobs() and getJob(id) functions in src/lib/
 
 **Claude Link to conversation:**
+
 https://claude.ai/share/9bd7fa2f-67b3-45c0-a3c3-9fa4e890d7b3
 
 **AI-Suggested Content:**
