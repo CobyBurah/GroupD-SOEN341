@@ -50,11 +50,11 @@ _October 19 4:15-5:00pm
 
  
 ## Sprint Discussions  
-During this meeting, we went over the progress so far from last meeting
+During this meeting, we went over the progress of our work individually so far from the last meeting
  
 
 ## Decisions 
-
+No new decisions where added
 
 ## Action Items 
 | Action Item | Responsible | Deadline | Status | 
