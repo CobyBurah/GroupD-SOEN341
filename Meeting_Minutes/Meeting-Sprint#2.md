@@ -54,7 +54,7 @@ During this meeting, we went over the progress of our work individually so far f
  
 
 ## Decisions 
-No new decisions where added
+No new decisions where made.
 
 ## Action Items 
 | Action Item | Responsible | Deadline | Status | 
