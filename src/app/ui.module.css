@@ -142,3 +142,7 @@ ul.pills { margin: 12px 0 20px; }
 .shell .statusForm label { font-weight: 600; }
 .statusControls { display: flex; gap: 12px; align-items: center; }
 .shell .statusControls select { width: auto; min-width: 180px; }
+
+/* Job seeker favourites */
+.shell .favouriteForm { margin: 0; display: grid; gap: 4px; }
+.shell .favouriteForm button[aria-pressed=true] .icon { color: var(--cc-danger); }

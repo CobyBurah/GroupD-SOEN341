@@ -24,6 +24,14 @@ export default async function DashboardPage() {
         </div>
       </li>
       <li className={styles.row}>
+        <h2 className={styles.rowTitle}>Favourites</h2>
+        <p className={styles.meta}>Revisit the jobs you saved while browsing.</p>
+        <div className={styles.bottomRow}>
+          <span />
+          <Link className={styles.primary} href="/favourites">View favourites <span className={styles.arrow}>→</span></Link>
+        </div>
+      </li>
+      <li className={styles.row}>
         <h2 className={styles.rowTitle}>Your profile</h2>
         <p className={styles.meta}>Update your headline, location and bio.</p>
         <div className={styles.bottomRow}>
