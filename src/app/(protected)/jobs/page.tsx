@@ -38,7 +38,7 @@ const employmentType = params.employmentType ?? ''
         </div>
       </header>
       {/* Search bar: clicking search puts the word in the url */}
-      <form action = "/jobs" className = {styles.actiosn}>
+      <form action = "/jobs" className = {styles.actions}>
         <input 
           type = "text"
           name = "keyword"
