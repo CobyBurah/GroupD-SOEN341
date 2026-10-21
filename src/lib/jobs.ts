@@ -19,7 +19,7 @@ export type Job = {
 }
 //what the user will be able to SEARCH OR FILTER by
 //if a part is empty it will just ignore it 
-export async function getJobs(keyword = '', location = '', category=''){
+export async function getJobs(keyword = '', location = '', category='', employmentType = ''){
   //connecting to the supabase
   const supabase = await createClient()
 
