@@ -30,7 +30,7 @@ export async function getJobs(keyword = '', location = '', category='', employme
   if(keyword !== ''){
     const search = '"%' + keyword + '%"' // the quotes let the keyword contain comas, like "Montreal,QC"
     //.or() means that it matchs any of the title or category or location
-    query = query.or('title.ilike.' + search + ',category.ilike.' + search + ',location.ilike.' + search) //ilike means "contains" while ignoring the captial letters
+    query = query.or('title.ilike.' + search + ',company.ilike.' + search + ',category.ilike.' + search + ',location.ilike.' + search) //ilike means "contains" while ignoring the captial letters
   }
   
   //if there's a location, only keep jobs who's location is in that exact location
