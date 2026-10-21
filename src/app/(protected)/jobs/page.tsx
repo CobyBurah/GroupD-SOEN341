@@ -15,7 +15,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) { // thi
   // Read the search word from the URL. If there isn't one, use '' (empty = show all jobs)
   const params = await searchParams
   const keyword = params.keyword ?? ''
-
+const employmentType = params.employmentType ?? ''
   const jobs = await getJobs(keyword) // ask Supabase for the jobs that match the search
   // Get the current user's role so job seekers can see the Apply button
   const supabase = await createClient()
