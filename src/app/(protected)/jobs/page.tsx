@@ -8,7 +8,9 @@ import styles from '@/app/ui.module.css' // shared theme (header band, rows, pil
 
 // The page receives the URL's search words
 type JobsPageProps = {
-  searchParams: Promise<{ keyword?: string }>
+  searchParams: Promise<{ 
+  keyword?: string 
+  employmentType?: string}>
 }
 
 export default async function JobsPage({ searchParams }: JobsPageProps) { // this is the page where Next.js shows it
