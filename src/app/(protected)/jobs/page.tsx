@@ -63,7 +63,7 @@ const employmentType = params.employmentType ?? ''
 
       {jobs.length === 0 ? ( // nothing posted yet, so show a friendly empty state
         <section className={styles.card}>
-          {keyword !== '' ? (
+          {keyword !== '' || employmentType !== '' ? (
             //The user searched, but nothing matched the jobs posted from the location, title or category .
           <>
            <h2>No jobs match your search</h2>
