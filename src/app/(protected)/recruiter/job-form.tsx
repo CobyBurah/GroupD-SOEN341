@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useActionState } from 'react'
 import { EMPLOYMENT_TYPES, JOB_CATEGORIES, EMPTY_JOB, JOB_LIMITS, type JobValues } from '@/lib/job-posting'
 import { saveJob, type JobState } from './actions'
+import { LocationAutocomplete } from './location-autocomplete'
 import styles from '@/app/ui.module.css'
 
 const labels = { title: 'Job title', company: 'Company', location: 'Location', salary: 'Salary', description: 'Job description' }
@@ -13,14 +14,16 @@ export function JobForm({ id = null, initialValues = EMPTY_JOB }: { id?: string 
   const values = state.values ?? initialValues
 
   return <form action={action} className={styles.form} key={JSON.stringify(values)} noValidate>
-    <p>Job title, company, and description are required.</p>
+    <p>Job title, company, location, and description are required.</p>
     {state.message && <p role="alert">{state.message}</p>}
 
     {(Object.keys(labels) as (keyof typeof labels)[]).map(field => <div key={field}>
-      <label htmlFor={field}>{labels[field]}{['title', 'company', 'description'].includes(field) ? ' *' : ''}</label>
+      <label htmlFor={field === 'location' ? 'location_search' : field}>{labels[field]}{['title', 'company', 'description'].includes(field) ? ' *' : ''}</label>
       {field === 'description'
         ? <textarea id={field} name={field} rows={10} defaultValue={values[field]} maxLength={JOB_LIMITS[field]} required aria-invalid={!!state.errors?.[field]} aria-describedby={state.errors?.[field] ? `${field}-error` : undefined} />
-        : <input id={field} name={field} defaultValue={values[field]} maxLength={JOB_LIMITS[field]} required={field === 'title' || field === 'company'} aria-invalid={!!state.errors?.[field]} aria-describedby={state.errors?.[field] ? `${field}-error` : undefined} />}
+        : field === 'location'
+          ? <LocationAutocomplete initialLocation={values.location} initialCity={values.location_city} initialRegion={values.location_region} initialCountry={values.location_country} invalid={!!state.errors?.location} />
+          : <input id={field} name={field} defaultValue={values[field]} maxLength={JOB_LIMITS[field]} required={field === 'title' || field === 'company'} aria-invalid={!!state.errors?.[field]} aria-describedby={state.errors?.[field] ? `${field}-error` : undefined} />}
       {state.errors?.[field] && <p id={`${field}-error`} role="alert">{state.errors[field]}</p>}
     </div>)}
 

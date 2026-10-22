@@ -35,14 +35,14 @@ export const JOB_CATEGORIES = [
 ] as const
 
 export const JOB_LIMITS = {
-  title: 150, company: 150, location: 150, category: 100, salary: 100, description: 15000,
+  title: 150, company: 150, location: 150, location_city: 100, location_region: 100, location_country: 100, category: 100, salary: 100, description: 15000,
 } as const
 
 export type JobValues = Record<keyof typeof JOB_LIMITS | 'employment_type', string>
 export type JobErrors = Partial<Record<keyof JobValues, string>>
 
 export const EMPTY_JOB: JobValues = {
-  title: '', company: '', location: '', category: '', employment_type: '', salary: '', description: '',
+  title: '', company: '', location: '', location_city: '', location_region: '', location_country: '', category: '', employment_type: '', salary: '', description: '',
 }
 
 export function validateJob(formData: FormData) {
@@ -55,7 +55,7 @@ export function validateJob(formData: FormData) {
     if (raw !== null && typeof raw !== 'string') errors[field] = 'Enter text for this field.'
   }
 
-  for (const field of ['title', 'company', 'description'] as const) {
+  for (const field of ['title', 'company', 'location', 'description'] as const) {
     if (!values[field]) errors[field] = 'This field is required.'
   }
 
@@ -73,6 +73,11 @@ export function validateJob(formData: FormData) {
   if (values.category && !JOB_CATEGORIES.includes(values.category as typeof JOB_CATEGORIES[number])) {
     errors.category = 'Choose a listed category.'
   }
+
+  // Location has to be Remote or a city selected from the location suggestions
+  if (values.location && values.location !== 'Remote' && (!values.location_city || !values.location_country) ) {
+  errors.location = 'Choose a location from the suggestions.'
+}
 
   return { values, errors, valid: Object.keys(errors).length === 0 }
 }

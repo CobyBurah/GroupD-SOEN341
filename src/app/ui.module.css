@@ -143,6 +143,15 @@ ul.pills { margin: 12px 0 20px; }
 .shell legend { font-weight: 600; padding: 0 6px; }
 .shell fieldset label, .shell .form fieldset label { display: flex; align-items: center; gap: 8px; font-weight: 400; margin: 4px 0; }
 
+/* Recruiter location autocomplete. */
+.locationAutocomplete { position: relative; }
+.shell .form .remoteOption { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font-weight: 400; }
+.locationSuggestions { display: grid; margin-top: 8px; border: 2px solid var(--cc-line); border-radius: 12px; background: white; overflow: hidden; }
+.shell .locationSuggestion { width: 100%; justify-content: flex-start; padding: 10px 14px; border-radius: 0; background: white; color: var(--cc-ink); text-align: left; }
+.shell .locationSuggestion + .locationSuggestion { border-top: 1px solid var(--cc-line); }
+.shell .locationSuggestion:hover { background: var(--cc-pill); opacity: 1; }
+.shell .locationAttribution { margin: 8px 0 0; font-size: 12px; }
+
 /* Narrow centred card for log in, sign up and error screens. */
 .shell main.auth { max-width: 460px; margin: 56px auto; padding: 32px; }
 .auth .form { margin: 20px 0 8px; gap: 16px; }

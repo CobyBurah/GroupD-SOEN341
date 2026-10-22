@@ -10,6 +10,9 @@ export type Job = {
   title: string
   company: string
   location: string | null
+  location_city: string | null
+  location_region: string | null
+  location_country: string | null
   category: string | null
   employment_type: string | null
   salary: string | null

@@ -1,0 +1,172 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+
+import styles from '@/app/ui.module.css'
+
+type LocationSuggestion = {
+  id: string
+  city: string
+  region: string
+  country: string
+  label: string
+}
+
+type LocationAutocompleteProps = {
+  initialLocation: string
+  initialCity: string
+  initialRegion: string
+  initialCountry: string
+  invalid: boolean
+}
+
+export function LocationAutocomplete({
+  initialLocation,
+  initialCity,
+  initialRegion,
+  initialCountry,
+  invalid,
+}: LocationAutocompleteProps) {
+  const [query, setQuery] = useState(initialLocation)
+  const [location, setLocation] = useState(initialLocation)
+  const [city, setCity] = useState(initialCity)
+  const [region, setRegion] = useState(initialRegion)
+  const [country, setCountry] = useState(initialCountry)
+  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([])
+  const [loading, setLoading] = useState(false)
+  const [remote, setRemote] = useState(initialLocation === 'Remote')
+
+  useEffect(() => {
+    // Don't search until there is enough text or when a valid option is already selected
+    if (remote || query.trim().length < 2 || query === location) {
+      setSuggestions([])
+      return
+    }
+
+    const controller = new AbortController()
+
+    // Wait a little before searching so every keystroke doesn't call the API
+    const timer = setTimeout(async () => {
+      setLoading(true)
+
+      try {
+        const response = await fetch(
+          `/api/locations?q=${encodeURIComponent(query)}`,
+          { signal: controller.signal }
+        )
+
+        if (!response.ok) {
+          setSuggestions([])
+          return
+        }
+
+        const data = await response.json()
+        setSuggestions(data.results ?? [])
+      } catch {
+        if (!controller.signal.aborted) {
+          setSuggestions([])
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false)
+        }
+      }
+    }, 300)
+
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
+    }
+  }, [query, location, remote])
+
+  function changeLocation(value: string) {
+    // Typing again means the previous selected location is no longer valid
+    setQuery(value)
+    setLocation('')
+    setCity('')
+    setRegion('')
+    setCountry('')
+  }
+
+  function selectLocation(suggestion: LocationSuggestion) {
+    setQuery(suggestion.label)
+    setLocation(suggestion.label)
+    setCity(suggestion.city)
+    setRegion(suggestion.region)
+    setCountry(suggestion.country)
+    setSuggestions([])
+  }
+
+  function changeRemote(checked: boolean) {
+    setRemote(checked)
+    setSuggestions([])
+
+    if (checked) {
+      setQuery('Remote')
+      setLocation('Remote')
+      setCity('')
+      setRegion('')
+      setCountry('')
+    } else {
+      setQuery('')
+      setLocation('')
+      setCity('')
+      setRegion('')
+      setCountry('')
+    }
+  }
+
+  return (
+    <div className={styles.locationAutocomplete}>
+      <input
+        id="location_search"
+        type="text"
+        value={query}
+        placeholder="Start typing a city..."
+        autoComplete="off"
+        disabled={remote}
+        aria-invalid={invalid}
+        aria-describedby={invalid ? 'location-error' : undefined}
+        onChange={(event) => changeLocation(event.target.value)}
+      />
+
+      {/* Only a selected suggestion or Remote is actually submitted */}
+      <input type="hidden" name="location" value={location} />
+      <input type="hidden" name="location_city" value={city} />
+      <input type="hidden" name="location_region" value={region} />
+      <input type="hidden" name="location_country" value={country} />
+
+      <label className={styles.remoteOption}>
+        <input
+          type="checkbox"
+          checked={remote}
+          onChange={(event) => changeRemote(event.target.checked)}
+        />
+        Remote
+      </label>
+
+      {loading && <p className={styles.muted}>Searching locations...</p>}
+
+      {suggestions.length > 0 && (
+        <div className={styles.locationSuggestions}>
+          {suggestions.map((suggestion) => (
+            <button
+              key={suggestion.id}
+              type="button"
+              className={styles.locationSuggestion}
+              onClick={() => selectLocation(suggestion)}
+            >
+              {suggestion.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <p className={styles.locationAttribution}>
+        Powered by <a href="https://www.geoapify.com/" target="_blank" rel="noreferrer">Geoapify</a>
+        {' · '}
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors</a>
+      </p>
+    </div>
+  )
+}
