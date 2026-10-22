@@ -3,9 +3,20 @@
 alter table public.jobs
   add column if not exists workplace_type text;
 
-alter table public.jobs
-  add constraint jobs_workplace_type_check
-  check (workplace_type is null or workplace_type in ('onsite', 'hybrid', 'remote'));
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'jobs_workplace_type_check'
+      and conrelid = 'public.jobs'::regclass
+  ) then
+    alter table public.jobs
+      add constraint jobs_workplace_type_check
+      check (workplace_type is null or workplace_type in ('onsite', 'hybrid', 'remote'));
+  end if;
+end;
+$$;
 
 update public.jobs
 set

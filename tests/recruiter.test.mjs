@@ -53,6 +53,8 @@ test('actual Postgres RLS enforces recruiter role, ownership, deletion and histo
     await db.exec('grant select, insert, update, delete on public.jobs to authenticated; grant select on public.profiles to authenticated;')
     await db.exec(await readFile(new URL('../supabase/migrations/0007_recruiter_job_management.sql', import.meta.url), 'utf8'))
     await db.query(`insert into auth.users values ($1, '{"role":"recruiter"}'), ($2, '{"role":"recruiter"}'), ($3, '{"role":"job_seeker"}')`, [recruiter, other, seeker])
+    await db.exec(await readFile(new URL('../supabase/migrations/0012_job_location_fields.sql', import.meta.url), 'utf8'))
+    await db.exec(await readFile(new URL('../supabase/migrations/0013_workplace_type.sql', import.meta.url), 'utf8'))
     async function asUser(id, fn) {
       await db.query("select set_config('request.jwt.claim.sub', $1, false)", [id])
       await db.exec('set role authenticated')
