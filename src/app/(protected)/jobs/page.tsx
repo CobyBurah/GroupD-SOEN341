@@ -2,7 +2,7 @@
 import Link from 'next/link'
 
 import { createClient } from '@/lib/supabase/server'
-import { getJobs, getJobFilterOptions } from '@/lib/jobs'
+import { getJobs, getJobFilterOptions, JOBS_PER_PAGE } from '@/lib/jobs'
 import { getFavouriteJobIds } from '@/lib/favourites'
 import { JobCard } from './jobs-card'
 import { JobSearch } from './job-search'
@@ -19,6 +19,7 @@ type JobsPageProps = {
     category?: string | string[]
     employmentType?: string | string[]
     workplaceType?: string | string[]
+    page?: string | string[]
   }>
 }
 
@@ -43,16 +44,21 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
   const employmentTypes = toArray(params.employmentType)
   const workplaceTypes = toArray(params.workplaceType)
 
+  const pageValue = Number(toSingle(params.page))
+  const page = Number.isInteger(pageValue) && pageValue > 0 ? pageValue : 1
+
   const supabase = await createClient()
 
   // Load the jobs, filter choices and user information at the same time
-  const [jobs, filterOptions, claimsResult] = await Promise.all([
-    getJobs(keyword, location, categories, employmentTypes, workplaceTypes),
+  const [jobsResult, filterOptions, claimsResult] = await Promise.all([
+    getJobs(keyword, location, categories, employmentTypes, workplaceTypes, page),
     getJobFilterOptions(),
     supabase.auth.getClaims(),
   ])
 
+  const { jobs, total } = jobsResult
   const { data: claims } = claimsResult
+  const totalPages = Math.ceil(total / JOBS_PER_PAGE)
 
   const hasActiveSearch =
     keyword !== '' ||
@@ -60,6 +66,23 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
     categories.length > 0 ||
     employmentTypes.length > 0 ||
     workplaceTypes.length > 0
+
+  // Builds a page link while keeping the current search and filters
+  function buildPageUrl(targetPage: number) {
+    const pageParams = new URLSearchParams()
+
+    if(keyword) pageParams.set('keyword', keyword)
+    if(location) pageParams.set('location', location)
+
+    categories.forEach((value) => pageParams.append('category', value))
+    employmentTypes.forEach((value) => pageParams.append('employmentType', value))
+    workplaceTypes.forEach((value) => pageParams.append('workplaceType', value))
+
+    if(targetPage > 1) pageParams.set('page', String(targetPage))
+
+    const query = pageParams.toString()
+    return query ? `/jobs?${query}` : '/jobs'
+  }
 
   // Get the current user's role so job seekers can see the Apply button
   const { data: profile } = await supabase
@@ -78,7 +101,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
       <header className={styles.header}>
         <div>
           <h1>Available Jobs For You</h1>
-          <p>{jobs.length === 1 ? '1 open role' : `${jobs.length} open roles`}</p>
+          <p>{total === 1 ? '1 open role' : `${total} open roles`}</p>
         </div>
       </header>
 
@@ -105,27 +128,48 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
               )}
             </section>
           ) : (
-            <ul className={styles.list}>
-              {jobs.map((job) => (
-                <JobCard key={job.id} job={job} href={`/jobs/${job.id}`}>
-                  {profile?.role === 'job_seeker' && (
-                    <>
-                      <FavouriteButton jobId={job.id} jobTitle={job.title} favourited={favouriteIds.has(job.id)} />
+            <>
+              <ul className={styles.list}>
+                {jobs.map((job) => (
+                  <JobCard key={job.id} job={job} href={`/jobs/${job.id}`}>
+                    {profile?.role === 'job_seeker' && (
+                      <>
+                        <FavouriteButton jobId={job.id} jobTitle={job.title} favourited={favouriteIds.has(job.id)} />
 
-                      <Link className={styles.secondary} href={`/jobs/${job.id}/apply`} aria-label={`Apply for ${job.title}`}>
-                        Apply
-                      </Link>
+                        <Link className={styles.secondary} href={`/jobs/${job.id}/apply`} aria-label={`Apply for ${job.title}`}>
+                          Apply
+                        </Link>
 
-                      <Link className={styles.primary} href={`/jobs/${job.id}`}>
-                        <span className={styles.detailsDesktop}>View Details</span>
-                        <span className={styles.detailsMobile}>Details</span>
-                        <span className={styles.arrow}>→</span>
-                      </Link>
-                    </>
-                  )}
-                </JobCard>
-              ))}
-            </ul>
+                        <Link className={styles.primary} href={`/jobs/${job.id}`}>
+                          <span className={styles.detailsDesktop}>View Details</span>
+                          <span className={styles.detailsMobile}>Details</span>
+                          <span className={styles.arrow}>→</span>
+                        </Link>
+                      </>
+                    )}
+                  </JobCard>
+                ))}
+              </ul>
+
+              {totalPages > 1 && (
+                <nav className={styles.pagination} aria-label="Job pages">
+                  {page > 1 && <Link href={buildPageUrl(page - 1)}>← Previous</Link>}
+
+                  {Array.from({length: totalPages}, (_, index) => index + 1).map((pageNumber) => (
+                    <Link
+                      key={pageNumber}
+                      href={buildPageUrl(pageNumber)}
+                      className={pageNumber === page ? styles.currentPage : undefined}
+                      aria-current={pageNumber === page ? 'page' : undefined}
+                    >
+                      {pageNumber}
+                    </Link>
+                  ))}
+
+                  {page < totalPages && <Link href={buildPageUrl(page + 1)}>Next →</Link>}
+                </nav>
+              )}
+            </>
           )}
         </div>
       </div>

@@ -84,6 +84,12 @@
 .jobsLayout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 44px; align-items: start; }
 .jobResults { min-width: 0; }
 
+/* Jobs page pagination. */
+.pagination { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 34px 0 0; }
+.shell .pagination a { padding: 8px 12px; border-radius: 10px; text-decoration: none; font-weight: 600; }
+.shell .pagination a:not(.currentPage):hover { background: var(--cc-pill); }
+.shell .pagination .currentPage { background: var(--cc-ink); color: white; cursor: default; }
+
 /* Job filters. */
 .filterSidebar { position: sticky; top: 24px; align-self: start; padding-right: 28px; border-right: 2px solid var(--cc-line); }
 .filterHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 16px; }

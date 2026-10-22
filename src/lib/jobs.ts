@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 
+export const JOBS_PER_PAGE = 10
+
 // What one job looks like (same columns as the jobs table).
 // "| null" means the value can be empty.
 export type Job = {
@@ -64,12 +66,12 @@ export async function getJobFilterOptions(): Promise<JobFilterOptions> {
 
 //what the user will be able to SEARCH OR FILTER by
 //if a part is empty it will just ignore it
-export async function getJobs(keyword = '', location = '', categories: string[] = [], employmentTypes: string[] = [], workplaceTypes: string[] = []){
+export async function getJobs(keyword = '', location = '', categories: string[] = [], employmentTypes: string[] = [], workplaceTypes: string[] = [], page = 1){
   //connecting to the supabase
   const supabase = await createClient()
 
   //only jobs that haven't been deleted
-  let query = supabase.from('jobs').select('*').is('deleted_at', null)
+  let query = supabase.from('jobs').select('*', {count: 'exact'}).is('deleted_at', null)
 
   //if there's a keyword, only keep jobs whose title, company, category, location or employment type contains it
   if(keyword !== ''){
@@ -98,17 +100,25 @@ export async function getJobs(keyword = '', location = '', categories: string[] 
     query = query.in('category', categories)
   }
 
+  //only load the jobs belonging to the current page
+  const firstJob = (page - 1) * JOBS_PER_PAGE
+  const lastJob = firstJob + JOBS_PER_PAGE - 1
+
   //sorting the newest first and send the question to Supabase
-  const result = await query.order('created_at', {ascending: false})
+  const result = await query
+    .order('created_at', {ascending: false})
+    .range(firstJob, lastJob)
 
   //If something goes wrong, then output an error message and stop
   if(result.error){
     throw new Error('Could not load job:' + result.error.message)
   }
 
-  //giving back the list of jobs or an empty list if nothing matches what the user is searching
+  //giving back the jobs on this page and the total number of matching jobs
   const jobs: Job[] = result.data ?? []
-  return jobs
+  const total = result.count ?? 0
+
+  return { jobs, total }
 }
 
 // Get one job using its id.
