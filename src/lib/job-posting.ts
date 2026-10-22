@@ -63,19 +63,11 @@ export function validateJob(formData: FormData) {
     if (!values[field]) errors[field] = 'This field is required.'
   }
 
-  if (!values.workplace_type) {
-  errors.workplace_type = 'This field is required.'
-  }
-
   const locationSearch = formData.get('location_search')
   const typedLocation = typeof locationSearch === 'string' ? locationSearch.trim() : ''
 
   if (!values.location && typedLocation) {
     errors.location = 'Choose a location from the suggestions.'
-  }
-
-  if (values.workplace_type !== 'remote' && !values.location && !typedLocation) {
-    errors.location = 'This field is required.'
   }
 
   for (const field of Object.keys(JOB_LIMITS) as (keyof typeof JOB_LIMITS)[]) {

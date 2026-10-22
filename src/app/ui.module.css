@@ -73,10 +73,8 @@
 .searchBar input[type=text] { flex: 1; min-width: 0; }
 .searchBar button { margin-left: auto; }
 
-.keywordSearch { flex: 2; }
 .locationSearchWrap { position: relative; flex: 1; min-width: 250px; }
-.locationSearchIcon { position: absolute; left: 14px; top: 50%; width: 19px; height: 19px; transform: translateY(-50%); color: var(--cc-text); pointer-events: none; z-index: 1; }
-.shell .searchBar .locationSearch { width: 100%; padding-left: 42px; }
+.locationSearchIcon { position: absolute; left: 16px; top: 50%; width: 19px; height: 19px; transform: translateY(-50%); color: var(--cc-text); pointer-events: none; z-index: 1; }
 .locationSearchSuggestions { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 20; border: 2px solid var(--cc-line); border-radius: 12px; background: white; overflow: hidden; }
 .shell button.locationSearchSuggestion { display: block; width: 100%; padding: 11px 14px; border: 0; border-radius: 0; background: white; color: var(--cc-ink); font: inherit; font-weight: 400; text-align: left; }
 .shell button.locationSearchSuggestion + button.locationSearchSuggestion { border-top: 1px solid var(--cc-line); }
@@ -144,6 +142,7 @@ ul.pills { margin: 12px 0 20px; }
 .shell section form { max-width: 720px; display: grid; gap: 10px; margin: 16px 0; }
 .shell .form label, .shell section form label { display: block; font-weight: 600; margin-bottom: 6px; }
 .shell input:not([type=checkbox]):not([type=radio]):not([type=file]), .shell textarea, .shell select { box-sizing: border-box; width: 100%; border: 2px solid var(--cc-line); border-radius: 12px; padding: 11px 14px; font: inherit; background: white; color: var(--cc-ink); transition: border-color .15s ease; }
+.shell .searchBar .locationSearchWrap input.locationSearch { width: 100%; padding: 11px 14px 11px 50px; }
 .shell input:focus, .shell textarea:focus, .shell select:focus { border-color: var(--cc-ink); }
 .shell input[type=file] { font: inherit; max-width: 100%; }
 .shell input[type=checkbox], .shell input[type=radio] { accent-color: var(--cc-ink); }

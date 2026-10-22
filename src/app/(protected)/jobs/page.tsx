@@ -82,10 +82,10 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
         </div>
       </header>
 
-      <JobSearch keyword={keyword} location={location} locationOptions={filterOptions.locations} categories={categories} employmentTypes={employmentTypes} workplaceTypes={workplaceTypes} />
+      <JobSearch key={`${keyword}-${location}`} keyword={keyword} location={location} locationOptions={filterOptions.locations} categories={categories} employmentTypes={employmentTypes} workplaceTypes={workplaceTypes} />
 
       <div className={styles.jobsLayout}>
-        <JobFilters keyword={keyword} location={location} categories={categories} employmentTypes={employmentTypes} workplaceTypes={workplaceTypes} filterOptions={filterOptions} />
+        <JobFilters key={`${categories.join('-')}-${workplaceTypes.join('-')}-${employmentTypes.join('-')}`} keyword={keyword} location={location} categories={categories} employmentTypes={employmentTypes} workplaceTypes={workplaceTypes} filterOptions={filterOptions} />
 
         <div className={styles.jobResults}>
           <ActiveFilters keyword={keyword} location={location} categories={categories} employmentTypes={employmentTypes} workplaceTypes={workplaceTypes} />

@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 import type { JobFilterOptions } from '@/lib/jobs'
 import { EMPLOYMENT_TYPES, WORKPLACE_TYPES } from '@/lib/job-posting'
@@ -16,6 +18,12 @@ type JobFiltersProps = {
   filterOptions: JobFilterOptions
 }
 
+type FilterState = {
+  categories: string[]
+  employmentTypes: string[]
+  workplaceTypes: string[]
+}
+
 export function JobFilters({
   keyword,
   location,
@@ -24,30 +32,62 @@ export function JobFilters({
   workplaceTypes,
   filterOptions,
 }: JobFiltersProps) {
-  // Reset sidebar filters but keep anything in the search bar
-  const resetParams = new URLSearchParams()
+  const router = useRouter()
+  const firstRender = useRef(true)
 
-  if(keyword) resetParams.set('keyword', keyword)
-  if(location) resetParams.set('location', location)
+  const [filters, setFilters] = useState<FilterState>({
+    categories,
+    employmentTypes,
+    workplaceTypes,
+  })
 
-  const resetQuery = resetParams.toString()
-  const resetFiltersUrl = resetQuery ? `/jobs?${resetQuery}` : '/jobs'
+  // Update the URL after filter changes without losing fast checkbox clicks
+  useEffect(() => {
+    if(firstRender.current){
+      firstRender.current = false
+      return
+    }
+
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams()
+
+      if(keyword) params.set('keyword', keyword)
+      if(location) params.set('location', location)
+
+      filters.categories.forEach((value) => params.append('category', value))
+      filters.workplaceTypes.forEach((value) => params.append('workplaceType', value))
+      filters.employmentTypes.forEach((value) => params.append('employmentType', value))
+
+      const query = params.toString()
+      router.replace(query ? `/jobs?${query}` : '/jobs', { scroll: false })
+    }, 150)
+
+    return () => clearTimeout(timer)
+  }, [filters, keyword, location, router])
+
+  function toggleFilter(type: keyof FilterState, value: string) {
+    setFilters((current) => {
+      const selected = current[type]
+
+      return {
+        ...current,
+        [type]: selected.includes(value)
+          ? selected.filter((option) => option !== value)
+          : [...selected, value],
+      }
+    })
+  }
 
   return (
     // Filters shown on the left of the job postings
     <aside className={styles.filterSidebar} aria-label="Job filters">
       <div className={styles.filterHeader}>
         <h2>Filters</h2>
-        <Link href={resetFiltersUrl} className={styles.resetFilters}>Reset filters</Link>
+        <Link href="/jobs" className={styles.resetFilters}>Reset filters</Link>
       </div>
 
-      {/* Sends the filters back to the jobs page whenever a checkbox is changed */}
-      <form action="/jobs" className={styles.filterForm}>
-        {/* Keep the search values when the user changes filters */}
-        {keyword && <input type="hidden" name="keyword" value={keyword} />}
-        {location && <input type="hidden" name="location" value={location} />}
-
-        <details className={styles.filterGroup} open={categories.length > 0}>
+      <div className={styles.filterForm}>
+        <details className={styles.filterGroup} open={filters.categories.length > 0}>
           <summary>Category</summary>
 
           <div className={styles.filterOptions}>
@@ -55,10 +95,8 @@ export function JobFilters({
               <label className={styles.filterOption} key={option}>
                 <input
                   type="checkbox"
-                  name="category"
-                  value={option}
-                  checked={categories.includes(option)}
-                  onChange={(event) => event.currentTarget.form?.requestSubmit()}
+                  checked={filters.categories.includes(option)}
+                  onChange={() => toggleFilter('categories', option)}
                 />
                 {option}
               </label>
@@ -66,7 +104,7 @@ export function JobFilters({
           </div>
         </details>
 
-        <details className={styles.filterGroup} open={workplaceTypes.length > 0}>
+        <details className={styles.filterGroup} open={filters.workplaceTypes.length > 0}>
           <summary>Workplace</summary>
 
           <div className={styles.filterOptions}>
@@ -74,10 +112,8 @@ export function JobFilters({
               <label className={styles.filterOption} key={value}>
                 <input
                   type="checkbox"
-                  name="workplaceType"
-                  value={value}
-                  checked={workplaceTypes.includes(value)}
-                  onChange={(event) => event.currentTarget.form?.requestSubmit()}
+                  checked={filters.workplaceTypes.includes(value)}
+                  onChange={() => toggleFilter('workplaceTypes', value)}
                 />
                 {label}
               </label>
@@ -85,7 +121,7 @@ export function JobFilters({
           </div>
         </details>
 
-        <details className={styles.filterGroup} open={employmentTypes.length > 0}>
+        <details className={styles.filterGroup} open={filters.employmentTypes.length > 0}>
           <summary>Employment Type</summary>
 
           <div className={styles.filterOptions}>
@@ -93,17 +129,15 @@ export function JobFilters({
               <label className={styles.filterOption} key={value}>
                 <input
                   type="checkbox"
-                  name="employmentType"
-                  value={value}
-                  checked={employmentTypes.includes(value)}
-                  onChange={(event) => event.currentTarget.form?.requestSubmit()}
+                  checked={filters.employmentTypes.includes(value)}
+                  onChange={() => toggleFilter('employmentTypes', value)}
                 />
                 {label}
               </label>
             ))}
           </div>
         </details>
-      </form>
+      </div>
     </aside>
   )
 }

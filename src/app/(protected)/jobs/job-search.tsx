@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import styles from '@/app/ui.module.css'
 
@@ -40,6 +40,7 @@ export function JobSearch({
   employmentTypes,
   workplaceTypes,
 }: JobSearchProps) {
+  const formRef = useRef<HTMLFormElement>(null)
   const [locationValue, setLocationValue] = useState(location)
   const [showLocations, setShowLocations] = useState(false)
 
@@ -51,9 +52,17 @@ export function JobSearch({
       .slice(0, 8)
   }, [locationValue, locationOptions])
 
+  function selectLocation(option: string) {
+    setLocationValue(option)
+    setShowLocations(false)
+
+    // Apply the selected location right away
+    setTimeout(() => formRef.current?.requestSubmit(), 0)
+  }
+
   return (
     // Sends the search values and active filters back to the jobs page through the URL
-    <form action="/jobs" className={styles.searchBar}>
+    <form ref={formRef} action="/jobs" className={styles.searchBar}>
       <input className={styles.keywordSearch} type="text" name="keyword" placeholder="Search jobs..." defaultValue={keyword} aria-label="Search Jobs" />
 
       <div className={styles.locationSearchWrap}>
@@ -83,10 +92,7 @@ export function JobSearch({
                 type="button"
                 className={styles.locationSearchSuggestion}
                 onMouseDown={(event) => event.preventDefault()}
-                onClick={() => {
-                  setLocationValue(option)
-                  setShowLocations(false)
-                }}
+                onClick={() => selectLocation(option)}
               >
                 {option}
               </button>

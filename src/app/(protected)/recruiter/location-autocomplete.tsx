@@ -39,7 +39,6 @@ export function LocationAutocomplete({
   useEffect(() => {
     // Don't search until there is enough text or when a valid option is already selected
     if (query.trim().length < 2 || query === location) {
-      setSuggestions([])
       return
     }
 
@@ -99,7 +98,6 @@ export function LocationAutocomplete({
     setSelectionError(false)
   }
 
-
   function checkLocation() {
     // If something was typed but no suggestion was selected, show an error
     if (query.trim() !== '' && !location) {
@@ -121,10 +119,9 @@ export function LocationAutocomplete({
           onChange={(event) => changeLocation(event.target.value)}
           onBlur={checkLocation}
         />
-
       </div>
 
-      {/* Only a selected suggestion or Remote is actually saved */}
+      {/* Only a selected suggestion is actually saved */}
       <input type="hidden" name="location" value={location} />
       <input type="hidden" name="location_city" value={city} />
       <input type="hidden" name="location_region" value={region} />
@@ -138,7 +135,7 @@ export function LocationAutocomplete({
 
       {loading && <p className={styles.muted}>Searching locations...</p>}
 
-      {suggestions.length > 0 && (
+      {query.trim().length >= 2 && query !== location && suggestions.length > 0 && (
         <div className={styles.locationSuggestions}>
           {suggestions.map((suggestion) => (
             <button
