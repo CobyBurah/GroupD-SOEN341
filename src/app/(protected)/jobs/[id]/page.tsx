@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { getJob } from '@/lib/jobs'
+import { WORKPLACE_TYPES } from '@/lib/job-posting'
 import styles from '@/app/ui.module.css'
 
 type JobDetailsPageProps = {
@@ -37,6 +38,7 @@ export default async function JobDetailsPage({
   const hasJobInformation = Boolean(
     job.category ||
     job.employment_type ||
+    job.workplace_type ||
     job.salary
   )
 
@@ -76,6 +78,13 @@ export default async function JobDetailsPage({
           {job.category && (
             <p>
               <strong>Category:</strong> {job.category}
+            </p>
+          )}
+
+          {job.workplace_type && (
+            <p>
+              <strong>Workplace:</strong>{' '}
+              {WORKPLACE_TYPES[job.workplace_type as keyof typeof WORKPLACE_TYPES]}
             </p>
           )}
 
