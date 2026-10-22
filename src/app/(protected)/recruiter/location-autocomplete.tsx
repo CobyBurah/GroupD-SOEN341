@@ -35,6 +35,7 @@ export function LocationAutocomplete({
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([])
   const [loading, setLoading] = useState(false)
   const [remote, setRemote] = useState(initialLocation === 'Remote')
+  const [selectionError, setSelectionError] = useState(false)
 
   useEffect(() => {
     // Don't search until there is enough text or when a valid option is already selected
@@ -86,6 +87,7 @@ export function LocationAutocomplete({
     setCity('')
     setRegion('')
     setCountry('')
+    setSelectionError(false)
   }
 
   function selectLocation(suggestion: LocationSuggestion) {
@@ -95,11 +97,13 @@ export function LocationAutocomplete({
     setRegion(suggestion.region)
     setCountry(suggestion.country)
     setSuggestions([])
+    setSelectionError(false)
   }
 
   function changeRemote(checked: boolean) {
     setRemote(checked)
     setSuggestions([])
+    setSelectionError(false)
 
     if (checked) {
       setQuery('Remote')
@@ -116,34 +120,50 @@ export function LocationAutocomplete({
     }
   }
 
+  function checkLocation() {
+    // If something was typed but no suggestion was selected, show an error
+    if (query.trim() !== '' && !location && !remote) {
+      setSelectionError(true)
+    }
+  }
+
   return (
     <div className={styles.locationAutocomplete}>
-      <input
-        id="location_search"
-        type="text"
-        value={query}
-        placeholder="Start typing a city..."
-        autoComplete="off"
-        disabled={remote}
-        aria-invalid={invalid}
-        aria-describedby={invalid ? 'location-error' : undefined}
-        onChange={(event) => changeLocation(event.target.value)}
-      />
+      <div className={styles.locationRow}>
+        <input
+          id="location_search"
+          name="location_search"
+          type="text"
+          value={query}
+          autoComplete="off"
+          disabled={remote}
+          aria-invalid={invalid || selectionError}
+          aria-describedby={selectionError ? 'location-selection-error' : invalid ? 'location-error' : undefined}
+          onChange={(event) => changeLocation(event.target.value)}
+          onBlur={checkLocation}
+        />
 
-      {/* Only a selected suggestion or Remote is actually submitted */}
+        <button
+          type="button"
+          className={`${styles.remoteButton} ${remote ? styles.remoteButtonActive : ''}`}
+          aria-pressed={remote}
+          onClick={() => changeRemote(!remote)}
+        >
+          Remote
+        </button>
+      </div>
+
+      {/* Only a selected suggestion or Remote is actually saved */}
       <input type="hidden" name="location" value={location} />
       <input type="hidden" name="location_city" value={city} />
       <input type="hidden" name="location_region" value={region} />
       <input type="hidden" name="location_country" value={country} />
 
-      <label className={styles.remoteOption}>
-        <input
-          type="checkbox"
-          checked={remote}
-          onChange={(event) => changeRemote(event.target.checked)}
-        />
-        Remote
-      </label>
+      {selectionError && (
+        <p id="location-selection-error" role="alert">
+          Choose a location from the suggestions.
+        </p>
+      )}
 
       {loading && <p className={styles.muted}>Searching locations...</p>}
 
@@ -154,6 +174,7 @@ export function LocationAutocomplete({
               key={suggestion.id}
               type="button"
               className={styles.locationSuggestion}
+              onMouseDown={(event) => event.preventDefault()}
               onClick={() => selectLocation(suggestion)}
             >
               {suggestion.label}

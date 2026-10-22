@@ -18,7 +18,7 @@ export function JobForm({ id = null, initialValues = EMPTY_JOB }: { id?: string 
     {state.message && <p role="alert">{state.message}</p>}
 
     {(Object.keys(labels) as (keyof typeof labels)[]).map(field => <div key={field}>
-      <label htmlFor={field === 'location' ? 'location_search' : field}>{labels[field]}{['title', 'company', 'description'].includes(field) ? ' *' : ''}</label>
+      <label htmlFor={field === 'location' ? 'location_search' : field}>{labels[field]}{['title', 'company', 'location', 'description'].includes(field) ? ' *' : ''}</label>
       {field === 'description'
         ? <textarea id={field} name={field} rows={10} defaultValue={values[field]} maxLength={JOB_LIMITS[field]} required aria-invalid={!!state.errors?.[field]} aria-describedby={state.errors?.[field] ? `${field}-error` : undefined} />
         : field === 'location'

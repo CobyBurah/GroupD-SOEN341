@@ -145,13 +145,19 @@ ul.pills { margin: 12px 0 20px; }
 
 /* Recruiter location autocomplete. */
 .locationAutocomplete { position: relative; }
-.shell .form .remoteOption { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font-weight: 400; }
-.locationSuggestions { display: grid; margin-top: 8px; border: 2px solid var(--cc-line); border-radius: 12px; background: white; overflow: hidden; }
-.shell .locationSuggestion { width: 100%; justify-content: flex-start; padding: 10px 14px; border-radius: 0; background: white; color: var(--cc-ink); text-align: left; }
-.shell .locationSuggestion + .locationSuggestion { border-top: 1px solid var(--cc-line); }
-.shell .locationSuggestion:hover { background: var(--cc-pill); opacity: 1; }
-.shell .locationAttribution { margin: 8px 0 0; font-size: 12px; }
 
+.locationRow { display: flex; align-items: stretch; gap: 10px; }
+.shell .locationRow input[type=text] { flex: 1; width: auto; min-width: 0; }
+.shell .locationRow input:disabled { opacity: .5; background: var(--cc-bg); cursor: not-allowed; }
+
+.shell .remoteButton { background: transparent; color: var(--cc-ink); border: 2px solid var(--cc-ink); }
+.shell .remoteButtonActive { background: var(--cc-ink); color: white; }
+
+.locationSuggestions { display: grid; margin-top: 4px; border: 2px solid var(--cc-line); border-radius: 12px; background: white; overflow: hidden; }
+.shell button.locationSuggestion { display: block; width: 100%; padding: 11px 14px; border: 0; border-radius: 0; background: white; color: var(--cc-ink); font: inherit; font-weight: 400; line-height: 1.4; text-align: left; cursor: pointer; }
+.shell button.locationSuggestion + button.locationSuggestion { border-top: 1px solid var(--cc-line); }
+.shell button.locationSuggestion:hover { background: #f5f5f5; opacity: 1; }
+.shell .locationAttribution { margin: 8px 0 0; font-size: 12px; }
 /* Narrow centred card for log in, sign up and error screens. */
 .shell main.auth { max-width: 460px; margin: 56px auto; padding: 32px; }
 .auth .form { margin: 20px 0 8px; gap: 16px; }

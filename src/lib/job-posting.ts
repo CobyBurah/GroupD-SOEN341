@@ -59,6 +59,13 @@ export function validateJob(formData: FormData) {
     if (!values[field]) errors[field] = 'This field is required.'
   }
 
+  const locationSearch = formData.get('location_search')
+  const typedLocation = typeof locationSearch === 'string' ? locationSearch.trim() : ''
+
+  if (!values.location && typedLocation) {
+  errors.location = 'Choose a location from the suggestions.'
+  }
+
   for (const field of Object.keys(JOB_LIMITS) as (keyof typeof JOB_LIMITS)[]) {
     if (values[field].length > JOB_LIMITS[field]) {
       errors[field] = `Use ${JOB_LIMITS[field]} characters or fewer.`
