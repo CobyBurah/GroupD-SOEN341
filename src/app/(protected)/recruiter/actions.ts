@@ -33,6 +33,7 @@ export async function saveJob(id: string | null, _state: JobState, formData: For
   location_country: values.location_country || null,
   category: values.category || null,
   employment_type: values.employment_type || null,
+  workplace_type: values.workplace_type || null,
   salary: values.salary || null,
   }
   let saved

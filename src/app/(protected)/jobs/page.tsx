@@ -18,6 +18,7 @@ type JobsPageProps = {
     location?: string | string[]
     category?: string | string[]
     employmentType?: string | string[]
+    workplaceType?: string | string[]
   }>
 }
 
@@ -27,19 +28,26 @@ function toArray(value: string | string[] | undefined) {
   return Array.isArray(value) ? value : [value]
 }
 
+// Uses the first value for search fields that only accept one value
+function toSingle(value: string | string[] | undefined) {
+  if (!value) return ''
+  return Array.isArray(value) ? value[0] ?? '' : value
+}
+
 export default async function JobsPage({ searchParams }: JobsPageProps) {
   // Read the search and filter values from the URL
   const params = await searchParams
   const keyword = params.keyword ?? ''
-  const locations = toArray(params.location)
+  const location = toSingle(params.location)
   const categories = toArray(params.category)
   const employmentTypes = toArray(params.employmentType)
+  const workplaceTypes = toArray(params.workplaceType)
 
   const supabase = await createClient()
 
   // Load the jobs, filter choices and user information at the same time
   const [jobs, filterOptions, claimsResult] = await Promise.all([
-    getJobs(keyword, locations, categories, employmentTypes),
+    getJobs(keyword, location, categories, employmentTypes, workplaceTypes),
     getJobFilterOptions(),
     supabase.auth.getClaims(),
   ])
@@ -48,9 +56,10 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
 
   const hasActiveSearch =
     keyword !== '' ||
-    locations.length > 0 ||
+    location !== '' ||
     categories.length > 0 ||
-    employmentTypes.length > 0
+    employmentTypes.length > 0 ||
+    workplaceTypes.length > 0
 
   // Get the current user's role so job seekers can see the Apply button
   const { data: profile } = await supabase
@@ -73,13 +82,13 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
         </div>
       </header>
 
-      <JobSearch keyword={keyword} locations={locations} categories={categories} employmentTypes={employmentTypes} />
+      <JobSearch keyword={keyword} location={location} locationOptions={filterOptions.locations} categories={categories} employmentTypes={employmentTypes} workplaceTypes={workplaceTypes} />
 
       <div className={styles.jobsLayout}>
-        <JobFilters keyword={keyword} locations={locations} categories={categories} employmentTypes={employmentTypes} filterOptions={filterOptions} />
+        <JobFilters keyword={keyword} location={location} categories={categories} employmentTypes={employmentTypes} workplaceTypes={workplaceTypes} filterOptions={filterOptions} />
 
         <div className={styles.jobResults}>
-             <ActiveFilters keyword={keyword} locations={locations} categories={categories} employmentTypes={employmentTypes} />
+          <ActiveFilters keyword={keyword} location={location} categories={categories} employmentTypes={employmentTypes} workplaceTypes={workplaceTypes} />
 
           {jobs.length === 0 ? (
             <section className={styles.card}>
@@ -108,9 +117,9 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
                       </Link>
 
                       <Link className={styles.primary} href={`/jobs/${job.id}`}>
-                       <span className={styles.detailsDesktop}>View Details</span>
-                      <span className={styles.detailsMobile}>Details</span>
-                      <span className={styles.arrow}>→</span>
+                        <span className={styles.detailsDesktop}>View Details</span>
+                        <span className={styles.detailsMobile}>Details</span>
+                        <span className={styles.arrow}>→</span>
                       </Link>
                     </>
                   )}

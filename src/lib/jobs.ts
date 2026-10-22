@@ -15,6 +15,7 @@ export type Job = {
   location_country: string | null
   category: string | null
   employment_type: string | null
+  workplace_type: string | null
   salary: string | null
   description: string
   created_at: string
@@ -26,13 +27,13 @@ export type JobFilterOptions = {
   categories: string[]
 }
 
-// Get the location and category choices used by the filtering sidebar.
+// Get the location and category choices used by the jobs page.
 export async function getJobFilterOptions(): Promise<JobFilterOptions> {
   const supabase = await createClient()
 
   const result = await supabase
     .from('jobs')
-    .select('location, category')
+    .select('location, location_region, location_country, category')
     .is('deleted_at', null)
 
   if (result.error) {
@@ -40,14 +41,15 @@ export async function getJobFilterOptions(): Promise<JobFilterOptions> {
   }
 
   const jobs = result.data ?? []
+  const locationOptions = new Set<string>()
 
-  const locations = Array.from(
-    new Set(
-      jobs
-        .map((job) => job.location)
-        .filter((value): value is string => Boolean(value))
-    )
-  ).sort()
+  jobs.forEach((job) => {
+    if(job.location) locationOptions.add(job.location)
+    if(job.location_region && job.location_country) locationOptions.add(`${job.location_region}, ${job.location_country}`)
+    if(job.location_country) locationOptions.add(job.location_country)
+  })
+
+  const locations = Array.from(locationOptions).sort()
 
   const categories = Array.from(
     new Set(
@@ -61,30 +63,34 @@ export async function getJobFilterOptions(): Promise<JobFilterOptions> {
 }
 
 //what the user will be able to SEARCH OR FILTER by
-//if a part is empty it will just ignore it 
-export async function getJobs(keyword = '', locations: string[] = [], categories: string[] = [], employmentTypes: string[] = []){
+//if a part is empty it will just ignore it
+export async function getJobs(keyword = '', location = '', categories: string[] = [], employmentTypes: string[] = [], workplaceTypes: string[] = []){
   //connecting to the supabase
   const supabase = await createClient()
 
   //only jobs that haven't been deleted
   let query = supabase.from('jobs').select('*').is('deleted_at', null)
 
-  //if there's a keyword, only keep jobs whose title, category, location, employement type, contains it 
+  //if there's a keyword, only keep jobs whose title, company, category, location or employment type contains it
   if(keyword !== ''){
-    const search = '"%' + keyword + '%"' // the quotes let the keyword contain comas, like "Montreal,QC"
-    const typeSearch = '"%' + keyword.replaceAll(' ', '_') + '%"' //for employment types bc they are saved with full_time if user tries full time it wont work so now it would work 
-    //.or() means it can match any of the searchable job fields
-    query = query.or('title.ilike.' + search + ',company.ilike.' + search + ',category.ilike.' + search + ',location.ilike.' + search + ',employment_type.ilike.' + typeSearch) //ilike means "contains" while ignoring the captial letters
+    const search = '"%' + keyword + '%"'
+    const typeSearch = '"%' + keyword.replaceAll(' ', '_') + '%"'
+    query = query.or('title.ilike.' + search + ',company.ilike.' + search + ',category.ilike.' + search + ',location.ilike.' + search + ',employment_type.ilike.' + typeSearch)
   }
 
-  //if locations are selected, keep jobs matching any of those locations
-  if(locations.length > 0){
-    query = query.in('location', locations)
+  //if a location is entered, keep jobs whose location contains it
+  if(location !== ''){
+    query = query.ilike('location', `%${location}%`)
   }
 
   //if employment types are selected, keep jobs matching any of those types
   if(employmentTypes.length > 0){
     query = query.in('employment_type', employmentTypes)
+  }
+
+  //if workplace types are selected, keep jobs matching any of those types
+  if(workplaceTypes.length > 0){
+    query = query.in('workplace_type', workplaceTypes)
   }
 
   //if categories are selected, keep jobs matching any of those categories
@@ -112,7 +118,6 @@ export async function getJob(id: string) {
   const supabase = await createClient()
 
   // Ask for the job with this id (or nothing if it doesn't exist)
-  // methods from Supabase lib
   const result = await supabase
     .from('jobs')
     .select('*')
@@ -120,8 +125,6 @@ export async function getJob(id: string) {
     .eq('id', id)
     .maybeSingle()
 
-  // If the id isn't valid id then it will give back null
-  // so the page will show the error
   if (result.error) {
     if(result.error.code === '22P02'){
       return null
@@ -129,7 +132,6 @@ export async function getJob(id: string) {
     throw new Error('Could not load job: '+ result.error.message)
   }
 
-  // Return back the job and if it no job has that id then null 
   const job: Job | null = result.data
   return job
 }

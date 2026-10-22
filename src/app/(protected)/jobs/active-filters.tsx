@@ -1,29 +1,32 @@
 import Link from 'next/link'
 
-import { EMPLOYMENT_TYPES } from '@/lib/job-posting'
+import { EMPLOYMENT_TYPES, WORKPLACE_TYPES } from '@/lib/job-posting'
 import styles from '@/app/ui.module.css'
 
 type ActiveFiltersProps = {
   keyword: string
-  locations: string[]
+  location: string
   categories: string[]
   employmentTypes: string[]
+  workplaceTypes: string[]
 }
 
 // Builds the jobs URL again after one filter is removed
 function buildFilterUrl(
   keyword: string,
-  locations: string[],
+  location: string,
   categories: string[],
-  employmentTypes: string[]
+  employmentTypes: string[],
+  workplaceTypes: string[]
 ) {
   const params = new URLSearchParams()
 
-  if (keyword) params.set('keyword', keyword)
+  if(keyword) params.set('keyword', keyword)
+  if(location) params.set('location', location)
 
-  locations.forEach((value) => params.append('location', value))
   categories.forEach((value) => params.append('category', value))
   employmentTypes.forEach((value) => params.append('employmentType', value))
+  workplaceTypes.forEach((value) => params.append('workplaceType', value))
 
   const query = params.toString()
   return query ? `/jobs?${query}` : '/jobs'
@@ -31,37 +34,22 @@ function buildFilterUrl(
 
 export function ActiveFilters({
   keyword,
-  locations,
+  location,
   categories,
   employmentTypes,
+  workplaceTypes,
 }: ActiveFiltersProps) {
-  // Don't display anything when no filters are selected
+  // Don't display anything when no sidebar filters are selected
   if (
-    locations.length === 0 &&
     categories.length === 0 &&
-    employmentTypes.length === 0
+    employmentTypes.length === 0 &&
+    workplaceTypes.length === 0
   ) {
     return null
   }
 
   return (
     <div className={styles.activeFilters} aria-label="Active job filters">
-      {/* Each link removes only that selected location */}
-      {locations.map((location) => (
-        <Link
-          key={location}
-          className={styles.activeFilter}
-          href={buildFilterUrl(
-            keyword,
-            locations.filter((value) => value !== location),
-            categories,
-            employmentTypes
-          )}
-        >
-          <span className={styles.activeFilterText}>{location}</span> ×
-        </Link>
-      ))}
-
       {/* Each link removes only that selected category */}
       {categories.map((category) => (
         <Link
@@ -69,12 +57,30 @@ export function ActiveFilters({
           className={styles.activeFilter}
           href={buildFilterUrl(
             keyword,
-            locations,
+            location,
             categories.filter((value) => value !== category),
-            employmentTypes
+            employmentTypes,
+            workplaceTypes
           )}
         >
           {category} ×
+        </Link>
+      ))}
+
+      {/* Each link removes only that selected workplace type */}
+      {workplaceTypes.map((type) => (
+        <Link
+          key={type}
+          className={styles.activeFilter}
+          href={buildFilterUrl(
+            keyword,
+            location,
+            categories,
+            employmentTypes,
+            workplaceTypes.filter((value) => value !== type)
+          )}
+        >
+          {WORKPLACE_TYPES[type as keyof typeof WORKPLACE_TYPES]} ×
         </Link>
       ))}
 
@@ -85,9 +91,10 @@ export function ActiveFilters({
           className={styles.activeFilter}
           href={buildFilterUrl(
             keyword,
-            locations,
+            location,
             categories,
-            employmentTypes.filter((value) => value !== type)
+            employmentTypes.filter((value) => value !== type),
+            workplaceTypes
           )}
         >
           {EMPLOYMENT_TYPES[type as keyof typeof EMPLOYMENT_TYPES]} ×

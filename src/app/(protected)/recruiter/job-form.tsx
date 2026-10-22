@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useActionState } from 'react'
-import { EMPLOYMENT_TYPES, JOB_CATEGORIES, EMPTY_JOB, JOB_LIMITS, type JobValues } from '@/lib/job-posting'
+import { EMPLOYMENT_TYPES, WORKPLACE_TYPES, JOB_CATEGORIES, EMPTY_JOB, JOB_LIMITS, type JobValues } from '@/lib/job-posting'
 import { saveJob, type JobState } from './actions'
 import { LocationAutocomplete } from './location-autocomplete'
 import styles from '@/app/ui.module.css'
@@ -14,11 +14,11 @@ export function JobForm({ id = null, initialValues = EMPTY_JOB }: { id?: string 
   const values = state.values ?? initialValues
 
   return <form action={action} className={styles.form} key={JSON.stringify(values)} noValidate>
-    <p>Job title, company, location, and description are required.</p>
+    <p>Job title, company, workplace, and description are required. Location is required for on-site and hybrid jobs.</p>
     {state.message && <p role="alert">{state.message}</p>}
 
     {(Object.keys(labels) as (keyof typeof labels)[]).map(field => <div key={field}>
-      <label htmlFor={field === 'location' ? 'location_search' : field}>{labels[field]}{['title', 'company', 'location', 'description'].includes(field) ? ' *' : ''}</label>
+      <label htmlFor={field === 'location' ? 'location_search' : field}>{labels[field]}{['title', 'company', 'description'].includes(field) ? ' *' : ''}</label>
       {field === 'description'
         ? <textarea id={field} name={field} rows={10} defaultValue={values[field]} maxLength={JOB_LIMITS[field]} required aria-invalid={!!state.errors?.[field]} aria-describedby={state.errors?.[field] ? `${field}-error` : undefined} />
         : field === 'location'
@@ -36,6 +36,15 @@ export function JobForm({ id = null, initialValues = EMPTY_JOB }: { id?: string 
       {state.errors?.category && <p id="category-error" role="alert">{state.errors.category}</p>}
     </div>
 
+    <div>
+      <label htmlFor="workplace_type">Workplace *</label>
+      <select id="workplace_type" name="workplace_type" defaultValue={values.workplace_type} required aria-invalid={!!state.errors?.workplace_type} aria-describedby={state.errors?.workplace_type ? 'workplace-error' : undefined}>
+        <option value="">Select workplace type</option>
+        {Object.entries(WORKPLACE_TYPES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+      </select>
+      {state.errors?.workplace_type && <p id="workplace-error" role="alert">{state.errors.workplace_type}</p>}
+    </div>
+    
     <div>
       <label htmlFor="employment_type">Employment type</label>
       <select id="employment_type" name="employment_type" defaultValue={values.employment_type} aria-invalid={!!state.errors?.employment_type} aria-describedby={state.errors?.employment_type ? 'employment-error' : undefined}>

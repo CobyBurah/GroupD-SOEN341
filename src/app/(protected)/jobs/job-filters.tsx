@@ -3,29 +3,35 @@
 import Link from 'next/link'
 
 import type { JobFilterOptions } from '@/lib/jobs'
-import { EMPLOYMENT_TYPES } from '@/lib/job-posting'
+import { EMPLOYMENT_TYPES, WORKPLACE_TYPES } from '@/lib/job-posting'
 import styles from '@/app/ui.module.css'
 
 // The values the filter area receives from the jobs page
 type JobFiltersProps = {
   keyword: string
-  locations: string[]
+  location: string
   categories: string[]
   employmentTypes: string[]
+  workplaceTypes: string[]
   filterOptions: JobFilterOptions
 }
 
 export function JobFilters({
   keyword,
-  locations,
+  location,
   categories,
   employmentTypes,
+  workplaceTypes,
   filterOptions,
 }: JobFiltersProps) {
-  // Reset the filters but keep anything the user typed in the search bar
-  const resetFiltersUrl = keyword
-    ? `/jobs?keyword=${encodeURIComponent(keyword)}`
-    : '/jobs'
+  // Reset sidebar filters but keep anything in the search bar
+  const resetParams = new URLSearchParams()
+
+  if(keyword) resetParams.set('keyword', keyword)
+  if(location) resetParams.set('location', location)
+
+  const resetQuery = resetParams.toString()
+  const resetFiltersUrl = resetQuery ? `/jobs?${resetQuery}` : '/jobs'
 
   return (
     // Filters shown on the left of the job postings
@@ -37,8 +43,9 @@ export function JobFilters({
 
       {/* Sends the filters back to the jobs page whenever a checkbox is changed */}
       <form action="/jobs" className={styles.filterForm}>
-        {/* Keep the search word when the user changes filters */}
+        {/* Keep the search values when the user changes filters */}
         {keyword && <input type="hidden" name="keyword" value={keyword} />}
+        {location && <input type="hidden" name="location" value={location} />}
 
         <details className={styles.filterGroup} open={categories.length > 0}>
           <summary>Category</summary>
@@ -59,20 +66,20 @@ export function JobFilters({
           </div>
         </details>
 
-        <details className={styles.filterGroup} open={locations.length > 0}>
-          <summary>Location</summary>
+        <details className={styles.filterGroup} open={workplaceTypes.length > 0}>
+          <summary>Workplace</summary>
 
           <div className={styles.filterOptions}>
-            {filterOptions.locations.map((option) => (
-              <label className={styles.filterOption} key={option}>
+            {Object.entries(WORKPLACE_TYPES).map(([value, label]) => (
+              <label className={styles.filterOption} key={value}>
                 <input
                   type="checkbox"
-                  name="location"
-                  value={option}
-                  checked={locations.includes(option)}
+                  name="workplaceType"
+                  value={value}
+                  checked={workplaceTypes.includes(value)}
                   onChange={(event) => event.currentTarget.form?.requestSubmit()}
                 />
-                {option}
+                {label}
               </label>
             ))}
           </div>

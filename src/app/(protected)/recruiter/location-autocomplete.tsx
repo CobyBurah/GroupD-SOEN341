@@ -34,12 +34,11 @@ export function LocationAutocomplete({
   const [country, setCountry] = useState(initialCountry)
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([])
   const [loading, setLoading] = useState(false)
-  const [remote, setRemote] = useState(initialLocation === 'Remote')
   const [selectionError, setSelectionError] = useState(false)
 
   useEffect(() => {
     // Don't search until there is enough text or when a valid option is already selected
-    if (remote || query.trim().length < 2 || query === location) {
+    if (query.trim().length < 2 || query === location) {
       setSuggestions([])
       return
     }
@@ -78,7 +77,7 @@ export function LocationAutocomplete({
       clearTimeout(timer)
       controller.abort()
     }
-  }, [query, location, remote])
+  }, [query, location])
 
   function changeLocation(value: string) {
     // Typing again means the previous selected location is no longer valid
@@ -100,29 +99,10 @@ export function LocationAutocomplete({
     setSelectionError(false)
   }
 
-  function changeRemote(checked: boolean) {
-    setRemote(checked)
-    setSuggestions([])
-    setSelectionError(false)
-
-    if (checked) {
-      setQuery('Remote')
-      setLocation('Remote')
-      setCity('')
-      setRegion('')
-      setCountry('')
-    } else {
-      setQuery('')
-      setLocation('')
-      setCity('')
-      setRegion('')
-      setCountry('')
-    }
-  }
 
   function checkLocation() {
     // If something was typed but no suggestion was selected, show an error
-    if (query.trim() !== '' && !location && !remote) {
+    if (query.trim() !== '' && !location) {
       setSelectionError(true)
     }
   }
@@ -136,21 +116,12 @@ export function LocationAutocomplete({
           type="text"
           value={query}
           autoComplete="off"
-          disabled={remote}
           aria-invalid={invalid || selectionError}
           aria-describedby={selectionError ? 'location-selection-error' : invalid ? 'location-error' : undefined}
           onChange={(event) => changeLocation(event.target.value)}
           onBlur={checkLocation}
         />
 
-        <button
-          type="button"
-          className={`${styles.remoteButton} ${remote ? styles.remoteButtonActive : ''}`}
-          aria-pressed={remote}
-          onClick={() => changeRemote(!remote)}
-        >
-          Remote
-        </button>
       </div>
 
       {/* Only a selected suggestion or Remote is actually saved */}
