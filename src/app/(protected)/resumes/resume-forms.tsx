@@ -116,7 +116,7 @@ export function ResumeRow({ resume }: { resume: Resume }) {
       </h2>
       <div className={styles.pills}>
         <span className={styles.pill}>{formatFileSize(resume.size_bytes)}</span>
-        <span className={styles.pill}>{new Date(resume.created_at).toLocaleDateString()}</span>
+        <span className={styles.pill}>{new Date(resume.created_at).toLocaleDateString('en-CA', {timeZone: 'UTC'})}</span>
       </div>
       <form action={renameAction} key={`rename-${renameState.token ?? 'initial'}`}>
         <input type="hidden" name="resumeId" value={resume.id} />
