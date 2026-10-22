@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import type { JobFilterOptions } from '@/lib/jobs'
+import { jobFilterKey, type JobFilterType } from '@/lib/job-filtering'
 import { EMPLOYMENT_TYPES, WORKPLACE_TYPES } from '@/lib/job-posting'
 import styles from '@/app/ui.module.css'
 
@@ -15,6 +16,7 @@ type JobFiltersProps = {
   categories: string[]
   employmentTypes: string[]
   workplaceTypes: string[]
+  filterOrder: string[]
   filterOptions: JobFilterOptions
 }
 
@@ -22,6 +24,7 @@ type FilterState = {
   categories: string[]
   employmentTypes: string[]
   workplaceTypes: string[]
+  order: string[]
 }
 
 export function JobFilters({
@@ -30,6 +33,7 @@ export function JobFilters({
   categories,
   employmentTypes,
   workplaceTypes,
+  filterOrder,
   filterOptions,
 }: JobFiltersProps) {
   const router = useRouter()
@@ -39,6 +43,7 @@ export function JobFilters({
     categories,
     employmentTypes,
     workplaceTypes,
+    order: filterOrder,
   })
 
   // Update the URL after filter changes without losing fast checkbox clicks
@@ -57,6 +62,7 @@ export function JobFilters({
       filters.categories.forEach((value) => params.append('category', value))
       filters.workplaceTypes.forEach((value) => params.append('workplaceType', value))
       filters.employmentTypes.forEach((value) => params.append('employmentType', value))
+      filters.order.forEach((value) => params.append('filterOrder', value))
 
       const query = params.toString()
       router.replace(query ? `/jobs?${query}` : '/jobs', { scroll: false })
@@ -65,15 +71,29 @@ export function JobFilters({
     return () => clearTimeout(timer)
   }, [filters, keyword, location, router])
 
-  function toggleFilter(type: keyof FilterState, value: string) {
+  function toggleFilter(type: JobFilterType, value: string) {
     setFilters((current) => {
-      const selected = current[type]
+      const selected =
+        type === 'category' ? current.categories :
+        type === 'employmentType' ? current.employmentTypes :
+        current.workplaceTypes
+
+      const adding = !selected.includes(value)
+      const key = jobFilterKey(type, value)
 
       return {
-        ...current,
-        [type]: selected.includes(value)
-          ? selected.filter((option) => option !== value)
-          : [...selected, value],
+        categories: type === 'category'
+          ? adding ? [...current.categories, value] : current.categories.filter((option) => option !== value)
+          : current.categories,
+        employmentTypes: type === 'employmentType'
+          ? adding ? [...current.employmentTypes, value] : current.employmentTypes.filter((option) => option !== value)
+          : current.employmentTypes,
+        workplaceTypes: type === 'workplaceType'
+          ? adding ? [...current.workplaceTypes, value] : current.workplaceTypes.filter((option) => option !== value)
+          : current.workplaceTypes,
+        order: adding
+          ? [...current.order, key]
+          : current.order.filter((option) => option !== key),
       }
     })
   }
@@ -93,11 +113,7 @@ export function JobFilters({
           <div className={styles.filterOptions}>
             {filterOptions.categories.map((option) => (
               <label className={styles.filterOption} key={option}>
-                <input
-                  type="checkbox"
-                  checked={filters.categories.includes(option)}
-                  onChange={() => toggleFilter('categories', option)}
-                />
+                <input type="checkbox" checked={filters.categories.includes(option)} onChange={() => toggleFilter('category', option)} />
                 {option}
               </label>
             ))}
@@ -110,11 +126,7 @@ export function JobFilters({
           <div className={styles.filterOptions}>
             {Object.entries(WORKPLACE_TYPES).map(([value, label]) => (
               <label className={styles.filterOption} key={value}>
-                <input
-                  type="checkbox"
-                  checked={filters.workplaceTypes.includes(value)}
-                  onChange={() => toggleFilter('workplaceTypes', value)}
-                />
+                <input type="checkbox" checked={filters.workplaceTypes.includes(value)} onChange={() => toggleFilter('workplaceType', value)} />
                 {label}
               </label>
             ))}
@@ -127,11 +139,7 @@ export function JobFilters({
           <div className={styles.filterOptions}>
             {Object.entries(EMPLOYMENT_TYPES).map(([value, label]) => (
               <label className={styles.filterOption} key={value}>
-                <input
-                  type="checkbox"
-                  checked={filters.employmentTypes.includes(value)}
-                  onChange={() => toggleFilter('employmentTypes', value)}
-                />
+                <input type="checkbox" checked={filters.employmentTypes.includes(value)} onChange={() => toggleFilter('employmentType', value)} />
                 {label}
               </label>
             ))}

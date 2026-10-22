@@ -12,6 +12,7 @@ type JobSearchProps = {
   categories: string[]
   employmentTypes: string[]
   workplaceTypes: string[]
+  filterOrder: string[]
 }
 
 function MapPinIcon() {
@@ -39,6 +40,7 @@ export function JobSearch({
   categories,
   employmentTypes,
   workplaceTypes,
+  filterOrder,
 }: JobSearchProps) {
   const formRef = useRef<HTMLFormElement>(null)
   const [locationValue, setLocationValue] = useState(location)
@@ -105,6 +107,7 @@ export function JobSearch({
       {categories.map((value) => <input key={value} type="hidden" name="category" value={value} />)}
       {employmentTypes.map((value) => <input key={value} type="hidden" name="employmentType" value={value} />)}
       {workplaceTypes.map((value) => <input key={value} type="hidden" name="workplaceType" value={value} />)}
+      {filterOrder.map((value) => <input key={value} type="hidden" name="filterOrder" value={value} />)}
 
       <button type="submit">Search</button>
     </form>

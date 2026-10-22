@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import { createClient } from '@/lib/supabase/server'
 import { getJobs, getJobFilterOptions, JOBS_PER_PAGE } from '@/lib/jobs'
+import { normalizeFilterOrder } from '@/lib/job-filtering'
 import { getFavouriteJobIds } from '@/lib/favourites'
 import { JobCard } from './jobs-card'
 import { JobSearch } from './job-search'
@@ -19,6 +20,7 @@ type JobsPageProps = {
     category?: string | string[]
     employmentType?: string | string[]
     workplaceType?: string | string[]
+    filterOrder?: string | string[]
     page?: string | string[]
   }>
 }
@@ -43,6 +45,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
   const categories = toArray(params.category)
   const employmentTypes = toArray(params.employmentType)
   const workplaceTypes = toArray(params.workplaceType)
+  const filterOrder = normalizeFilterOrder(toArray(params.filterOrder), categories, employmentTypes, workplaceTypes)
 
   const pageValue = Number(toSingle(params.page))
   const page = Number.isInteger(pageValue) && pageValue > 0 ? pageValue : 1
@@ -77,6 +80,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
     categories.forEach((value) => pageParams.append('category', value))
     employmentTypes.forEach((value) => pageParams.append('employmentType', value))
     workplaceTypes.forEach((value) => pageParams.append('workplaceType', value))
+    filterOrder.forEach((value) => pageParams.append('filterOrder', value))
 
     if(targetPage > 1) pageParams.set('page', String(targetPage))
 
@@ -105,13 +109,13 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
         </div>
       </header>
 
-      <JobSearch key={`${keyword}-${location}`} keyword={keyword} location={location} locationOptions={filterOptions.locations} categories={categories} employmentTypes={employmentTypes} workplaceTypes={workplaceTypes} />
+      <JobSearch key={`${keyword}-${location}`} keyword={keyword} location={location} locationOptions={filterOptions.locations} categories={categories} employmentTypes={employmentTypes} workplaceTypes={workplaceTypes} filterOrder={filterOrder} />
 
       <div className={styles.jobsLayout}>
-        <JobFilters key={`${categories.join('-')}-${workplaceTypes.join('-')}-${employmentTypes.join('-')}`} keyword={keyword} location={location} categories={categories} employmentTypes={employmentTypes} workplaceTypes={workplaceTypes} filterOptions={filterOptions} />
+        <JobFilters key={`${categories.join('-')}-${workplaceTypes.join('-')}-${employmentTypes.join('-')}`} keyword={keyword} location={location} categories={categories} employmentTypes={employmentTypes} workplaceTypes={workplaceTypes} filterOrder={filterOrder} filterOptions={filterOptions} />
 
         <div className={styles.jobResults}>
-          <ActiveFilters keyword={keyword} location={location} categories={categories} employmentTypes={employmentTypes} workplaceTypes={workplaceTypes} />
+          <ActiveFilters keyword={keyword} location={location} categories={categories} employmentTypes={employmentTypes} workplaceTypes={workplaceTypes} filterOrder={filterOrder} />
 
           {jobs.length === 0 ? (
             <section className={styles.card}>

@@ -139,3 +139,27 @@ test('server actions reject unauthorized mutations, preserve validation input an
   assert.match((await saveJob(id, {}, form())).message, /Could not save/)
   delete globalThis.__recruiterTest
 })
+
+test('posting validation accepts listed job options and only accepts selected locations', () => {
+  const valid = validateJob(form({
+    category: 'Marketing',
+    workplace_type: 'hybrid',
+    employment_type: 'full_time',
+    location: 'Montreal, Quebec, Canada',
+    location_city: 'Montreal',
+    location_region: 'Quebec',
+    location_country: 'Canada',
+  }))
+
+  assert.equal(valid.valid, true)
+
+  const typedOnly = form()
+  typedOnly.set('location_search', 'Montreal')
+  const typedResult = validateJob(typedOnly)
+
+  assert.equal(typedResult.valid, false)
+  assert.ok(typedResult.errors.location)
+
+  assert.equal(validateJob(form({ category: 'Fake Category' })).valid, false)
+  assert.equal(validateJob(form({ workplace_type: 'office' })).valid, false)
+})
