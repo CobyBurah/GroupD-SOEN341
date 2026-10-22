@@ -34,6 +34,13 @@ export default async function JobDetailsPage({
     )
   }
 
+  const postedDate = new Intl.DateTimeFormat('en-CA', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(job.created_at))
+
   // Only display Job Information when at least one field exists
   const hasJobInformation = Boolean(
     job.category ||
@@ -102,6 +109,10 @@ export default async function JobDetailsPage({
               <strong>Salary:</strong> {job.salary}
             </p>
           )}
+
+          <p>
+            <strong>Posted:</strong> {postedDate}
+          </p>
         </section>
       )}
 
