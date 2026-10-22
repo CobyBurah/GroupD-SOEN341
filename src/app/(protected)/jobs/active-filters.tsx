@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { EMPLOYMENT_TYPES } from '@/lib/job-posting'
+import styles from '@/app/ui.module.css'
 
 type ActiveFiltersProps = {
   keyword: string
@@ -44,12 +45,12 @@ export function ActiveFilters({
   }
 
   return (
-    <div aria-label="Active job filters">
-
+    <div className={styles.activeFilters} aria-label="Active job filters">
       {/* Each link removes only that selected location */}
       {locations.map((location) => (
         <Link
           key={location}
+          className={styles.activeFilter}
           href={buildFilterUrl(
             keyword,
             locations.filter((value) => value !== location),
@@ -57,7 +58,7 @@ export function ActiveFilters({
             employmentTypes
           )}
         >
-          {location} ×
+          <span className={styles.activeFilterText}>{location}</span> ×
         </Link>
       ))}
 
@@ -65,6 +66,7 @@ export function ActiveFilters({
       {categories.map((category) => (
         <Link
           key={category}
+          className={styles.activeFilter}
           href={buildFilterUrl(
             keyword,
             locations,
@@ -80,6 +82,7 @@ export function ActiveFilters({
       {employmentTypes.map((type) => (
         <Link
           key={type}
+          className={styles.activeFilter}
           href={buildFilterUrl(
             keyword,
             locations,

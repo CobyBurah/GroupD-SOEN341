@@ -64,6 +64,42 @@
 .shell button:hover, .shell .primary:hover, .shell .secondary:hover { opacity: .9; }
 .shell button:disabled { opacity: .65; cursor: wait; }
 .arrow { font-size: 18px; line-height: 1; }
+.detailsMobile { display: none; }
+
+/* Job search bar. */
+.searchBar { display: flex; align-items: center; gap: 14px; width: 100%; margin: 30px 0 36px; }
+.searchBar input[type=text] { flex: 1; min-width: 0; }
+.searchBar button { margin-left: auto; }
+
+/* Jobs page filtering layout. */
+.jobsLayout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 44px; align-items: start; }
+.jobResults { min-width: 0; }
+
+/* Job filters. */
+.filterSidebar { position: sticky; top: 24px; align-self: start; padding-right: 28px; border-right: 2px solid var(--cc-line); }
+.filterHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 16px; }
+.filterHeader h2 { margin: 0; }
+.shell .resetFilters { color: var(--cc-text); font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.shell .resetFilters:hover { opacity: .7; }
+
+.filterForm { display: grid; gap: 0; }
+.filterGroup { border-top: 1px solid var(--cc-line); }
+.filterGroup:last-of-type { border-bottom: 1px solid var(--cc-line); }
+
+.filterGroup summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 0; color: var(--cc-ink); font-weight: 600; cursor: pointer; list-style: none; }
+.filterGroup summary::-webkit-details-marker { display: none; }
+.filterGroup summary::after { content: "+"; font-size: 20px; font-weight: 400; line-height: 1; }
+.filterGroup[open] summary::after { content: "−"; }
+
+.filterOptions { display: grid; gap: 11px; padding: 0 0 18px; }
+.filterOption { display: flex; align-items: flex-start; gap: 9px; color: var(--cc-text); font-size: 14px; line-height: 1.4; cursor: pointer; }
+.filterOption input { margin: 3px 0 0; flex-shrink: 0; }
+
+/* Selected filters shown above the job results. */
+.activeFilters { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0 0 20px; }
+.shell .activeFilter { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: var(--cc-pill); color: var(--cc-ink); font-size: 14px; font-weight: 500; text-decoration: none; transition: opacity .15s ease; }
+.shell .activeFilter:hover { opacity: .75; }
+.activeFilterText { min-width: 0; }
 
 /* Lists of rows separated by dividers, like the job listings. */
 .list { list-style: none; padding: 0; margin: 0; }
@@ -74,12 +110,15 @@
 .shell .rowTitle a:hover { opacity: .7; }
 .meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 4px 0 22px; font-size: 16px; }
 .bottomRow { display: flex; align-items: center; justify-content: space-between; gap: 30px; min-width: 0; }
-.pills { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; list-style: none; padding: 0; margin: 0; max-width: 100%; }
+.bottomRow .actions { margin-left: auto; flex-shrink: 0; }
+.pills { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; list-style: none; padding: 0; margin: 0; max-width: 100%; flex: 1 1 auto; min-width: 0; }
 ul.pills { margin: 12px 0 20px; }
 .pill { display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 9px 18px; border-radius: 999px; background: var(--cc-pill); color: var(--cc-text); font-size: 15px; white-space: nowrap; max-width: 100%; }
 
 /* Slight horizontal adjustment so job pill content looks visually centered. */
 .jobPill { padding-left: 14px; padding-right: 18px; }
+
+.locationText { min-width: 0; }
 
 .icon { width: 19px; height: 19px; flex-shrink: 0; color: var(--cc-ink); }
 
@@ -124,7 +163,24 @@ ul.pills { margin: 12px 0 20px; }
   .meta { justify-content: center; text-align: center; }
   .pills { flex-direction: column; align-items: center; gap: 10px; width: 100%; }
   .pill { min-width: 185px; }
+  .locationText { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .card, .shell main.auth { padding: 22px; }
+
+  .searchBar { flex-direction: column; align-items: stretch; }
+  .searchBar button { align-self: center; margin-left: 0; }
+
+  .jobsLayout { grid-template-columns: 1fr; gap: 0; }
+  .filterSidebar { position: static; padding: 0; border-right: 0; border-bottom: 0; }
+
+  .activeFilters { justify-content: center; padding: 16px 0 10px; margin: 0; }
+  .activeFilters + .list .row:first-child { padding-top: 24px; }
+  .activeFilterText { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+ 
+  .detailsDesktop { display: none; }
+  .detailsMobile { display: inline; }
+
+  .bottomRow .actions { width: 100%; justify-content: center; flex-wrap: nowrap; gap: 10px; }
+  .bottomRow .actions .primary, .bottomRow .actions .secondary, .bottomRow .actions button { padding: 9px 14px; font-size: 14px; }
 }
 
 @media (max-width: 600px) {

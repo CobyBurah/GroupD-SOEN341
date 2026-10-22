@@ -100,7 +100,7 @@ export function JobCard({
           {job.location && (
             <div className={`${styles.pill} ${styles.jobPill}`}>
               <MapPinIcon />
-              <span>{job.location}</span>
+              <span className={styles.locationText}>{job.location}</span>
             </div>
           )}
 

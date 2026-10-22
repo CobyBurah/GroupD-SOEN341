@@ -108,8 +108,9 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
                       </Link>
 
                       <Link className={styles.primary} href={`/jobs/${job.id}`}>
-                        View Details
-                        <span className={styles.arrow}>→</span>
+                       <span className={styles.detailsDesktop}>View Details</span>
+                      <span className={styles.detailsMobile}>Details</span>
+                      <span className={styles.arrow}>→</span>
                       </Link>
                     </>
                   )}
