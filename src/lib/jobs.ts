@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 
+export const JOBS_PER_PAGE = 10
+
 // What one job looks like (same columns as the jobs table).
 // "| null" means the value can be empty.
 export type Job = {
@@ -10,55 +12,115 @@ export type Job = {
   title: string
   company: string
   location: string | null
+  location_city: string | null
+  location_region: string | null
+  location_country: string | null
   category: string | null
   employment_type: string | null
+  workplace_type: string | null
   salary: string | null
   description: string
   created_at: string
   updated_at: string
 }
+
+export type JobFilterOptions = {
+  locations: string[]
+  categories: string[]
+}
+
+// Get the location and category choices used by the jobs page.
+export async function getJobFilterOptions(): Promise<JobFilterOptions> {
+  const supabase = await createClient()
+
+  const result = await supabase
+    .from('jobs')
+    .select('location, location_region, location_country, category')
+    .is('deleted_at', null)
+
+  if (result.error) {
+    throw new Error('Could not load job filters: ' + result.error.message)
+  }
+
+  const jobs = result.data ?? []
+  const locationOptions = new Set<string>()
+
+  jobs.forEach((job) => {
+    if(job.location) locationOptions.add(job.location)
+    if(job.location_region && job.location_country) locationOptions.add(`${job.location_region}, ${job.location_country}`)
+    if(job.location_country) locationOptions.add(job.location_country)
+  })
+
+  const locations = Array.from(locationOptions).sort()
+
+  const categories = Array.from(
+    new Set(
+      jobs
+        .map((job) => job.category)
+        .filter((value): value is string => Boolean(value))
+    )
+  ).sort()
+
+  return { locations, categories }
+}
+
 //what the user will be able to SEARCH OR FILTER by
-//if a part is empty it will just ignore it 
-export async function getJobs(keyword = '', location = '', category='', employmentType = ''){
+//if a part is empty it will just ignore it
+export async function getJobs(keyword = '', location = '', categories: string[] = [], employmentTypes: string[] = [], workplaceTypes: string[] = [], page = 1){
   //connecting to the supabase
   const supabase = await createClient()
 
   //only jobs that haven't been deleted
-  let query = supabase.from('jobs').select('*').is('deleted_at', null)
+  let query = supabase.from('jobs').select('*', {count: 'exact'}).is('deleted_at', null)
 
-  //if there's a keyword, only keep jobs whose title, category, location, employement type, contains it 
+  //if there's a keyword, only keep jobs whose title, company, category, location or employment type contains it
   if(keyword !== ''){
-    const search = '"%' + keyword + '%"' // the quotes let the keyword contain comas, like "Montreal,QC"
-    const typeSearch = '"%' + keyword.replaceAll(' ', '_') + '%"' //for employment types bc they are saved with full_time if user tries full time it wont work so now it would work 
-    //.or() means that it matchs any of the title or category or location
-    query = query.or('title.ilike.' + search + ',company.ilike.' + search + ',category.ilike.' + search + ',location.ilike.' + search + ',employment_type.ilike.' + typeSearch) //ilike means "contains" while ignoring the captial letters
+    const search = '"%' + keyword + '%"'
+    const typeSearch = '"%' + keyword.replaceAll(' ', '_') + '%"'
+    query = query.or('title.ilike.' + search + ',company.ilike.' + search + ',category.ilike.' + search + ',location.ilike.' + search + ',employment_type.ilike.' + typeSearch)
   }
-  
-  //if there's a location, only keep jobs who's location is in that exact location
+
+  //if a location is entered, keep jobs whose location contains it
   if(location !== ''){
-    query = query.ilike('location', location)
+    query = query.ilike('location', `%${location}%`)
   }
-if (employmentType !== '') {
-  query = query.ilike('employment_type', employmentType)
-}
-  //if there's a category, only keep the jobs who's in that exact category
-  if(category !== ''){
-    query = query.ilike('category', category)
+
+  //if employment types are selected, keep jobs matching any of those types
+  if(employmentTypes.length > 0){
+    query = query.in('employment_type', employmentTypes)
   }
+
+  //if workplace types are selected, keep jobs matching any of those types
+  if(workplaceTypes.length > 0){
+    query = query.in('workplace_type', workplaceTypes)
+  }
+
+  //if categories are selected, keep jobs matching any of those categories
+  if(categories.length > 0){
+    query = query.in('category', categories)
+  }
+
+  //only load the jobs belonging to the current page
+  const firstJob = (page - 1) * JOBS_PER_PAGE
+  const lastJob = firstJob + JOBS_PER_PAGE - 1
 
   //sorting the newest first and send the question to Supabase
-  const result = await query.order('created_at', {ascending: false})
+  const result = await query
+    .order('created_at', {ascending: false})
+    .range(firstJob, lastJob)
 
   //If something goes wrong, then output an error message and stop
   if(result.error){
     throw new Error('Could not load job:' + result.error.message)
-
   }
-  //giving back the list of jobs or an empty list if nothing matches what the user is searching
-  const jobs: Job[] = result.data ?? []
-  return jobs 
 
+  //giving back the jobs on this page and the total number of matching jobs
+  const jobs: Job[] = result.data ?? []
+  const total = result.count ?? 0
+
+  return { jobs, total }
 }
+
 // Get one job using its id.
 // Used by the job details page.
 export async function getJob(id: string) {
@@ -66,7 +128,6 @@ export async function getJob(id: string) {
   const supabase = await createClient()
 
   // Ask for the job with this id (or nothing if it doesn't exist)
-  // methods from Supabase lib
   const result = await supabase
     .from('jobs')
     .select('*')
@@ -74,15 +135,13 @@ export async function getJob(id: string) {
     .eq('id', id)
     .maybeSingle()
 
-  // If the id isn't valid id then it will give back null
-  // so the page will show the error
   if (result.error) {
-    if(result.error.code === '22P02'){ //'22P02' is the error code: that the text can't be returned, this comes from the error list of codes of PostgreSQL (inside supabase)
-       return null 
+    if(result.error.code === '22P02'){
+      return null
     }
     throw new Error('Could not load job: '+ result.error.message)
   }
-  // Return back the job and if it no job has that id then null 
+
   const job: Job | null = result.data
   return job
 }

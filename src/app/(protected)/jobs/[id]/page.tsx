@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { getJob } from '@/lib/jobs'
+import { WORKPLACE_TYPES } from '@/lib/job-posting'
 import styles from '@/app/ui.module.css'
 
 type JobDetailsPageProps = {
@@ -33,10 +34,18 @@ export default async function JobDetailsPage({
     )
   }
 
+  const postedDate = new Intl.DateTimeFormat('en-CA', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(job.created_at))
+
   // Only display Job Information when at least one field exists
   const hasJobInformation = Boolean(
     job.category ||
     job.employment_type ||
+    job.workplace_type ||
     job.salary
   )
 
@@ -79,6 +88,13 @@ export default async function JobDetailsPage({
             </p>
           )}
 
+          {job.workplace_type && (
+            <p>
+              <strong>Workplace:</strong>{' '}
+              {WORKPLACE_TYPES[job.workplace_type as keyof typeof WORKPLACE_TYPES]}
+            </p>
+          )}
+
           {job.employment_type && (
             <p>
               <strong>Employment Type:</strong>{' '}
@@ -93,6 +109,10 @@ export default async function JobDetailsPage({
               <strong>Salary:</strong> {job.salary}
             </p>
           )}
+
+          <p>
+            <strong>Posted:</strong> {postedDate}
+          </p>
         </section>
       )}
 

@@ -3,41 +3,70 @@ import { startPreview } from '../fixtures/recruiter-preview.mjs'
 let preview
 test.beforeAll(async () => { preview = await startPreview() })
 test.afterAll(async () => { await preview?.close() })
+
 test('recruiter creates, validates, edits, views pending applications and deletes a posting', async ({ page, context }, testInfo) => {
   const { session, appPort } = preview
   await context.addCookies([{ name: 'sb-127-auth-token', value: 'base64-' + Buffer.from(JSON.stringify(session)).toString('base64url'), domain: '127.0.0.1', path: '/' }])
+
+  await page.route('**/api/locations**', route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ results: [{ id: 'montreal', city: 'Montreal', region: 'Quebec', country: 'Canada', label: 'Montreal, Quebec, Canada' }] }),
+  }))
+
   const base = `http://127.0.0.1:${appPort}`
   await page.goto(base + '/recruiter')
   await expect(page.getByRole('heading', { name: 'Your job postings' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'No postings yet' })).toBeVisible()
   await page.getByRole('link', { name: 'Create posting' }).click()
+
   await page.getByRole('button', { name: 'Publish posting' }).click()
   await expect(page.getByText('This field is required.')).toHaveCount(3)
+
   await page.getByLabel('Job title').fill('Frontend Developer')
   await page.getByLabel('Company').fill('CareerConnect Demo')
-  await page.getByLabel('Location').fill('Montreal')
   await page.getByLabel('Job description').fill('Build accessible interfaces for job seekers.')
+  await page.getByLabel('Category').selectOption('Software Development')
+  await page.getByLabel('Workplace').selectOption('hybrid')
   await page.getByLabel('Employment type').selectOption('full_time')
+
+  // Typing a location without choosing a suggestion must fail
+  await page.getByLabel('Location').fill('Montreal')
   await page.getByRole('button', { name: 'Publish posting' }).click()
+  await expect(page.getByText('Choose a location from the suggestions.')).toBeVisible()
+
+  // Selecting the autocomplete result makes the location valid
+  await page.getByLabel('Location').fill('Montreal')
+  await page.getByRole('button', { name: 'Montreal, Quebec, Canada', exact: true }).click()
+  await page.getByRole('button', { name: 'Publish posting' }).click()
+
   await expect(page.getByRole('status')).toHaveText('Posting published.')
   await expect(page.getByRole('heading', { name: 'Frontend Developer' })).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('recruiter-dashboard-desktop.png'), fullPage: true })
+
   await page.getByRole('link', { name: 'Edit Frontend Developer', exact: true }).click()
   await expect(page.getByLabel('Job title')).toHaveValue('Frontend Developer')
+  await expect(page.getByLabel('Location')).toHaveValue('Montreal, Quebec, Canada')
+  await expect(page.getByLabel('Category')).toHaveValue('Software Development')
+  await expect(page.getByLabel('Workplace')).toHaveValue('hybrid')
   await page.getByLabel('Job title').fill('Senior Frontend Developer')
   await page.getByRole('button', { name: 'Save changes' }).click()
+
   await expect(page.getByRole('status')).toHaveText('Posting updated.')
   await page.getByRole('link', { name: 'Applications for Senior Frontend Developer' }).click()
   await expect(page.getByRole('heading', { name: 'No applications yet' })).toBeVisible()
   await page.getByRole('link', { name: 'Back to your postings' }).click()
+
   await page.setViewportSize({ width: 390, height: 844 })
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: testInfo.outputPath('recruiter-dashboard-mobile.png'), fullPage: true })
+
   await page.getByRole('link', { name: 'Delete Senior Frontend Developer', exact: true }).click()
   await page.getByLabel('I confirm').check()
   await page.getByRole('button', { name: 'Delete posting' }).click()
   await expect(page.getByRole('status')).toHaveText('Posting deleted from active listings.')
   await expect(page.getByRole('heading', { name: 'No postings yet' })).toBeVisible()
+
   await page.goto(base + '/jobs')
   await expect(page.getByRole('heading', { name: 'Available Jobs For You' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'No jobs posted yet' })).toBeVisible()

@@ -184,8 +184,14 @@ export async function startPreview() {
     }
     res.end(JSON.stringify(rows))
   })
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
-  apiPort = server.address().port
+  apiPort = Number(process.env.E2E_SUPABASE_PORT ?? 54329)
+await new Promise((resolve, reject) => {
+  server.once('error', reject)
+  server.listen(apiPort, '127.0.0.1', () => {
+    server.off('error', reject)
+    resolve()
+  })
+})
   const reservation = createServer()
   await new Promise(resolve => reservation.listen(0, '127.0.0.1', resolve))
   appPort = reservation.address().port

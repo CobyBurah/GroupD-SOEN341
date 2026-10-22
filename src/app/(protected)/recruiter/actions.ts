@@ -26,9 +26,15 @@ export async function saveJob(id: string | null, _state: JobState, formData: For
   if (id !== null && !isJobId(id)) return { values, message: 'Posting not found or unavailable.' }
   // Whitelist editable fields. Ownership always comes from the verified session.
   const fields = {
-    ...values,
-    location: values.location || null, category: values.category || null,
-    employment_type: values.employment_type || null, salary: values.salary || null,
+  ...values,
+  location: values.location || null,
+  location_city: values.location_city || null,
+  location_region: values.location_region || null,
+  location_country: values.location_country || null,
+  category: values.category || null,
+  employment_type: values.employment_type || null,
+  workplace_type: values.workplace_type || null,
+  salary: values.salary || null,
   }
   let saved
   try {

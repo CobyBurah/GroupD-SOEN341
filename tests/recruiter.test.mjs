@@ -53,6 +53,8 @@ test('actual Postgres RLS enforces recruiter role, ownership, deletion and histo
     await db.exec('grant select, insert, update, delete on public.jobs to authenticated; grant select on public.profiles to authenticated;')
     await db.exec(await readFile(new URL('../supabase/migrations/0007_recruiter_job_management.sql', import.meta.url), 'utf8'))
     await db.query(`insert into auth.users values ($1, '{"role":"recruiter"}'), ($2, '{"role":"recruiter"}'), ($3, '{"role":"job_seeker"}')`, [recruiter, other, seeker])
+    await db.exec(await readFile(new URL('../supabase/migrations/0012_job_location_fields.sql', import.meta.url), 'utf8'))
+    await db.exec(await readFile(new URL('../supabase/migrations/0013_workplace_type.sql', import.meta.url), 'utf8'))
     async function asUser(id, fn) {
       await db.query("select set_config('request.jwt.claim.sub', $1, false)", [id])
       await db.exec('set role authenticated')
@@ -138,4 +140,28 @@ test('server actions reject unauthorized mutations, preserve validation input an
   result = { data: null, error: { message: 'Database error' } }
   assert.match((await saveJob(id, {}, form())).message, /Could not save/)
   delete globalThis.__recruiterTest
+})
+
+test('posting validation accepts listed job options and only accepts selected locations', () => {
+  const valid = validateJob(form({
+    category: 'Marketing',
+    workplace_type: 'hybrid',
+    employment_type: 'full_time',
+    location: 'Montreal, Quebec, Canada',
+    location_city: 'Montreal',
+    location_region: 'Quebec',
+    location_country: 'Canada',
+  }))
+
+  assert.equal(valid.valid, true)
+
+  const typedOnly = form()
+  typedOnly.set('location_search', 'Montreal')
+  const typedResult = validateJob(typedOnly)
+
+  assert.equal(typedResult.valid, false)
+  assert.ok(typedResult.errors.location)
+
+  assert.equal(validateJob(form({ category: 'Fake Category' })).valid, false)
+  assert.equal(validateJob(form({ workplace_type: 'office' })).valid, false)
 })

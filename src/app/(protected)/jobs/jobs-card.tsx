@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import type { Job } from '@/lib/jobs' // imports the Job structure/type already defined for Supabase jobs
+import { WORKPLACE_TYPES } from '@/lib/job-posting'
 import styles from '@/app/ui.module.css' // shared theme styles (row, pills, buttons, etc.)
 
 type JobCardProps = {
@@ -100,9 +101,15 @@ export function JobCard({
           {job.location && (
             <div className={`${styles.pill} ${styles.jobPill}`}>
               <MapPinIcon />
-              <span>{job.location}</span>
+              <span className={styles.locationText}>{job.location}</span>
             </div>
           )}
+
+          {job.workplace_type && (
+             <div className={`${styles.pill} ${styles.jobPill}`}>
+              <span>{WORKPLACE_TYPES[job.workplace_type as keyof typeof WORKPLACE_TYPES]}</span>
+            </div>
+)}
 
           {job.employment_type && (
             <div className={`${styles.pill} ${styles.jobPill}`}>
