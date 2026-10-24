@@ -28,3 +28,42 @@ Monday October 19th, 2026
   
 **Responsible Person:**
 - Coby, who conducted the interaction and completed the forgot password / reset password feature
+
+## AI Log #2 - Sprint 2
+
+**Saturday October 24th, 2026**
+
+### Task ID/Title
+
+Task: My Applications page for job seekers
+
+### Purpose of AI Use
+
+- Help me plan a page where job seekers can see every job they applied to and its current status
+- Help me keep a history of each status change, since we only stored the current status
+- Help me let seekers withdraw their own applications safely
+
+### Claude Link to conversation
+
+https://claude.ai/code/cshk_014uyYnBeXyoLX8iC41VQzprUwnppEDaYrsw1oTZ5JKTs5
+
+### AI-Suggested Content
+
+Claude Code built the `/applications` page with status badges, a status filter, a "View history" timeline and a Withdraw button. It also wrote a migration with a database trigger that records every status change automatically, plus unit and browser tests for the feature.
+
+### Validation
+
+- Ran `npm test` and all 23 unit tests passed
+
+### Decision
+
+- I kept the trigger approach Claude suggested since it records history automatically without recruiters doing anything extra
+- I decided withdrawing should fully delete the application so seekers can reapply to the same job later
+
+### Reflection
+
+This helped me understand how database triggers and row-level security work together in Supabase, especially how the database can record history without users being allowed to write to it themselves.
+
+### Responsible Person
+
+Coby, who conducted the interaction and completed the My Applications feature and its tests
