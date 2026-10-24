@@ -89,5 +89,6 @@ export async function updateApplicationStatus(jobId: string, applicationId: stri
   if (result.error) return { message: 'Could not update the status. Please try again.' }
   if (!result.data) return { message: 'Application not found or unavailable.' }
   revalidatePath(`/recruiter/jobs/${jobId}/applications`)
+  revalidatePath('/applications')
   return { status: result.data.status, saved: true }
 }

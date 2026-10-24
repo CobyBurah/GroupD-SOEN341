@@ -27,6 +27,7 @@ export async function SiteHeader() {
             <>
               <Link href={recruiter ? '/recruiter' : '/dashboard'}>{recruiter ? 'My postings' : 'Dashboard'}</Link>
               <Link href="/jobs">Browse jobs</Link>
+              {!recruiter && <Link href="/applications">My applications</Link>}
               {!recruiter && <Link href="/favourites">Favourites</Link>}
               {!recruiter && <Link href="/resumes">Resumes</Link>}
               <Link href="/profile">My profile</Link>

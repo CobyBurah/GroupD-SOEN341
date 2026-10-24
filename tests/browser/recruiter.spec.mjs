@@ -74,3 +74,26 @@ test('recruiter creates, validates, edits, views pending applications and delete
   await page.goto(base + '/recruiter/jobs/not-a-uuid/edit')
   await expect(page.getByRole('heading', { name: 'Posting unavailable' })).toBeVisible()
 })
+test('job seekers cannot create, edit or delete recruiter postings', async ({ page }) => {
+  const base = `http://127.0.0.1:${preview.appPort}`
+  const response = await fetch(`http://127.0.0.1:${preview.apiPort}/rest/v1/jobs`, { method: 'POST', body: JSON.stringify({ recruiter_id: '00000000-0000-0000-0000-000000000001', title: 'Backend Developer', company: 'Acme', description: 'Synthetic posting.' }) })
+  expect(response.ok).toBe(true)
+  const [job] = await response.json()
+
+  await page.goto(base + '/login')
+  await page.getByLabel('Email').fill('jobseeker@example.test')
+  await page.getByLabel('Password').fill('any-password')
+  await page.getByRole('button', { name: 'Log in' }).click()
+  await expect(page).toHaveURL(base + '/')
+  await expect(page.getByRole('link', { name: 'My postings' })).toHaveCount(0)
+
+  for (const path of ['/recruiter', '/recruiter/jobs/new', `/recruiter/jobs/${job.id}/edit`, `/recruiter/jobs/${job.id}/delete`]) {
+    await page.goto(base + path)
+    await expect(page).toHaveURL(base + '/dashboard')
+  }
+
+  // The posting is untouched and offers no recruiter controls to the seeker.
+  await page.goto(`${base}/jobs/${job.id}`)
+  await expect(page.getByRole('heading', { name: 'Backend Developer' })).toBeVisible()
+  await expect(page.getByRole('link', { name: /^(Edit|Delete) Backend Developer$/ })).toHaveCount(0)
+})

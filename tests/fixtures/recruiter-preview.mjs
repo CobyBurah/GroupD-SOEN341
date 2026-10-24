@@ -9,6 +9,7 @@ const owner = { id: userId, aud: 'authenticated', role: 'authenticated', email: 
 let jobs = []
 let resumes = [], resumeSeq = 0
 let favourites = []
+let applications = []
 const storedFiles = new Map()
 let server, app, appOutput = ''
 let apiPort, appPort
@@ -125,8 +126,49 @@ async function handleFavourites(req, res, url) {
   res.end(JSON.stringify(rows))
 }
 
+// Applications mimic RLS: seekers see and withdraw their own, recruiters see and update
+// status on their jobs' applications. Every status change is appended to the row's history.
+async function handleApplications(req, res, url) {
+  const user = requestUser(req)
+  const filters = [...url.searchParams].filter(([key, value]) => ['id', 'user_id', 'job_id'].includes(key) && value.startsWith('eq.'))
+  const visible = row => row.user_id === user.id || jobs.some(j => j.id === row.job_id && j.recruiter_id === user.id)
+  const matches = row => visible(row) && filters.every(([key, value]) => row[key] === value.slice(3))
+  const deny = () => { res.statusCode = 403; return res.end(JSON.stringify({ code: '42501', message: 'new row violates row-level security policy for table "applications"' })) }
+  let rows
+  if (req.method === 'POST') {
+    const fields = JSON.parse((await readBody(req)).toString() || '{}')
+    const job = jobs.find(j => j.id === fields.job_id && j.deleted_at === null)
+    const resume = resumes.find(r => r.id === fields.resume_id && r.user_id === user.id)
+    if (user.id !== seekerId || fields.user_id !== user.id || !job || !resume) return deny()
+    if (applications.some(row => row.user_id === user.id && row.job_id === job.id)) { res.statusCode = 409; return res.end(JSON.stringify({ code: '23505', message: 'duplicate key value violates unique constraint "applications_job_id_user_id_key"' })) }
+    const created_at = new Date(Date.now() + applications.length).toISOString()
+    applications.push({ id: randomUUID(), job_id: job.id, user_id: user.id, resume_id: resume.id, status: 'Applied', created_at, history: [{ status: 'Applied', changed_at: created_at }] })
+    res.statusCode = 201; return res.end()
+  }
+  if (req.method === 'PATCH') {
+    const { status } = JSON.parse((await readBody(req)).toString() || '{}')
+    rows = applications.filter(row => matches(row) && jobs.some(j => j.id === row.job_id && j.recruiter_id === user.id))
+    for (const row of rows) {
+      if (row.status !== status) row.history.push({ status, changed_at: new Date().toISOString() })
+      row.status = status
+    }
+  } else if (req.method === 'DELETE') {
+    rows = applications.filter(row => matches(row) && row.user_id === user.id)
+    applications = applications.filter(row => !rows.includes(row))
+  } else {
+    rows = applications.filter(matches).sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
+  }
+  const select = url.searchParams.get('select') ?? ''
+  res.end(JSON.stringify(rows.map(({ history, ...row }) => ({
+    ...row,
+    ...(select.includes('jobs(') && { job: jobs.find(j => j.id === row.job_id && j.deleted_at === null) ?? null }),
+    ...(select.includes('resumes(') && { resume: (r => r ? { id: r.id, file_name: r.file_name } : null)(resumes.find(r => r.id === row.resume_id)) }),
+    ...(select.includes('application_status_history(') && { history }),
+  }))))
+}
+
 export async function startPreview() {
-  jobs = []; resumes = []; resumeSeq = 0; favourites = []; storedFiles.clear()
+  jobs = []; resumes = []; resumeSeq = 0; favourites = []; applications = []; storedFiles.clear()
   server = createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost')
     res.setHeader('content-type', 'application/json')
@@ -157,11 +199,15 @@ export async function startPreview() {
     if (url.pathname === '/auth/v1/user') return res.end(JSON.stringify(requestUser(req)))
     if (url.pathname === '/rest/v1/profiles') {
       const user = requestUser(req)
+      // Recruiters list applicants with id=in.(...): answer with the seeker's profile.
+      if (url.searchParams.get('id')?.startsWith('in.')) {
+        return res.end(JSON.stringify(url.searchParams.get('id').includes(seekerId) ? [{ id: seekerId, full_name: 'Demo Job Seeker', headline: '', location: '' }] : []))
+      }
       return res.end(JSON.stringify({ id: user.id, role: user.id === seekerId ? 'job_seeker' : 'recruiter', full_name: user.id === seekerId ? 'Demo Job Seeker' : 'Demo Recruiter', headline: '', location: '', bio: '' }))
     }
     if (url.pathname === '/rest/v1/resumes') return handleResumes(req, res, url)
     if (url.pathname.startsWith('/storage/v1/object/')) return handleStorage(req, res, url)
-    if (url.pathname === '/rest/v1/applications') return res.end('[]')
+    if (url.pathname === '/rest/v1/applications') return handleApplications(req, res, url)
     if (url.pathname === '/rest/v1/favourites') return handleFavourites(req, res, url)
     if (url.pathname !== '/rest/v1/jobs') { res.statusCode = 404; return res.end('{}') }
     const matches = job => ['id', 'recruiter_id'].every(field => !url.searchParams.has(field) || url.searchParams.get(field) === `eq.${job[field]}`)

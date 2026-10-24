@@ -24,6 +24,14 @@ export default async function DashboardPage() {
         </div>
       </li>
       <li className={styles.row}>
+        <h2 className={styles.rowTitle}>My applications</h2>
+        <p className={styles.meta}>Track the status and history of every job you have applied to.</p>
+        <div className={styles.bottomRow}>
+          <span />
+          <Link className={styles.primary} href="/applications">View applications <span className={styles.arrow}>→</span></Link>
+        </div>
+      </li>
+      <li className={styles.row}>
         <h2 className={styles.rowTitle}>Favourites</h2>
         <p className={styles.meta}>Revisit the jobs you saved while browsing.</p>
         <div className={styles.bottomRow}>
