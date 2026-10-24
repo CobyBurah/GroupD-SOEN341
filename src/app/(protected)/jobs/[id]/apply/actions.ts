@@ -19,5 +19,6 @@ export async function submitApplication(jobId: string, _state: { error?: string;
   if (error?.code === '23505') return { success: true }
   if (error) return { error: 'Could not submit your application. Please try again later.' }
   revalidatePath(`/jobs/${jobId}/apply`)
+  revalidatePath('/applications')
   return { success: true }
 }

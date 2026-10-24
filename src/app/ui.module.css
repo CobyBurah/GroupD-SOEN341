@@ -242,3 +242,25 @@ ul.pills { margin: 12px 0 20px; }
 /* Job seeker favourites */
 .shell .favouriteForm { margin: 0; display: grid; gap: 4px; }
 .shell .favouriteForm button[aria-pressed=true] .icon { color: var(--cc-danger); }
+
+/* My applications: status badges, status filter and history timeline */
+.statusBadge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.statusApplied { background: var(--cc-pill); color: var(--cc-ink); }
+.statusUnderReview { background: #fdf0d5; color: #7a4f05; }
+.statusInterview { background: #dbe8fb; color: #1b3f73; }
+.statusOffered { background: var(--cc-ink); color: white; }
+.statusRejected { background: #f6dede; color: var(--cc-danger); }
+.statusFilters { display: flex; flex-wrap: wrap; gap: 10px; margin: 30px 0 6px; }
+.shell .statusFilters a { padding: 8px 14px; border-radius: 999px; border: 2px solid var(--cc-line); color: var(--cc-ink); font-size: 14px; font-weight: 500; text-decoration: none; }
+.shell .statusFilters a:hover { background: var(--cc-pill); }
+.shell .statusFilters a[aria-current=page] { background: var(--cc-ink); border-color: var(--cc-ink); color: white; }
+.applicationDetails { margin: -10px 0 22px; }
+.shell .applicationSummary { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; margin: 0 0 10px; font-size: 15px; }
+.history summary { color: var(--cc-ink); font-size: 14px; font-weight: 600; cursor: pointer; }
+.history ol { display: grid; gap: 8px; margin: 12px 0 0; padding: 0 0 0 16px; border-left: 2px solid var(--cc-line); list-style: none; }
+.history li { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--cc-text); }
+@media (max-width: 750px) {
+  .applicationSummary, .statusFilters { justify-content: center; text-align: center; }
+  .applicationDetails { text-align: center; }
+  .history ol { justify-items: center; border-left: 0; padding: 0; }
+}

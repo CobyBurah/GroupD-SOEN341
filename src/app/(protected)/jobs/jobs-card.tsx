@@ -8,6 +8,7 @@ type JobCardProps = {
   job: Job // each JobCard receives one job from the jobs list
   href?: string // where the title/button link to; defaults to the job's details page
   children?: React.ReactNode // optional custom actions such as View Details / Apply
+  details?: React.ReactNode // optional extra content shown above the pills, e.g. application status
 }
 
 function MapPinIcon() { // outlined location icon used inside the location pill
@@ -75,6 +76,7 @@ export function JobCard({
   job,
   href = `/jobs/${job.id}`,
   children,
+  details,
 }: JobCardProps) {
   return (
     <li className={styles.row}>
@@ -95,6 +97,8 @@ export function JobCard({
           </>
         )}
       </p>
+
+      {details}
 
       <div className={styles.bottomRow}>
         <div className={styles.pills}>

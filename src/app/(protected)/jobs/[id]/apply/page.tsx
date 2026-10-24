@@ -22,7 +22,7 @@ export default async function ApplyPage({ params }: { params: Promise<{ id: stri
     <header className={styles.header}><div><h1>Apply for {job.title}</h1><p>{job.company}{job.location ? ` · ${job.location}` : ''}</p></div></header>
     <p className={styles.description}>{job.description}</p>
     <section><h2>Your application</h2>
-      {existing ? <p className={styles.notice} role="status">You have applied for this job. Status: {existing.status}.</p>
+      {existing ? <p className={styles.notice} role="status">You have applied for this job. Status: {existing.status}. <Link href="/applications">View my applications</Link></p>
         : applicationError || resumeError ? <p role="alert">Applications are temporarily unavailable. Please try again later.</p>
         : resumes?.length ? <ApplicationForm jobId={id} resumes={resumes} />
         : <p>Upload a resume before applying. <Link href="/resumes">Manage resumes</Link></p>}
