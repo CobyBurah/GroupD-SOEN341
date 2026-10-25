@@ -37,7 +37,6 @@ export function JobFilters({
   filterOptions,
 }: JobFiltersProps) {
   const router = useRouter()
-  const firstRender = useRef(true)
 
   const [filters, setFilters] = useState<FilterState>({
     categories,
@@ -46,12 +45,21 @@ export function JobFilters({
     order: filterOrder,
   })
 
-  // Update the URL after filter changes without losing fast checkbox clicks
+  // The filters/keyword/location last reflected in the URL, so we can tell a
+  // genuine filter change (which should jump back to page 1) apart from an
+  // effect re-run that changed nothing - e.g. a plain reload/deep link, or
+  // React Strict Mode re-invoking this effect once on mount in development.
+  // Without this check, re-running the effect on mount would rebuild the URL
+  // from filter state alone and silently drop whatever `page` was in it.
+  const lastSynced = useRef({ keyword, location, filters })
+
   useEffect(() => {
-    if(firstRender.current){
-      firstRender.current = false
-      return
-    }
+    const unchanged =
+      keyword === lastSynced.current.keyword &&
+      location === lastSynced.current.location &&
+      filters === lastSynced.current.filters
+
+    if(unchanged) return
 
     const timer = setTimeout(() => {
       const params = new URLSearchParams()
@@ -63,6 +71,10 @@ export function JobFilters({
       filters.workplaceTypes.forEach((value) => params.append('workplaceType', value))
       filters.employmentTypes.forEach((value) => params.append('employmentType', value))
       filters.order.forEach((value) => params.append('filterOrder', value))
+
+      // A real filter/keyword/location change always goes back to page 1, so
+      // `page` is deliberately left out here.
+      lastSynced.current = { keyword, location, filters }
 
       const query = params.toString()
       router.replace(query ? `/jobs?${query}` : '/jobs', { scroll: false })
