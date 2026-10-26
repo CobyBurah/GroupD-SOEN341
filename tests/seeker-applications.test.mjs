@@ -36,7 +36,9 @@ test('loads the seeker\'s applications newest first with job, resume and history
   assert.deepEqual(calls[0], ['from', 'applications'])
   const select = calls.find(([name]) => name === 'select')[1]
   assert.match(select, /job:jobs\(\*\)/)
-  assert.match(select, /resume:resumes\(id, file_name\)/)
+  assert.match(select, /submitted_resume_name/)
+  assert.match(select, /submitted_resume_path/)
+  assert.doesNotMatch(select, /resume:resumes/)
   assert.match(select, /history:application_status_history\(status, changed_at\)/)
   assert.ok(calls.some((call) => call[0] === 'eq' && call[1] === 'user_id' && call[2] === 'user-1'))
   assert.ok(calls.some((call) => call[0] === 'order' && call[1] === 'created_at' && call[2].ascending === false))

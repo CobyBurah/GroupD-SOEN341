@@ -13,7 +13,9 @@ export type SeekerApplication = {
   created_at: string
   // Null when the recruiter has removed the posting.
   job: Job | null
-  resume: { id: string; file_name: string } | null
+  submitted_resume_name: string | null
+  submitted_resume_path: string | null
+  resume_snapshot_is_legacy: boolean
   // Oldest first.
   history: ApplicationHistoryEntry[]
 }
@@ -25,7 +27,7 @@ export async function getSeekerApplications(userId: string): Promise<SeekerAppli
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('applications')
-    .select('id, status, created_at, job:jobs(*), resume:resumes(id, file_name), history:application_status_history(status, changed_at)')
+    .select('id, status, created_at, submitted_resume_name, submitted_resume_path, resume_snapshot_is_legacy, job:jobs(*), history:application_status_history(status, changed_at)')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
   if (error) throw new Error('Could not load applications: ' + error.message)

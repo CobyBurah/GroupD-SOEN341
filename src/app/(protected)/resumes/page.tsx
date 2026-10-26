@@ -45,6 +45,7 @@ export default async function ResumesPage() {
         <div>
           <h1>Resumes</h1>
           <p>Upload the resumes you want to apply with, several at once. PDF or DOCX, up to 5 MB each.</p>
+          <p>Replacing, renaming or deleting a resume here does not change resumes already submitted. Withdraw an application to remove access for that recruiter.</p>
         </div>
       </header>
 

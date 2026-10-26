@@ -103,6 +103,8 @@ The database structure lives in `supabase/migrations/`. Open the Supabase dashbo
 | 0011 | `0011_favourites.sql` | Saved jobs / favourites for job seekers |
 | 0012 | `0012_job_location_fields.sql` | City, region and country fields for job locations |
 | 0013 | `0013_workplace_type.sql` | Workplace type (on-site, hybrid, remote) for jobs |
+| 0014 | `0014_application_history.sql` | Application status history and seeker withdrawal |
+| 0015 | `0015_submitted_resume_versions.sql` | Preserves submitted resume versions and restricts access to retained files |
 
 A migration that ran successfully says **"Success. No rows returned."** If one fails, fix the error before moving on to the next one.
 
