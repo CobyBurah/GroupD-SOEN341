@@ -19,6 +19,9 @@ const localSession = { access_token: token, refresh_token: 'local-test-refresh',
 
 const seekerId = '00000000-0000-0000-0000-000000000003'
 const seeker = { ...owner, id: seekerId, email: 'jobseeker@example.test', user_metadata: { full_name: 'Demo Job Seeker' } }
+const otherRecruiter = { ...owner, id: '00000000-0000-0000-0000-000000000002', email: 'other-recruiter@example.test' }
+const otherSeeker = { ...seeker, id: '00000000-0000-0000-0000-000000000004', email: 'other-seeker@example.test' }
+const previewUsers = [owner, seeker, otherRecruiter, otherSeeker]
 function sessionFor(user) {
   const claims = { sub: user.id, email: user.email, aud: 'authenticated', role: 'authenticated', exp: Math.floor(Date.now()/1000)+3600, iat: Math.floor(Date.now()/1000) }
   const access_token = `${Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url')}.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.local-test-signature`
@@ -27,7 +30,7 @@ function sessionFor(user) {
 function requestUser(req) {
   try {
     const claims = JSON.parse(Buffer.from((req.headers.authorization ?? '').split('.')[1], 'base64url').toString())
-    return claims.sub === seekerId ? seeker : owner
+    return previewUsers.find(user => user.id === claims.sub) ?? owner
   } catch { return owner }
 }
 
@@ -59,6 +62,9 @@ async function handleResumes(req, res, url) {
   } else if (req.method === 'DELETE') {
     rows = user.id === seekerId ? resumes.filter(matches) : []
     resumes = resumes.filter(row => !rows.includes(row))
+    for (const application of applications) {
+      if (rows.some(row => row.id === application.resume_id)) application.resume_id = null
+    }
   } else {
     rows = resumes.filter(matches)
     const [column, direction] = (url.searchParams.get('order') ?? '').split('.')
@@ -76,16 +82,22 @@ async function handleResumes(req, res, url) {
 // Minimal Storage API for the private "resumes" bucket (paths as used by @supabase/storage-js).
 async function handleStorage(req, res, url) {
   const path = decodeURIComponent(url.pathname.slice('/storage/v1/object/'.length))
+  const user = requestUser(req)
+  const retained = key => resumes.some(r => r.storage_path === key) || applications.some(a => a.submitted_resume_path === key)
   if (req.method === 'DELETE' && path === 'resumes') {
     const { prefixes = [] } = JSON.parse((await readBody(req)).toString() || '{}')
-    const removed = prefixes.filter(key => storedFiles.delete(key)).map(name => ({ name, bucket_id: 'resumes' }))
+    const removed = prefixes.filter(key => key.startsWith(`${user.id}/`) && !retained(key) && storedFiles.delete(key)).map(name => ({ name, bucket_id: 'resumes' }))
     return res.end(JSON.stringify(removed))
   }
   if (req.method === 'POST' && path.startsWith('list/resumes')) return res.end('[]')
   if (path.startsWith('sign/resumes/')) {
     const key = path.slice('sign/resumes/'.length)
     if (!storedFiles.has(key)) { res.statusCode = 400; return res.end(JSON.stringify({ statusCode: '404', error: 'not_found', message: 'Object not found' })) }
-    if (req.method === 'POST') return res.end(JSON.stringify({ signedURL: `/object/sign/resumes/${key}?token=local-test-token` }))
+    if (req.method === 'POST') {
+      const allowed = key.startsWith(`${user.id}/`) || applications.some(a => a.submitted_resume_path === key && jobs.some(j => j.id === a.job_id && j.recruiter_id === user.id))
+      if (!allowed) { res.statusCode = 403; return res.end(JSON.stringify({ message: 'Not permitted' })) }
+      return res.end(JSON.stringify({ signedURL: `/object/sign/resumes/${key}?token=local-test-token` }))
+    }
     const file = storedFiles.get(key)
     res.setHeader('content-type', file.type)
     return res.end(file.bytes)
@@ -100,6 +112,7 @@ async function handleStorage(req, res, url) {
       const blob = [...(await new Response(body, { headers: { 'content-type': contentType } }).formData()).values()].find(value => typeof value !== 'string')
       file = { bytes: Buffer.from(await blob.arrayBuffer()), type: blob.type || 'application/octet-stream' }
     }
+    if (retained(key)) { res.statusCode = 403; return res.end(JSON.stringify({ message: 'Referenced file is immutable' })) }
     storedFiles.set(key, file)
     return res.end(JSON.stringify({ Key: `resumes/${key}`, Id: randomUUID() }))
   }
@@ -142,7 +155,9 @@ async function handleApplications(req, res, url) {
     if (user.id !== seekerId || fields.user_id !== user.id || !job || !resume) return deny()
     if (applications.some(row => row.user_id === user.id && row.job_id === job.id)) { res.statusCode = 409; return res.end(JSON.stringify({ code: '23505', message: 'duplicate key value violates unique constraint "applications_job_id_user_id_key"' })) }
     const created_at = new Date(Date.now() + applications.length).toISOString()
-    applications.push({ id: randomUUID(), job_id: job.id, user_id: user.id, resume_id: resume.id, status: 'Applied', created_at, history: [{ status: 'Applied', changed_at: created_at }] })
+    applications.push({ id: randomUUID(), job_id: job.id, user_id: user.id, resume_id: resume.id,
+      submitted_resume_name: resume.file_name, submitted_resume_path: resume.storage_path, resume_snapshot_is_legacy: false,
+      status: 'Applied', created_at, history: [{ status: 'Applied', changed_at: created_at }] })
     res.statusCode = 201; return res.end()
   }
   if (req.method === 'PATCH') {
@@ -159,12 +174,17 @@ async function handleApplications(req, res, url) {
     rows = applications.filter(matches).sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
   }
   const select = url.searchParams.get('select') ?? ''
-  res.end(JSON.stringify(rows.map(({ history, ...row }) => ({
+  const output = rows.map(({ history, ...row }) => ({
     ...row,
     ...(select.includes('jobs(') && { job: jobs.find(j => j.id === row.job_id && j.deleted_at === null) ?? null }),
     ...(select.includes('resumes(') && { resume: (r => r ? { id: r.id, file_name: r.file_name } : null)(resumes.find(r => r.id === row.resume_id)) }),
     ...(select.includes('application_status_history(') && { history }),
-  }))))
+  }))
+  if (req.headers.accept?.includes('application/vnd.pgrst.object+json')) {
+    if (output.length !== 1) { res.statusCode = 406; return res.end(JSON.stringify({ code: 'PGRST116', message: 'No rows', details: 'The result contains 0 rows' })) }
+    return res.end(JSON.stringify(output[0]))
+  }
+  res.end(JSON.stringify(output))
 }
 
 export async function startPreview({ paginateJobs = false } = {}) {
@@ -183,7 +203,7 @@ export async function startPreview({ paginateJobs = false } = {}) {
         }
         return res.end(JSON.stringify(sessionFor(seeker)))
       }
-      return res.end(JSON.stringify(sessionFor(input.email === seeker.email ? seeker : owner)))
+      return res.end(JSON.stringify(sessionFor(previewUsers.find(user => user.email === input.email) ?? owner)))
     }
     if (url.pathname === '/auth/v1/logout') { res.statusCode = 204; return res.end() }
     if (url.pathname === '/auth/v1/recover') return res.end('{}')
@@ -203,7 +223,8 @@ export async function startPreview({ paginateJobs = false } = {}) {
       if (url.searchParams.get('id')?.startsWith('in.')) {
         return res.end(JSON.stringify(url.searchParams.get('id').includes(seekerId) ? [{ id: seekerId, full_name: 'Demo Job Seeker', headline: '', location: '' }] : []))
       }
-      return res.end(JSON.stringify({ id: user.id, role: user.id === seekerId ? 'job_seeker' : 'recruiter', full_name: user.id === seekerId ? 'Demo Job Seeker' : 'Demo Recruiter', headline: '', location: '', bio: '' }))
+      const isSeeker = [seekerId, otherSeeker.id].includes(user.id)
+      return res.end(JSON.stringify({ id: user.id, role: isSeeker ? 'job_seeker' : 'recruiter', full_name: isSeeker ? 'Demo Job Seeker' : 'Demo Recruiter', headline: '', location: '', bio: '' }))
     }
     if (url.pathname === '/rest/v1/resumes') return handleResumes(req, res, url)
     if (url.pathname.startsWith('/storage/v1/object/')) return handleStorage(req, res, url)

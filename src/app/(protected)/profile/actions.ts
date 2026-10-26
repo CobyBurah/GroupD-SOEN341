@@ -140,12 +140,24 @@ export async function deleteAccount(
   const { data: claimsData } = await supabase.auth.getClaims()
   const userId = claimsData?.claims.sub
 
-  // The cascade on auth.users deletes the resumes rows but not the files in
-  // storage, so remove those first while the session can still access them.
+  // Release this user's current/submitted file references before Storage
+  // cleanup. Retention policies otherwise intentionally prevent their removal.
   if (userId) {
-    const { data: files } = await supabase.storage.from(RESUME_BUCKET).list(userId)
-    if (files && files.length > 0) {
-      await supabase.storage.from(RESUME_BUCKET).remove(files.map((file) => `${userId}/${file.name}`))
+    const { error: applicationsError } = await supabase.from('applications').delete().eq('user_id', userId)
+    if (applicationsError) return { message: 'Could not remove your applications. Please try again.' }
+    const { error: resumesError } = await supabase.from('resumes').delete().eq('user_id', userId)
+    if (resumesError) return { message: 'Could not remove your resumes. Please try again.' }
+    // Resume versions can exceed one Storage list page. Always consume the
+    // first page after removal, and stop on errors instead of hiding a failure.
+    for (;;) {
+      const { data: files, error: listError } = await supabase.storage.from(RESUME_BUCKET).list(userId, { limit: 100 })
+      if (listError) return { message: 'Could not list your resume files. Please try again.' }
+      if (!files?.length) break
+      const { data: removed, error: removeError } = await supabase.storage.from(RESUME_BUCKET)
+        .remove(files.map((file) => `${userId}/${file.name}`))
+      if (removeError || removed?.length !== files.length) {
+        return { message: 'Could not remove all your resume files. Please try again.' }
+      }
     }
   }
 

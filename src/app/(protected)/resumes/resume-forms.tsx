@@ -161,7 +161,7 @@ export function ResumeRow({ resume }: { resume: Resume }) {
       <form
         action={deleteAction}
         onSubmit={(event) => {
-          if (!window.confirm('Delete this resume? This cannot be undone.')) {
+          if (!window.confirm('Delete this resume from your list? Submitted applications keep their saved version.')) {
             event.preventDefault()
           }
         }}

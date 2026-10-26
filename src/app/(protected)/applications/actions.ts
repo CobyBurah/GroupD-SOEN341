@@ -18,9 +18,15 @@ export async function withdrawApplication(applicationId: string, jobId: string |
   if (profile?.role !== 'job_seeker') return { message: 'Only job seekers can withdraw applications.' }
 
   const { data, error } = await supabase.from('applications').delete()
-    .eq('id', applicationId).eq('user_id', userId).select('id').maybeSingle()
+    .eq('id', applicationId).eq('user_id', userId).select('id, submitted_resume_path').maybeSingle()
   if (error) return { message: 'Could not withdraw your application. Please try again.' }
   if (!data) return { message: 'Application not found.' }
+
+  // Storage RLS keeps the file if another application or current resume still
+  // references it. Otherwise this removes an obsolete retained version.
+  if (data.submitted_resume_path) {
+    await supabase.storage.from('resumes').remove([data.submitted_resume_path])
+  }
 
   revalidatePath('/applications')
   if (jobId && isJobId(jobId)) revalidatePath(`/jobs/${jobId}/apply`)

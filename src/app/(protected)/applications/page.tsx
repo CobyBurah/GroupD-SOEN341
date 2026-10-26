@@ -36,11 +36,13 @@ function ApplicationDetails({ application }: { application: SeekerApplication })
       <p className={styles.applicationSummary}>
         <StatusBadge status={application.status} />
         <span>Applied {formatDate(application.created_at)}</span>
-        {application.resume && (
+        {application.submitted_resume_path && (
           <span>
-            Resume: <Link href={`/resumes/${application.resume.id}/view`}>{application.resume.file_name}</Link>
+            {application.resume_snapshot_is_legacy ? 'Resume saved during upgrade' : 'Submitted resume'}:{' '}
+            <a href={`/applications/${application.id}/resume`} target="_blank" rel="noopener noreferrer">{application.submitted_resume_name}</a>
           </span>
         )}
+        {!application.submitted_resume_path && <span>Submitted resume unavailable</span>}
       </p>
       <details className={styles.history}>
         <summary>View history</summary>
