@@ -21,7 +21,7 @@
 | "No jobs match your search" message | Added the empty-results message with a link back to all jobs, shown only when a search returns nothing (otherwise "No jobs posted yet"). | ~45 min | [Issue #48](https://github.com/CobyBurah/GroupD-SOEN341/issues/48); [PR #67](https://github.com/CobyBurah/GroupD-SOEN341/pull/67); [Commit 3af4f29](https://github.com/CobyBurah/GroupD-SOEN341/commit/3af4f2909e5d02d743de2fff125a02f42628f6f6) |
 | Bug fix: employment type search | Found and fixed two bugs after PR #67 was merged: the employment type part of the keyword search was missing its search value, and "full time" (with a space) did not match `full_time`. | ~45 min | [PR #73](https://github.com/CobyBurah/GroupD-SOEN341/pull/73); [Commit 19627fe](https://github.com/CobyBurah/GroupD-SOEN341/commit/19627fed6d289a41264a37ad588b6d2f8dc49c9e) |
 
-**Total estimated time: around 19.5 hours**, across 5 merged PRs (#54, #56, #57, #67, #73) plus meeting minutes, user stories, acceptance tests and AI log contributions.
+**Total estimated time: around 14.5 hours**, across 5 merged PRs (#54, #56, #57, #67, #73) plus meeting minutes, user stories, acceptance tests and AI log contributions.
 
 The checks used before merging included:
 
