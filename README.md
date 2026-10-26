@@ -20,6 +20,7 @@ CareerConnect will provide a single online platform where job seekers can create
 <li> Framework: Next.js </li>
 <li> Database: Supabase</li>
 <li> Deployment: Vercel</li>
+<li> Location Search: Geoapify</li>
 
 # Setup Instructions
 ## Accessing CareerConnect
@@ -39,16 +40,17 @@ Before running the project locally, make sure the following are installed:
 - Node.js
 - npm
 - Git
-- Access to the Supabase project
+- Access to the Supabase project (see Database Setup)
+- A Geoapify API key, used for location suggestions when recruiters post a job
 
 ### Installation
 
 1. Clone the GitHub repository:
-   ```bash
+   ```bash```
    git clone https://github.com/CobyBurah/GroupD-SOEN341.git
 
 2. Navigate into the project folder:
-```bash
+```bash```
 cd GroupD-SOEN341
 ```
 
@@ -57,11 +59,12 @@ cd GroupD-SOEN341
 npm install
 ```
 4. Create a `.env.local` file in the root of the project and use `.env.example` as a template.
-5. Fill in the required environment variables.
+5. Fill in the required environment variables (see table below).
 6. Start the development server:
-   ```bash
+   ```bash```
    npm run dev
    ```
+7. Open http://localhost:3000 in your browser
 
 ### Checks and Continuous Integration
 
