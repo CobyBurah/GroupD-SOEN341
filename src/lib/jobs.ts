@@ -102,7 +102,7 @@ export async function getJobs(keyword = '', location = '', categories: string[] 
 
   // Get the matching count with a safe first-page range before using any
   // requested offset. This also supplies the fallback for invalid pages.
-  query = query.order('created_at', {ascending: false})
+  query = query.order('created_at', {ascending: false}).order('id', {ascending: true})
   let result = await query.range(0, JOBS_PER_PAGE - 1)
   let resolvedPage = 1
 

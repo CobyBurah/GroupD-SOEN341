@@ -248,8 +248,14 @@ export async function startPreview({ paginateJobs = false } = {}) {
         rows = rows.filter(row => conditions.some(([column, pattern]) => matchesLike(row[column], pattern)))
       }
       const total = rows.length
-      const [column, direction] = (url.searchParams.get('order') ?? '').split('.')
-      if (column) rows = [...rows].sort((a, b) => (a[column] < b[column] ? -1 : a[column] > b[column] ? 1 : 0) * (direction === 'desc' ? -1 : 1))
+      const ordering = (url.searchParams.get('order') ?? '').split(',').filter(Boolean).map(value => value.split('.'))
+      if (ordering.length) rows = [...rows].sort((a, b) => {
+        for (const [column, direction] of ordering) {
+          const comparison = (a[column] < b[column] ? -1 : a[column] > b[column] ? 1 : 0) * (direction === 'desc' ? -1 : 1)
+          if (comparison) return comparison
+        }
+        return 0
+      })
       const offset = Number(url.searchParams.get('offset') ?? 0)
       const limit = Number(url.searchParams.get('limit') ?? total)
       rows = rows.slice(offset, offset + limit)

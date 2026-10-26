@@ -63,6 +63,22 @@ test('jobs are limited to 10 per page', async () => {
   assert.equal(JOBS_PER_PAGE, 10)
   assert.ok(calls.some((call) => call[0] === 'range' && call[1] === 10 && call[2] === 19))
   assert.ok(calls.some((call) => call[0] === 'order' && call[1] === 'created_at' && call[2].ascending === false))
+  assert.deepEqual(calls.filter(([name]) => name === 'order'), [
+    ['order', 'created_at', { ascending: false }],
+    ['order', 'id', { ascending: true }],
+  ])
+})
+
+test('empty and exactly full first pages never request a second-page range', async () => {
+  for (const count of [0, 10]) {
+    const jobs = Array.from({ length: count }, (_, index) => ({ id: `job-${index}` }))
+    for (const page of [1, 2, 999]) {
+      const calls = mockQuery({ data: jobs, count, error: null })
+      const result = await getJobs('', '', [], [], [], page)
+      assert.deepEqual(result, { jobs, total: count, page: 1 })
+      assert.deepEqual(calls.filter(([name]) => name === 'range'), [['range', 0, 9]])
+    }
+  }
 })
 
 test('invalid, out-of-range and enormous pages only request the safe first page', async () => {
