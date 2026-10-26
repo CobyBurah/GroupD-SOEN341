@@ -112,7 +112,7 @@ A migration that ran successfully says **"Success. No rows returned."** If one f
 
 Every job must belong to a recruiter. Jobs posted through the recruiter dashboard are linked to the recruiter automatically, but this file is a SQL script, so it uses the id of the team's test recruiter account.
 
-In the team's shared Supabase project, this account already exists, so the file works as is. On a new Supabase project, the database starts empty, so you need to create a recruiter first:
+On a new Supabase project, the database starts empty, so you need to create a recruiter first:
 
 1. Run the app and **sign up as a recruiter**.
 2. In Supabase, go to **Table Editor → profiles** and copy the `id` of that recruiter.
