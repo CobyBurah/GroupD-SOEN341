@@ -21,9 +21,26 @@
 | "No jobs match your search" message | Added the empty-results message with a link back to all jobs, shown only when a search returns nothing (otherwise "No jobs posted yet"). | ~45 min | [Issue #48](https://github.com/CobyBurah/GroupD-SOEN341/issues/48); [PR #67](https://github.com/CobyBurah/GroupD-SOEN341/pull/67); [Commit 3af4f29](https://github.com/CobyBurah/GroupD-SOEN341/commit/3af4f2909e5d02d743de2fff125a02f42628f6f6) |
 | Bug fix: employment type search | Found and fixed two bugs after PR #67 was merged: the employment type part of the keyword search was missing its search value, and "full time" (with a space) did not match `full_time`. | ~45 min | [PR #73](https://github.com/CobyBurah/GroupD-SOEN341/pull/73); [Commit 19627fe](https://github.com/CobyBurah/GroupD-SOEN341/commit/19627fed6d289a41264a37ad588b6d2f8dc49c9e) |
 
-**Total estimated time: around 14.5 hours**, across 5 merged PRs (#54, #56, #57, #67, #73) plus meeting minutes, user stories, acceptance tests and AI log contributions.
-
-The checks used before merging included:
+**Total estimated time: around 14.5 hours**, across 5 merged PRs (#54, #56, #57, #67, #73) plus meeting minutes, user stories.
+The final checks included:
 
 - `npm run lint`
-- `npm
+- `npm run typecheck`
+- `npm test`
+- `npm run test:browser` and the production build (run automatically by the team CI on each of my pull requests)
+- Manual testing on the local app (searching, empty results, capital letters, employment types)
+- Checking the `jobs` table and sample data directly in Supabase
+
+On `main` after my last PR (#73), lint and typecheck passed and all 12 unit/integration tests passed.
+
+## Validation and AI assistance
+
+I used AI (Claude) during Sprint 2 mainly for help with implementation and debugging, since SQL, Supabase and Next.js were new to me. I reviewed the suggestions before using them, asked for explanations of every line, and made changes when they did not fit the project or did not work correctly during testing.
+
+- **Jobs table:** AI taught me SQL step by step, but I wrote the migration and fixed my own errors.
+- **Sample data:** AI generated the 12 fake jobs. I matched them to our table columns and checked that they loaded in Supabase.
+- **Loading jobs:** I needed AI help because connecting Next.js to Supabase was new to me.
+- **Search bar:** I did it myself.
+- **Filtering and the no-results message:** AI helped with the logic. I tested it and fixed my own bugs (typos, a missing link component, capital letters).
+
+The final implementation was tested and adjusted locally before merging. Each AI interaction is documented in my AI log with what was suggested, how I validated it and what I changed.
