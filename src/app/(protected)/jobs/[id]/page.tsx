@@ -1,10 +1,12 @@
 import Link from 'next/link'
 
 import { getJob } from '@/lib/jobs'
+import { getJobsReturnUrl } from '@/lib/job-navigation'
 import { WORKPLACE_TYPES } from '@/lib/job-posting'
 import styles from '@/app/ui.module.css'
 
 type JobDetailsPageProps = {
+  searchParams: Promise<{ returnTo?: string | string[] }>
   params: Promise<{
     id: string
   }>
@@ -12,9 +14,11 @@ type JobDetailsPageProps = {
 
 export default async function JobDetailsPage({
   params,
+  searchParams,
 }: JobDetailsPageProps) {
   // Get the id from the URL
   const { id } = await params
+  const returnTo = getJobsReturnUrl((await searchParams).returnTo)
 
   // Ask Supabase for the job that has this id
   const job = await getJob(id)
@@ -27,7 +31,7 @@ export default async function JobDetailsPage({
 
         <p>
           <strong>
-            <Link href="/jobs">← Back to Jobs</Link>
+            <Link href={returnTo}>← Back to Jobs</Link>
           </strong>
         </p>
       </main>
@@ -63,7 +67,7 @@ export default async function JobDetailsPage({
         </div>
 
         <Link
-          href={`/jobs/${job.id}/apply`}
+          href={`/jobs/${job.id}/apply?returnTo=${encodeURIComponent(returnTo)}`}
           className={styles.primary}
         >
           Apply Now
@@ -72,7 +76,7 @@ export default async function JobDetailsPage({
 
       {/* Navigation back to the job listings */}
       <p className={styles.backLink}>
-        <Link href="/jobs">
+        <Link href={returnTo}>
           ← Back to Jobs
         </Link>
       </p>
@@ -127,7 +131,7 @@ export default async function JobDetailsPage({
       {/* Second application option below the final divider */}
       <div className={styles.actions}>
         <Link
-          href={`/jobs/${job.id}/apply`}
+          href={`/jobs/${job.id}/apply?returnTo=${encodeURIComponent(returnTo)}`}
           className={styles.primary}
         >
           Apply Now

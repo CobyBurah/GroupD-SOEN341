@@ -167,7 +167,7 @@ async function handleApplications(req, res, url) {
   }))))
 }
 
-export async function startPreview() {
+export async function startPreview({ paginateJobs = false } = {}) {
   jobs = []; resumes = []; resumeSeq = 0; favourites = []; applications = []; storedFiles.clear()
   server = createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost')
@@ -227,6 +227,17 @@ export async function startPreview() {
     if (req.headers.accept?.includes('application/vnd.pgrst.object+json')) {
       if (rows.length !== 1) { res.statusCode = 406; return res.end(JSON.stringify({ code: 'PGRST116', message: 'No rows', details: 'The result contains 0 rows' })) }
       return res.end(JSON.stringify(rows[0]))
+    }
+    if (paginateJobs && req.method === 'GET') {
+      const total = rows.length
+      const [column, direction] = (url.searchParams.get('order') ?? '').split('.')
+      if (column) rows = [...rows].sort((a, b) => (a[column] < b[column] ? -1 : a[column] > b[column] ? 1 : 0) * (direction === 'desc' ? -1 : 1))
+      const offset = Number(url.searchParams.get('offset') ?? 0)
+      const limit = Number(url.searchParams.get('limit') ?? total)
+      rows = rows.slice(offset, offset + limit)
+      if (req.headers.prefer?.includes('count=exact')) {
+        res.setHeader('content-range', `${rows.length ? `${offset}-${offset + rows.length - 1}` : '*'}/${total}`)
+      }
     }
     res.end(JSON.stringify(rows))
   })
