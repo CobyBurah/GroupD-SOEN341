@@ -100,14 +100,28 @@ export async function getJobs(keyword = '', location = '', categories: string[] 
     query = query.in('category', categories)
   }
 
-  //only load the jobs belonging to the current page
-  const firstJob = (page - 1) * JOBS_PER_PAGE
-  const lastJob = firstJob + JOBS_PER_PAGE - 1
+  // Get the matching count with a safe first-page range before using any
+  // requested offset. This also supplies the fallback for invalid pages.
+  query = query.order('created_at', {ascending: false}).order('id', {ascending: true})
+  let result = await query.range(0, JOBS_PER_PAGE - 1)
+  let resolvedPage = 1
 
-  //sorting the newest first and send the question to Supabase
-  const result = await query
-    .order('created_at', {ascending: false})
-    .range(firstJob, lastJob)
+  if (!result.error && Number.isSafeInteger(page) && page > 1 &&
+      page <= Math.ceil((result.count ?? 0) / JOBS_PER_PAGE)) {
+    const firstJob = (page - 1) * JOBS_PER_PAGE
+    const lastJob = firstJob + JOBS_PER_PAGE - 1
+    // Keep offsets within PostgreSQL's signed integer range as well.
+    if (Number.isSafeInteger(lastJob) && lastJob <= 2_147_483_647) {
+      const requested = await query.range(firstJob, lastJob)
+      // Results can shrink between queries. Treat an unsatisfiable range as
+      // page 1 too, but keep surfacing unrelated database errors.
+      if (requested.error?.code !== 'PGRST103' &&
+          (requested.error || (requested.data?.length ?? 0) > 0)) {
+        result = requested
+        resolvedPage = page
+      }
+    }
+  }
 
   //If something goes wrong, then output an error message and stop
   if(result.error){
@@ -118,7 +132,7 @@ export async function getJobs(keyword = '', location = '', categories: string[] 
   const jobs: Job[] = result.data ?? []
   const total = result.count ?? 0
 
-  return { jobs, total }
+  return { jobs, total, page: resolvedPage }
 }
 
 // Get one job using its id.

@@ -1,5 +1,6 @@
 // Job listings page: shows every active job posting as a row.
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
 import { getJobs, getJobFilterOptions, JOBS_PER_PAGE } from '@/lib/jobs'
@@ -54,18 +55,23 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
   const filterOrder = normalizeFilterOrder(toArray(params.filterOrder), categories, employmentTypes, workplaceTypes)
 
   const pageValue = Number(toSingle(params.page))
-  const page = Number.isInteger(pageValue) && pageValue > 0 ? pageValue : 1
+  const requestedPage = Number.isInteger(pageValue) && pageValue > 0 ? pageValue : 1
 
   const supabase = await createClient()
 
   // Load the jobs, filter choices and user information at the same time
   const [jobsResult, filterOptions, claimsResult] = await Promise.all([
-    getJobs(keyword, location, categories, employmentTypes, workplaceTypes, page),
+    getJobs(keyword, location, categories, employmentTypes, workplaceTypes, requestedPage),
     getJobFilterOptions(),
     supabase.auth.getClaims(),
   ])
 
-  const { jobs, total } = jobsResult
+  const { jobs, total, page } = jobsResult
+  if (page !== requestedPage) {
+    listingParams.delete('page')
+    const query = listingParams.toString()
+    redirect(query ? `/jobs?${query}` : '/jobs')
+  }
   const { data: claims } = claimsResult
   const totalPages = Math.ceil(total / JOBS_PER_PAGE)
 

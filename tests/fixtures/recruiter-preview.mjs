@@ -229,9 +229,33 @@ export async function startPreview({ paginateJobs = false } = {}) {
       return res.end(JSON.stringify(rows[0]))
     }
     if (paginateJobs && req.method === 'GET') {
+      const matchesLike = (value, pattern) => {
+        const escaped = pattern.replace(/^"|"$/g, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        return new RegExp(`^${escaped.replaceAll('%', '.*').replaceAll('_', '.')}$`, 'i').test(value ?? '')
+      }
+      for (const column of ['category', 'employment_type', 'workplace_type']) {
+        const filter = url.searchParams.get(column)
+        if (filter?.startsWith('in.(')) {
+          const values = filter.slice(4, -1).split(',').map(value => value.replace(/^"|"$/g, ''))
+          rows = rows.filter(row => values.includes(row[column]))
+        }
+      }
+      const location = url.searchParams.get('location')
+      if (location?.startsWith('ilike.')) rows = rows.filter(row => matchesLike(row.location, location.slice(6)))
+      const keyword = url.searchParams.get('or')
+      if (keyword) {
+        const conditions = keyword.slice(1, -1).split(',').map(condition => condition.split('.ilike.'))
+        rows = rows.filter(row => conditions.some(([column, pattern]) => matchesLike(row[column], pattern)))
+      }
       const total = rows.length
-      const [column, direction] = (url.searchParams.get('order') ?? '').split('.')
-      if (column) rows = [...rows].sort((a, b) => (a[column] < b[column] ? -1 : a[column] > b[column] ? 1 : 0) * (direction === 'desc' ? -1 : 1))
+      const ordering = (url.searchParams.get('order') ?? '').split(',').filter(Boolean).map(value => value.split('.'))
+      if (ordering.length) rows = [...rows].sort((a, b) => {
+        for (const [column, direction] of ordering) {
+          const comparison = (a[column] < b[column] ? -1 : a[column] > b[column] ? 1 : 0) * (direction === 'desc' ? -1 : 1)
+          if (comparison) return comparison
+        }
+        return 0
+      })
       const offset = Number(url.searchParams.get('offset') ?? 0)
       const limit = Number(url.searchParams.get('limit') ?? total)
       rows = rows.slice(offset, offset + limit)
