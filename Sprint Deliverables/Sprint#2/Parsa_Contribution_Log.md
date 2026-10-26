@@ -2,6 +2,7 @@
 
 **GitHub:** `bluwine`
 **Related assigned work:** recruiter posting management #40 and received-applications acceptance scenario #98.
+**Pull request:** [#116 — Preserve submitted resume versions for application review](https://github.com/CobyBurah/GroupD-SOEN341/pull/116).
 
 Parsa selected and requested an AI-assisted improvement to application review: keep the resume actually submitted when the applicant subsequently renames, replaces or deletes a resume from their list.
 
