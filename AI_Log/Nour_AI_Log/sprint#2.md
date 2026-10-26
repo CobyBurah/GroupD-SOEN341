@@ -757,3 +757,56 @@ The related browser-test setup files were:
 <li> Decision: Modified before use. I adapted the tests to the existing structure and updated the browser-test setup so the mock environment was used consistently. </li><br>
 
 <li> Reflection: AI helped identify both missing test coverage and the cause of the Playwright setup failures. It was especially useful for separating test-environment problems from actual application issues. </li><br><br>
+
+---
+
+## 9. 2026-10-25: Job Navigation and Pagination Fixes
+
+<li> Task Title: Job Listing Navigation and Pagination Fixes </li><br>
+
+<li> Purpose of AI Use: I used AI to fix job navigation and pagination issues and identify additional edge cases to test. </li><br><br>
+
+<li> Prompt 1: when someone is on another page of the jobs listing or has filters/search active, opening the job details or apply page and clicking Back to Jobs brings them back to the normal /jobs page. can you fix it so they return to the same listing they came from without changing the rest of the search/filter logic? </li><br><br>
+
+<li> Relevant AI Response: AI suggested passing the current jobs URL through the details and application links using a `returnTo` value and validating it before using it. If there is no valid return URL, it falls back to `/jobs`. </li><br>
+
+```ts
+export function getJobsReturnUrl(value: string | string[] | undefined): string {
+  return typeof value === 'string' &&
+    (value === '/jobs' || value.startsWith('/jobs?'))
+    ? value
+    : '/jobs'
+}
+```
+
+<li> Prompt 2: you mentioned some pagination edge cases that could still cause problems, including out-of-range page numbers like `/jobs?page=999` and extremely large page values. how do we fix those without breaking the current filters or normal pagination? </li><br><br>
+
+<li> Relevant AI Response: AI suggested checking the number of matching jobs before requesting a later page and returning to page 1 when the requested page does not exist. The existing keyword and filters are kept when the page number is removed. </li><br>
+
+```tsx
+const { jobs, total, page } = jobsResult
+
+if (page !== requestedPage) {
+  listingParams.delete('page')
+  const query = listingParams.toString()
+  redirect(query ? `/jobs?${query}` : '/jobs')
+}
+```
+
+<li> Prompt 3: before i finish this fix can you check for other pagination edge cases that should be tested with it? </li><br><br>
+
+<li> Relevant AI Response: AI suggested testing an empty job list, exactly ten jobs, invalid and very large page numbers, and jobs with the same posting date. It also suggested using the job ID as a second sort value so jobs with the same date stay in a consistent order between pages. </li><br>
+
+```ts
+query = query
+  .order('created_at', { ascending: false })
+  .order('id', { ascending: true })
+```
+
+<li> AI-Suggested Content: AI suggested preserving the original job listing URL when navigating between pages, safely handling invalid pagination values, keeping the current search and filters after a redirect, and adding tests for pagination boundary cases. </li><br>
+
+<li> Validation: I tested the navigation and pagination fixes and ran the related automated tests to make sure the main job-listing behavior still worked correctly. </li><br>
+
+<li> Decision: Accepted after reviewing the suggested fixes and test results. </li><br>
+
+<li> Reflection: AI helped find and fix pagination cases that I had not considered when I first added pagination. </li><br><br>
