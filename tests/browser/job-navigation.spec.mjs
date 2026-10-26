@@ -148,7 +148,7 @@ test('pagination links, deep links, reloads and search/filter resets preserve is
   await expectPage(1)
   expect(new URL(page.url()).searchParams.has('page')).toBe(false)
   for (const filter of ['Software', 'Full time', 'Hybrid']) {
-    await page.goto(`${base}/jobs?${filteredQuery}&page=3`)
+    await page.goto(`${base}/jobs?${filteredQuery.replace('&category=Marketing', '')}&page=3`)
     await expectPage(3)
     await page.getByRole('checkbox', { name: filter, exact: true }).uncheck()
     await expectPage(1)
@@ -199,4 +199,48 @@ test('space encoding preserves decoded listing state without double-encoding', a
   // retaining their order, so double-encoding or missing values still fail.
   expect(listingState(href)).toEqual(expected)
   expect(listingState(page.url())).toEqual(expected)
+})
+
+test('invalid and out-of-range pages safely show page 1 and retain search/filter state', async ({ page }) => {
+  const base = await signIn(page)
+  const errors = []
+  page.on('pageerror', error => errors.push(error.message))
+  for (const query of ['', filteredQuery]) {
+    for (const value of ['0', '-2', 'invalid', '1.5', '4', '999', '3323232432423', '999999999999999999999999999999999999', '1e309']) {
+      const url = `${base}/jobs?${query ? query + '&' : ''}page=${value}`
+      const response = await page.goto(url)
+      expect(response.status()).toBeLessThan(400)
+      await expect(page.getByRole('listitem').getByRole('heading', { level: 2 })).toHaveText([...seededJobs].reverse().slice(0, 10).map(job => job.title))
+      await expect(page.getByRole('navigation', { name: 'Job pages' }).getByRole('link', { name: '1', exact: true })).toHaveAttribute('aria-current', 'page')
+      await expect(page.getByRole('heading', { name: 'No jobs posted yet' })).toHaveCount(0)
+      const actual = new URL(page.url())
+      const expected = new URL(url)
+      // Invalid syntax continues defaulting to page 1; positive out-of-range
+      // values redirect to a listing URL with page removed.
+      if (Number.isInteger(Number(value)) && Number(value) > 1) {
+        expect(actual.searchParams.has('page')).toBe(false)
+      }
+      actual.searchParams.delete('page')
+      expected.searchParams.delete('page')
+      expect([...actual.searchParams]).toEqual([...expected.searchParams])
+    }
+  }
+  // This search matches exactly one of the 25 jobs: pagination must use the
+  // filtered count, rather than the unfiltered three-page total.
+  const narrowQuery = filteredQuery.replace('keyword=Developer', 'keyword=Navigation+Developer+C%2B%2B+%26+100%25+25')
+  await page.goto(`${base}/jobs?${narrowQuery}&page=2`)
+  await expect(page).toHaveURL(`${base}/jobs?${narrowQuery}`)
+  await expect(page.getByRole('listitem').getByRole('heading', { level: 2 })).toHaveText([seededJobs[24].title])
+  await expect(page.getByText('1 open role', { exact: true })).toBeVisible()
+  await page.reload()
+  await expect(page).toHaveURL(`${base}/jobs?${narrowQuery}`)
+  // returnTo must now refer to the corrected listing, not the rejected page.
+  await page.getByRole('listitem').getByRole('link', { name: /View Details/ }).click()
+  await expect(page.getByRole('link', { name: /Back to jobs/i })).toHaveAttribute('href', `/jobs?${narrowQuery}`)
+  await page.getByRole('link', { name: /Back to jobs/i }).click()
+  await expect(page).toHaveURL(`${base}/jobs?${narrowQuery}`)
+  await page.goto(`${base}/jobs?keyword=NoSuchNavigationJob&page=999`)
+  await expect(page).toHaveURL(`${base}/jobs?keyword=NoSuchNavigationJob`)
+  await expect(page.getByRole('heading', { name: 'No jobs match your search' })).toBeVisible()
+  expect(errors).toEqual([])
 })
