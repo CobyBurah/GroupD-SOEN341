@@ -35,7 +35,8 @@ Same approach as Sprint 1: each story and task is a GitHub issue with an assigne
 | Job application submission & tracking | Coby, Noah, Eldar |
 | Recruiter dashboard & posting management | Eldar, Parsa |
 | Favourites (added mid-sprint) | Noah |
-| Sprint planning document | Nour |
+| Sprint 2 workplan consolidation | Noah |
+| Submission document | Nour |
 | Meeting minutes | Sabrina |
 
 ### Appendix A — Sprint 2 issues
@@ -52,10 +53,12 @@ Same approach as Sprint 1: each story and task is a GitHub issue with an assigne
 | [#45](https://github.com/CobyBurah/GroupD-SOEN341/issues/45)–[#53](https://github.com/CobyBurah/GroupD-SOEN341/issues/53), [#55](https://github.com/CobyBurah/GroupD-SOEN341/issues/55) | US-06 task breakdown (jobs table, search bar, filters, listing page, job details) | Task | Sabrina, Nour | High | Completed |
 | [#70](https://github.com/CobyBurah/GroupD-SOEN341/issues/70)–[#72](https://github.com/CobyBurah/GroupD-SOEN341/issues/72) | US-06 acceptance tests | Acceptance Test | Sabrina | High | Completed |
 | [#85](https://github.com/CobyBurah/GroupD-SOEN341/issues/85)–[#106](https://github.com/CobyBurah/GroupD-SOEN341/issues/106) | Acceptance tests for every Sprint 1 and Sprint 2 user story (2+ per story) | Acceptance Test | Coby, Noah, Eldar, Parsa, Sabrina, Nour | High | Completed, except [#85](https://github.com/CobyBurah/GroupD-SOEN341/issues/85) (password-reset email, in progress) and [#100](https://github.com/CobyBurah/GroupD-SOEN341/issues/100) (FAIL, bug filed as [#108](https://github.com/CobyBurah/GroupD-SOEN341/issues/108)) |
-| [#108](https://github.com/CobyBurah/GroupD-SOEN341/issues/108) | Bug: `/jobs` pagination resets to page 1 on reload or deep link | Bug | Sabrina, Nour | Medium | Open |
+| [#108](https://github.com/CobyBurah/GroupD-SOEN341/issues/108) | Bug: `/jobs` pagination resets to page 1 on reload or deep link | Bug | Sabrina, Nour | Medium | Completed |
 | [#65](https://github.com/CobyBurah/GroupD-SOEN341/issues/65) | CI pipeline (lint, typecheck, tests, build, Playwright) | Task | Noah | High | Completed |
 | Meeting minutes (`Meeting_Minutes/Meeting-Sprint#2.md`) | Task | Sabrina | Medium | Completed |
-| This document | Task | Nour | Medium | Completed |
+| This document | Task | Noah | Medium | Completed |
+| Submission document | Task | Nour | Medium | Completed |
+
 
 ### Note on this document's timing
 
