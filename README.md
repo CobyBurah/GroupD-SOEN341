@@ -62,8 +62,7 @@ npm install
 5. Fill in the required environment variables (see table below).
 6. Start the development server:
    ```bash```
-   npm run dev
-   ```
+   ```npm run dev```
 7. Open http://localhost:3000 in your browser
 
 ### Checks and Continuous Integration
