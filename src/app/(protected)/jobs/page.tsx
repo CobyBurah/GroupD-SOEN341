@@ -40,6 +40,12 @@ function toSingle(value: string | string[] | undefined) {
 export default async function JobsPage({ searchParams }: JobsPageProps) {
   // Read the search and filter values from the URL
   const params = await searchParams
+  const listingParams = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    toArray(value).forEach((entry) => listingParams.append(key, entry))
+  })
+  const listingQuery = listingParams.toString()
+  const returnTo = encodeURIComponent(listingQuery ? `/jobs?${listingQuery}` : '/jobs')
   const keyword = params.keyword ?? ''
   const location = toSingle(params.location)
   const categories = toArray(params.category)
@@ -135,16 +141,16 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
             <>
               <ul className={styles.list}>
                 {jobs.map((job) => (
-                  <JobCard key={job.id} job={job} href={`/jobs/${job.id}`}>
+                  <JobCard key={job.id} job={job} href={`/jobs/${job.id}?returnTo=${returnTo}`}>
                     {profile?.role === 'job_seeker' && (
                       <>
                         <FavouriteButton jobId={job.id} jobTitle={job.title} favourited={favouriteIds.has(job.id)} />
 
-                        <Link className={styles.secondary} href={`/jobs/${job.id}/apply`} aria-label={`Apply for ${job.title}`}>
+                        <Link className={styles.secondary} href={`/jobs/${job.id}/apply?returnTo=${returnTo}`} aria-label={`Apply for ${job.title}`}>
                           Apply
                         </Link>
 
-                        <Link className={styles.primary} href={`/jobs/${job.id}`}>
+                        <Link className={styles.primary} href={`/jobs/${job.id}?returnTo=${returnTo}`}>
                           <span className={styles.detailsDesktop}>View Details</span>
                           <span className={styles.detailsMobile}>Details</span>
                           <span className={styles.arrow}>→</span>
