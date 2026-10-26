@@ -159,3 +159,7 @@ npm run test:browser  # Playwright browser tests (run `npm run build` first; fir
 
 ## Shared Features
 <li> User registration and authentication </li>
+<li> Login and logout </li>
+<li> Forgot password and password reset by email </li>
+<li> Account deletion </li>
+
