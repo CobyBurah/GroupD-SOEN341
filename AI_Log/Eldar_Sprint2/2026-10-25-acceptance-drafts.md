@@ -1,6 +1,30 @@
-# Acceptance-test audit and local drafts
+# Sprint 2 AI Usage Log — Recruiter Features and Acceptance Tests
 
 Date: October 25, 2026. Responsible member: Eldar Sadeghi. Tool: OpenAI Codex. The user initially requested local drafts and later authorized GitHub publication.
+
+## Feature 4: Recruiter Dashboard and Posting Management
+
+Eldar identified the following two requirements as his Sprint 2 contribution and estimated approximately one hour of human effort for each (approximately two hours total). These are Eldar's estimates, not AI runtime. This section consolidates the recruiter work with the acceptance-test work recorded below.
+
+### Allow recruiters to create and manage job postings
+
+- **Purpose and request:** Use Codex to plan and implement the recruiter dashboard and posting-management feature for US-05, initially locally for review and debugging. The earlier recorded instruction was to start after approval and not push until authorized.
+- **AI-generated output:** Recruiter dashboard, posting creation/edit forms and server actions, confirmation-based soft deletion, session/role/ownership checks, migration 0007, shared signed-in navigation, tests and local preview tooling.
+- **Decisions and modifications:** Derive ownership from the authenticated session; enforce ownership through server checks and database policies. Use soft deletion to preserve records for application history. Adjust shared navigation and profile formatting after user feedback.
+- **Validation:** The original implementation log records four passing automated tests, TypeScript/build checks and local synthetic UI checks for creation, prefilled editing, confirmed deletion and navigation. The later acceptance audit also passed the recruiter browser flow. These checks do not establish completed real-Supabase acceptance testing.
+- **Evidence:** [User story #40](https://github.com/CobyBurah/GroupD-SOEN341/issues/40), [PR #58](https://github.com/CobyBurah/GroupD-SOEN341/pull/58), [Eldar's implementation commit](https://github.com/CobyBurah/GroupD-SOEN341/commit/60c9b1de3bc70e2262a6ba059d82ffa5db80c082), and [original detailed AI log](2026-10-18-recruiter-management.md).
+- **Human time reported:** Approximately 1 hour.
+
+### Display applications received for a posting
+
+- **Contribution reported by Eldar:** Worked on displaying received applications as part of the recruiter dashboard; approximately 1 hour of human effort.
+- **Implemented behavior:** The posting owner can view applicants, submission dates, submitted-resume links and current application status. The integrated feature also provides status updates and scoped access to applicant information.
+- **AI assistance documented in this session:** Inspected the received-applications page, status form and server actions; compared them with the Sprint 2 requirements; prepared and published the received-applications acceptance scenario and ownership/status checks. No separate prompt history for Eldar's earlier received-applications implementation was available, so it is not reconstructed here.
+- **Shared-work attribution:** [PR #63](https://github.com/CobyBurah/GroupD-SOEN341/pull/63) contains the received-applications implementation; [commit 1a6a153](https://github.com/CobyBurah/GroupD-SOEN341/commit/1a6a153e8680b4a081d6045e07b819022b2332b8) is authored by Noah Dahan. This records Eldar's reported contribution without claiming sole authorship of that code.
+- **Validation and remaining work:** Database policy tests passed during the local audit. The recruiter browser flow verified the empty applications state; populated recruiter UI and full real-Supabase acceptance execution remain pending in this session. PR #63 separately reports its author's live checks; those are not presented as checks performed by Eldar or Codex in this session.
+- **Evidence:** [Received-applications acceptance test #98](https://github.com/CobyBurah/GroupD-SOEN341/issues/98) and [review task #82](https://github.com/CobyBurah/GroupD-SOEN341/issues/82).
+
+The [individual contribution log](../../Sprint%20Deliverables/Sprint%232/Eldar_Contribution_Log.md) records these two approximately one-hour activities. Acceptance-test preparation time remains unspecified and is not added to the two-hour total.
 
 ## Requests and generated output
 
