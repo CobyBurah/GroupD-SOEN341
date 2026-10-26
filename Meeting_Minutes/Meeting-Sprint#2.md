@@ -36,7 +36,7 @@ During this meeting, we discussed the following topics:
 -- 
 # Meeting #2 - Sprint 2
 
-_October 19 4:15-5:00pm
+_October 19 4:15-5:00pm_
 
 ## Attendees: 
 | Member | Present | 
@@ -70,8 +70,39 @@ We decided to come up with a new orginal feature to add which is users can save 
 | Jobs Saved (Favourites) | Noah | Oct. 25 | not started |
 
 
+-- 
+# Meeting #3 - Sprint 2
 
+_October 25 - Group chat discussion_
 
+## Attendees: 
+| Member | Present | 
+|--------|---------|
+| Coby | Present |
+| Sabrina | Present | 
+| Eldar | Present |
+| Nour | Present | 
+| Noah | Present |
+| Parsa | Present |
 
+ 
+## Sprint Discussions  
+During this discussion, we went over the remaining Sprint 2 work and final responsibilities before submission.
+ 
 
+## Decisions 
+* Acceptance-test preparation is assigned to Eldar
+* Sprint 2 workplan consolidation is reassigned to Noah
+* Nour is responsible for the Sprint 2 submission report and meeting minutes 3
+* Sabrina is responsible for the README update
+* Remaining bugs found during testing will be handled by the team member who identified the issue or another member available to fix it
 
+## Action Items 
+| Action Item | Responsible | Deadline | Status | 
+|-------------|-------------|----------|--------| 
+| Acceptance-test preparation | Eldar | Oct. 25 | in progress |
+| Sprint 2 workplan consolidation | Noah | Oct. 25 | not started |
+| Sprint 2 submission report | Nour | Oct. 26 | not started |
+| Meeting Minute log 3 | Nour | Oct. 26 | in progress |
+| README update | Sabrina | Oct. 26 | not started |
+| Remaining bug fixes | Member who identified the issue / available team member | Oct. 25 | in progress |
