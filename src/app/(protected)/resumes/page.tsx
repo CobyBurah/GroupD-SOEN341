@@ -1,10 +1,47 @@
 import { redirect } from 'next/navigation'
 
 import { isRole } from '@/lib/profiles'
+import { parseResumeFeedback, type StoredResumeFeedback } from '@/lib/resume-feedback'
 import { createClient } from '@/lib/supabase/server'
 import styles from '@/app/ui.module.css'
 
 import { ResumeRow, ResumeUploadForm } from './resume-forms'
+
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>
+
+// Latest saved AI feedback per resume, in one query. Any failure (including the
+// resume_feedback table not being migrated yet) just means "no feedback".
+async function loadLatestFeedback(
+  supabase: SupabaseClient,
+  resumeIds: string[]
+): Promise<Map<string, StoredResumeFeedback>> {
+  const latest = new Map<string, StoredResumeFeedback>()
+  if (resumeIds.length === 0) return latest
+
+  try {
+    const { data, error } = await supabase
+      .from('resume_feedback')
+      .select('resume_id, model_name, feedback, created_at')
+      .in('resume_id', resumeIds)
+      .order('created_at', { ascending: false })
+
+    if (error || !data) return latest
+
+    for (const row of data) {
+      if (typeof row.resume_id !== 'string' || latest.has(row.resume_id)) continue
+      const feedback = parseResumeFeedback(row.feedback)
+      if (!feedback) continue
+      latest.set(row.resume_id, {
+        feedback,
+        model: String(row.model_name),
+        createdAt: String(row.created_at),
+      })
+    }
+  } catch {
+    return new Map()
+  }
+  return latest
+}
 
 export default async function ResumesPage() {
   const supabase = await createClient()
@@ -39,6 +76,8 @@ export default async function ResumesPage() {
     .select('id, file_name, size_bytes, created_at')
     .order('created_at', { ascending: false })
 
+  const feedbackByResume = await loadLatestFeedback(supabase, (resumes ?? []).map((resume) => resume.id))
+
   return (
     <main>
       <header className={styles.header}>
@@ -59,7 +98,11 @@ export default async function ResumesPage() {
           <p>{resumes.length} {resumes.length === 1 ? 'resume' : 'resumes'}</p>
           <ul className={styles.list}>
             {resumes.map((resume) => (
-              <ResumeRow key={resume.id} resume={resume} />
+              <ResumeRow
+                key={resume.id}
+                resume={resume}
+                feedback={feedbackByResume.get(resume.id) ?? null}
+              />
             ))}
           </ul>
         </>
