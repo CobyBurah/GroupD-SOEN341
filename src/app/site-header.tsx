@@ -2,6 +2,8 @@ import Link from 'next/link'
 
 import { createClient } from '@/lib/supabase/server'
 
+import { getUnreadCount } from '@/lib/notifications'
+import { NotificationBell } from './notification-bell'
 import { signOut } from './auth/actions'
 import styles from './ui.module.css'
 
@@ -13,8 +15,13 @@ export async function SiteHeader() {
   const claims = data?.claims
 
   let recruiter = false
+  let unread: number | null = null
   if (claims?.sub) {
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', claims.sub).single()
+    const [{ data: profile }, count] = await Promise.all([
+      supabase.from('profiles').select('role').eq('id', claims.sub).single(),
+      getUnreadCount(supabase, claims.sub),
+    ])
+    unread = count
     recruiter = profile?.role === 'recruiter'
   }
 
@@ -31,6 +38,7 @@ export async function SiteHeader() {
               {!recruiter && <Link href="/favourites">Favourites</Link>}
               {!recruiter && <Link href="/resumes">Resumes</Link>}
               <Link href="/profile">My profile</Link>
+              <NotificationBell key={claims.sub} count={unread} />
             </>
           )}
         </nav>

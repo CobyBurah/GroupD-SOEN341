@@ -187,7 +187,8 @@ async function handleApplications(req, res, url) {
   res.end(JSON.stringify(output))
 }
 
-export async function startPreview({ paginateJobs = false } = {}) {
+export async function startPreview({ paginateJobs = false, inboxSeed = [] } = {}) {
+  const notices = structuredClone(inboxSeed)
   jobs = []; resumes = []; resumeSeq = 0; favourites = []; applications = []; storedFiles.clear()
   server = createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost')
@@ -225,6 +226,40 @@ export async function startPreview({ paginateJobs = false } = {}) {
       }
       const isSeeker = [seekerId, otherSeeker.id].includes(user.id)
       return res.end(JSON.stringify({ id: user.id, role: isSeeker ? 'job_seeker' : 'recruiter', full_name: isSeeker ? 'Demo Job Seeker' : 'Demo Recruiter', headline: '', location: '', bio: '' }))
+    }
+    if (url.pathname === '/rest/v1/notifications') {
+      const user = requestUser(req)
+      const filters = url.searchParams
+      const visible = notices.filter(row => row.user_id === user.id &&
+        ['user_id', 'id', 'is_read'].every(key => !filters.has(key) || filters.get(key) === `eq.${row[key]}`))
+      if (req.method === 'HEAD') {
+        res.setHeader('content-range', `*/${visible.length}`)
+        return res.end()
+      }
+      if (req.method === 'PATCH') {
+        const fields = JSON.parse((await readBody(req)).toString())
+        if (fields.is_read !== true || Object.keys(fields).length !== 1) {
+          res.statusCode = 403
+          return res.end(JSON.stringify({ message: 'Only the read state may be updated' }))
+        }
+        visible.forEach(row => { row.is_read = true })
+        res.statusCode = 204
+        return res.end()
+      }
+      if (req.method !== 'GET') { res.statusCode = 405; return res.end() }
+      // Apply the requested PostgREST ordering so the UI test exercises its query.
+      const order = (filters.get('order') ?? '').split(',').filter(Boolean)
+      visible.sort((a, b) => {
+        for (const entry of order) {
+          const [column, direction] = entry.split('.')
+          const cmp = String(a[column]).localeCompare(String(b[column]))
+          if (cmp) return direction === 'desc' ? -cmp : cmp
+        }
+        return 0
+      })
+      const offset = Number(filters.get('offset') ?? 0)
+      const limit = Number(filters.get('limit') ?? visible.length)
+      return res.end(JSON.stringify(visible.slice(offset, offset + limit)))
     }
     if (url.pathname === '/rest/v1/resumes') return handleResumes(req, res, url)
     if (url.pathname.startsWith('/storage/v1/object/')) return handleStorage(req, res, url)

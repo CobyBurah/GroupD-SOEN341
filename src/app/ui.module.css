@@ -15,10 +15,12 @@
 /* Top bar: dark green band that flows straight into each page header. */
 .topbar { background: var(--cc-ink); border-bottom: 1px solid rgba(255, 255, 255, .12); }
 .topbarInner { width: 90%; max-width: 1600px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; padding: 18px 0; min-width: 0; }
-.nav { display: flex; flex-wrap: wrap; align-items: center; gap: 28px; }
+.nav { display: flex; flex-wrap: wrap; align-items: center; gap: 16px clamp(16px, 1.5vw, 28px); }
 .shell .nav a { color: rgba(255, 255, 255, .8); text-decoration: none; font-size: 15px; transition: color .15s ease; }
 .shell .nav a:hover { color: white; }
 .shell .nav .brand { color: white; font-family: var(--font-montserrat), Arial, sans-serif; font-size: 19px; font-weight: 700; }
+.shell .nav .bell { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; gap: 5px; color: white; }
+.bellCount { padding: 1px 7px; border-radius: 999px; background: var(--cc-pill); color: var(--cc-ink); font-size: 13px; font-weight: 700; }
 .account { display: flex; align-items: center; gap: 16px; margin-left: auto; }
 .account > a:not([class]) { color: white; text-decoration: none; }
 .who { color: var(--cc-soft); font-size: 14px; overflow-wrap: anywhere; }
