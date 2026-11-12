@@ -9,6 +9,7 @@ import {
   MAX_UPLOAD_TOTAL_BYTES,
   formatFileSize,
 } from '@/lib/resumes'
+import type { StoredResumeFeedback } from '@/lib/resume-feedback'
 import styles from '@/app/ui.module.css'
 
 import {
@@ -21,6 +22,7 @@ import {
   type ReplaceResumeState,
   type UploadResumeState,
 } from './actions'
+import { ResumeFeedbackPanel } from './resume-feedback'
 
 // A request over serverActions.bodySizeLimit (next.config.ts) fails before our
 // action's own checks can return a friendly message, so reject oversized
@@ -95,7 +97,13 @@ const initialRenameState: RenameResumeState = {}
 const initialReplaceState: ReplaceResumeState = {}
 const initialDeleteState: DeleteResumeState = {}
 
-export function ResumeRow({ resume }: { resume: Resume }) {
+export function ResumeRow({
+  resume,
+  feedback = null,
+}: {
+  resume: Resume
+  feedback?: StoredResumeFeedback | null
+}) {
   const [renameState, renameAction, renamePending] = useActionState(
     renameResume,
     initialRenameState
@@ -172,6 +180,14 @@ export function ResumeRow({ resume }: { resume: Resume }) {
           {deletePending ? 'Deleting…' : 'Delete'}
         </button>
       </form>
+
+      <ResumeFeedbackPanel
+        // Remount when the server sends newer saved feedback (e.g. after a refresh).
+        key={feedback?.createdAt ?? 'none'}
+        resumeId={resume.id}
+        resumeName={resume.file_name}
+        initialFeedback={feedback}
+      />
     </li>
   )
 }
