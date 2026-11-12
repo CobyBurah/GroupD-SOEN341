@@ -1,18 +1,44 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 
-import { getActivityAxisLabels, type ActivityBucket, type ActivityGrouping, type ActivityRange, type ApplicationActivity } from '@/lib/application-activity'
+import { ACTIVITY_RANGE_COOKIE, ACTIVITY_RANGES, getActivityAxisLabels, getPreferredActivityRange, type ActivityBucket, type ActivityGrouping, type ActivityRange, type ApplicationActivity } from '@/lib/application-activity'
 import styles from '@/app/ui.module.css'
 
-type ApplicationActivitySectionProps = { activity: ApplicationActivity }
+type ApplicationActivitySectionProps = { activity: ApplicationActivity; initialRange: ActivityRange }
 
-const RANGES: { value: ActivityRange; label: string }[] = [
-  { value: '7d', label: 'Last 7 days' },
-  { value: '30d', label: 'Last 30 days' },
-  { value: '3m', label: 'Last 3 months' },
-  { value: '12m', label: 'Last 12 months' },
-]
+const RANGE_CHANGE_EVENT = 'application-activity-range-change'
+let currentRange: ActivityRange | null = null
+
+function getSavedRange(fallbackRange: ActivityRange): ActivityRange {
+  if (currentRange) return currentRange
+  try {
+    const prefix = `${ACTIVITY_RANGE_COOKIE}=`
+    const saved = document.cookie.split('; ').find(cookie => cookie.startsWith(prefix))?.slice(prefix.length)
+    return saved === undefined ? fallbackRange : getPreferredActivityRange(saved)
+  } catch {
+    return fallbackRange
+  }
+}
+
+function subscribeToRange(onChange: () => void) {
+  window.addEventListener(RANGE_CHANGE_EVENT, onChange)
+  return () => {
+    window.removeEventListener(RANGE_CHANGE_EVENT, onChange)
+  }
+}
+
+function saveRange(range: ActivityRange) {
+  currentRange = range
+  try {
+    // A cookie lets the next server render use the saved range immediately.
+    const secure = window.location.protocol === 'https:' ? '; Secure' : ''
+    document.cookie = `${ACTIVITY_RANGE_COOKIE}=${range}; Path=/applications; Max-Age=31536000; SameSite=Lax${secure}`
+  } catch {
+    // Keep the current chart usable even if persistence is blocked.
+  }
+  window.dispatchEvent(new Event(RANGE_CHANGE_EVENT))
+}
 
 function formatDate(value: string, monthly = false, year = false) {
   return new Date(value).toLocaleDateString('en-CA', {
@@ -29,8 +55,9 @@ function bucketLabel(bucket: ActivityBucket, grouping: ActivityGrouping) {
   return `${formatDate(bucket.start, false, true)} – ${formatDate(bucket.end, false, true)}`
 }
 
-export function ApplicationActivitySection({ activity }: ApplicationActivitySectionProps) {
-  const [range, setRange] = useState<ActivityRange>('7d')
+export function ApplicationActivitySection({ activity, initialRange }: ApplicationActivitySectionProps) {
+  // Server HTML and hydration start with the same saved preference.
+  const range = useSyncExternalStore(subscribeToRange, () => getSavedRange(initialRange), () => initialRange)
   const [chartWidth, setChartWidth] = useState(260)
   const barsRef = useRef<HTMLDivElement>(null)
 
@@ -80,9 +107,9 @@ export function ApplicationActivitySection({ activity }: ApplicationActivitySect
               className={styles.activityPeriod}
               aria-label="Activity time period"
               value={range}
-              onChange={(event) => setRange(event.target.value as ActivityRange)}
+              onChange={(event) => saveRange(event.target.value as ActivityRange)}
             >
-              {RANGES.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
+              {ACTIVITY_RANGES.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
             </select>
           </div>
 

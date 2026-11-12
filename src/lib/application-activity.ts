@@ -3,6 +3,18 @@ export type ActivityApplication = {
 }
 
 export type ActivityRange = '7d' | '30d' | '3m' | '12m' | 'all'
+export const ACTIVITY_RANGE_COOKIE = 'cc-application-activity-range'
+export const ACTIVITY_RANGES = [
+  { value: '7d', label: 'Last 7 days' },
+  { value: '30d', label: 'Last 30 days' },
+  { value: '3m', label: 'Last 3 months' },
+  { value: '12m', label: 'Last 12 months' },
+] as const
+
+export function getPreferredActivityRange(value: unknown): ActivityRange {
+  return ACTIVITY_RANGES.find(range => range.value === value)?.value ?? '7d'
+}
+
 export type ActivityGrouping = 'day' | 'week' | 'month'
 export type ActivityBucket = { start: string; end: string; count: number }
 export type ActivitySeries = { grouping: ActivityGrouping; buckets: ActivityBucket[] }

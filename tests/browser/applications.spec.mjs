@@ -29,7 +29,7 @@ async function signIn(page, email) {
   return base
 }
 
-test('job seeker tracks application status and history, filters and withdraws', async ({ page }, testInfo) => {
+test('job seeker tracks application status and history, filters and withdraws', async ({ page, browser }, testInfo) => {
   const frontend = await postJob({ title: 'Frontend Developer', company: 'Acme', employment_type: 'full_time' })
   const intern = await postJob({ title: 'Data Intern', company: 'Globex', employment_type: 'internship' })
   const errors = []
@@ -77,10 +77,28 @@ test('job seeker tracks application status and history, filters and withdraws', 
   for (const tick of await monthlyTicks.all()) {
     expect(new Date(await tick.getAttribute('datetime')).getUTCDate()).toBe(1)
   }
+  await page.reload()
+  await expect(page.getByLabel('Activity time period')).toHaveValue('3m')
+  await expect(activityChart).toHaveAccessibleName('Applications submitted per week')
+  await expect(monthlyTicks).toHaveCount(3)
+  // The saved range must already be in the server HTML, before hydration.
+  const serverContext = await browser.newContext({ javaScriptEnabled: false, storageState: await page.context().storageState() })
+  try {
+    const serverPage = await serverContext.newPage()
+    await serverPage.goto(base + '/applications')
+    await expect(serverPage.getByLabel('Activity time period')).toHaveValue('3m')
+    await expect(serverPage.locator('[aria-label="Applications submitted per week"]')).toHaveCount(1)
+    await expect(serverPage.locator('[aria-label="Applications submitted per day"]')).toHaveCount(0)
+  } finally {
+    await serverContext.close()
+  }
   await testInfo.attach('activity-three-months', { body: await page.getByRole('region', { name: 'My activity' }).screenshot(), contentType: 'image/png' })
 
   await page.getByLabel('Activity time period').selectOption('12m')
   await expect(activityChart).toHaveAccessibleName('Applications submitted per month')
+  await expect(activityChart.getByRole('listitem')).toHaveCount(12)
+  await page.reload()
+  await expect(page.getByLabel('Activity time period')).toHaveValue('12m')
   await expect(activityChart.getByRole('listitem')).toHaveCount(12)
   expect(await page.getByRole('region', { name: 'My activity' }).locator('time').count()).toBeGreaterThanOrEqual(3)
 
@@ -239,6 +257,25 @@ test('job seeker tracks application status and history, filters and withdraws', 
   await page.getByRole('link', { name: 'Apply Now' }).first().click()
   await expect(page.getByRole('link', { name: 'Back to My applications' })).toHaveAttribute('href', '/applications')
   await expect(page.getByRole('button', { name: 'Submit application' })).toBeVisible()
+
+  // Ignore preferences from removed options rather than indexing a missing chart.
+  await page.context().addCookies([{ name: 'cc-application-activity-range', value: 'all', domain: '127.0.0.1', path: '/applications' }])
+  await page.goto(base + '/applications')
+  await expect(page.getByLabel('Activity time period')).toHaveValue('7d')
+  await expect(activityChart.getByRole('listitem')).toHaveCount(7)
+
+  // A blocked preference cookie must not prevent changing the current chart.
+  await page.evaluate(() => {
+    const cookie = document.cookie
+    Object.defineProperty(document, 'cookie', {
+      configurable: true,
+      get: () => cookie,
+      set: () => { throw new DOMException('Cookies blocked', 'SecurityError') },
+    })
+  })
+  await page.getByLabel('Activity time period').selectOption('3m')
+  await expect(page.getByLabel('Activity time period')).toHaveValue('3m')
+  await expect(activityChart).toHaveAccessibleName('Applications submitted per week')
   expect(errors).toEqual([])
 })
 

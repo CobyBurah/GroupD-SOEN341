@@ -12,7 +12,7 @@ const compiled = ts.transpileModule(source, {
   },
 }).outputText
 
-const { getApplicationActivity, getActivityAxisLabels } = await import(
+const { getApplicationActivity, getActivityAxisLabels, getPreferredActivityRange } = await import(
   `data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`
 )
 
@@ -150,4 +150,12 @@ test('seven-day axis always shows only weekday initials', () => {
   const labels = getActivityAxisLabels(series['7d'], 190)
   assert.deepEqual(labels.map(label => label.index), [0, 1, 2, 3, 4, 5, 6])
   assert.deepEqual(labels.map(label => label.label), ['T', 'F', 'S', 'S', 'M', 'T', 'W'])
+})
+
+
+test('saved chart preference accepts only selectable ranges and defaults safely', () => {
+  for (const range of ['7d', '30d', '3m', '12m']) assert.equal(getPreferredActivityRange(range), range)
+  for (const invalid of [undefined, null, '', 'all', 'invalid', '3M', ['3m']]) {
+    assert.equal(getPreferredActivityRange(invalid), '7d')
+  }
 })

@@ -1,10 +1,11 @@
 // My applications page: every job a seeker has applied to, with its current status and history.
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
 import { APPLICATION_STATUSES, isApplicationStatus, type ApplicationStatus } from '@/lib/applications'
-import { getApplicationActivity } from '@/lib/application-activity'
+import { ACTIVITY_RANGE_COOKIE, getApplicationActivity, getPreferredActivityRange } from '@/lib/application-activity'
 import { getSeekerApplications, type SeekerApplication } from '@/lib/seeker-applications'
 import { JobCard } from '../jobs/jobs-card'
 import { ApplicationActivitySection } from './application-activity'
@@ -88,6 +89,7 @@ export default async function ApplicationsPage({ searchParams }: ApplicationsPag
 
   const applications = await getSeekerApplications(userId)
   const activity = getApplicationActivity(applications)
+  const initialRange = getPreferredActivityRange((await cookies()).get(ACTIVITY_RANGE_COOKIE)?.value)
   const counts = Object.fromEntries(APPLICATION_STATUSES.map((s) => [s, applications.filter((a) => a.status === s).length]))
   const shown = status ? applications.filter((a) => a.status === status) : applications
   const returnTo = encodeURIComponent(status ? `/applications?status=${encodeURIComponent(status)}` : '/applications')
@@ -158,7 +160,7 @@ export default async function ApplicationsPage({ searchParams }: ApplicationsPag
         </div>
 
         <aside className={styles.activitySidebar}>
-          <ApplicationActivitySection activity={activity} />
+          <ApplicationActivitySection activity={activity} initialRange={initialRange} />
         </aside>
       </div>
     </main>
