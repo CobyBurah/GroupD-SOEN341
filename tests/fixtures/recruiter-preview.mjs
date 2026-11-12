@@ -230,6 +230,8 @@ export async function startPreview({ paginateJobs = false } = {}) {
     if (url.pathname.startsWith('/storage/v1/object/')) return handleStorage(req, res, url)
     if (url.pathname === '/rest/v1/applications') return handleApplications(req, res, url)
     if (url.pathname === '/rest/v1/favourites') return handleFavourites(req, res, url)
+    // No saved AI feedback; generation is mocked per test at the browser level.
+    if (url.pathname === '/rest/v1/resume_feedback') return res.end('[]')
     if (url.pathname !== '/rest/v1/jobs') { res.statusCode = 404; return res.end('{}') }
     const matches = job => ['id', 'recruiter_id'].every(field => !url.searchParams.has(field) || url.searchParams.get(field) === `eq.${job[field]}`)
       && (url.searchParams.get('deleted_at') !== 'is.null' || job.deleted_at === null)
