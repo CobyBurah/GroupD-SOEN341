@@ -4,8 +4,10 @@ import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
 import { APPLICATION_STATUSES, isApplicationStatus, type ApplicationStatus } from '@/lib/applications'
+import { getApplicationActivity } from '@/lib/application-activity'
 import { getSeekerApplications, type SeekerApplication } from '@/lib/seeker-applications'
 import { JobCard } from '../jobs/jobs-card'
+import { ApplicationActivitySection } from './application-activity'
 import { WithdrawButton } from './withdraw-button'
 import styles from '@/app/ui.module.css'
 
@@ -85,8 +87,10 @@ export default async function ApplicationsPage({ searchParams }: ApplicationsPag
   const status = isApplicationStatus(statusParam) ? statusParam : null
 
   const applications = await getSeekerApplications(userId)
+  const activity = getApplicationActivity(applications)
   const counts = Object.fromEntries(APPLICATION_STATUSES.map((s) => [s, applications.filter((a) => a.status === s).length]))
   const shown = status ? applications.filter((a) => a.status === status) : applications
+  const returnTo = encodeURIComponent(status ? `/applications?status=${encodeURIComponent(status)}` : '/applications')
 
   return (
     <main>
@@ -98,57 +102,65 @@ export default async function ApplicationsPage({ searchParams }: ApplicationsPag
         <Link className={styles.primary} href="/jobs">Browse jobs</Link>
       </header>
 
-      {applications.length === 0 ? (
-        <section className={styles.card}>
-          <h2>No applications yet</h2>
-          <p>Find a role in the <Link href="/jobs">job listings</Link> and apply to start tracking it here.</p>
-        </section>
-      ) : (
-        <>
-          <nav aria-label="Filter by status" className={styles.statusFilters}>
-            <Link href="/applications" aria-current={status === null ? 'page' : undefined}>
-              All ({applications.length})
-            </Link>
-            {APPLICATION_STATUSES.map((s) => (
-              <Link
-                key={s}
-                href={`/applications?status=${encodeURIComponent(s)}`}
-                aria-current={status === s ? 'page' : undefined}
-              >
-                {s} ({counts[s]})
-              </Link>
-            ))}
-          </nav>
-
-          {shown.length === 0 ? (
+      <div className={styles.applicationsLayout}>
+        <div className={styles.applicationResults}>
+          {applications.length === 0 ? (
             <section className={styles.card}>
-              <h2>No applications with status {status}</h2>
-              <p><Link href="/applications">Show all applications</Link></p>
+              <h2>No applications yet</h2>
+              <p>Find a role in the <Link href="/jobs">job listings</Link> and apply to start tracking it here.</p>
             </section>
           ) : (
-            <ul className={styles.list}>
-              {shown.map((application) => application.job ? (
-                <JobCard key={application.id} job={application.job} details={<ApplicationDetails application={application} />}>
-                  <WithdrawButton applicationId={application.id} jobId={application.job.id} jobTitle={application.job.title} />
-                  <Link className={styles.primary} href={`/jobs/${application.job.id}`}>
-                    View job
-                    <span className={styles.arrow}>→</span>
+            <>
+              <nav aria-label="Filter by status" className={styles.statusFilters}>
+                <Link href="/applications" aria-current={status === null ? 'page' : undefined}>
+                  All ({applications.length})
+                </Link>
+                {APPLICATION_STATUSES.map((s) => (
+                  <Link
+                    key={s}
+                    href={`/applications?status=${encodeURIComponent(s)}`}
+                    aria-current={status === s ? 'page' : undefined}
+                  >
+                    {s} ({counts[s]})
                   </Link>
-                </JobCard>
+                ))}
+              </nav>
+
+              {shown.length === 0 ? (
+                <section className={styles.card}>
+                  <h2>No applications with status {status}</h2>
+                  <p><Link href="/applications">Show all applications</Link></p>
+                </section>
               ) : (
-                <li key={application.id} className={styles.row}>
-                  <h2 className={styles.rowTitle}>Job no longer available</h2>
-                  <p className={styles.meta}>This job posting has been removed by the recruiter.</p>
-                  <ApplicationDetails application={application} />
-                  <div className={styles.actions}>
-                    <WithdrawButton applicationId={application.id} jobId={null} jobTitle="this removed job" />
-                  </div>
-                </li>
-              ))}
-            </ul>
+                <ul className={styles.list}>
+                  {shown.map((application) => application.job ? (
+                    <JobCard key={application.id} job={application.job} href={`/jobs/${application.job.id}?returnTo=${returnTo}`} details={<ApplicationDetails application={application} />}>
+                      <WithdrawButton applicationId={application.id} jobId={application.job.id} jobTitle={application.job.title} />
+                      <Link className={styles.primary} href={`/jobs/${application.job.id}?returnTo=${returnTo}`}>
+                        View job
+                        <span className={styles.arrow}>→</span>
+                      </Link>
+                    </JobCard>
+                  ) : (
+                    <li key={application.id} className={styles.row}>
+                      <h2 className={styles.rowTitle}>Job no longer available</h2>
+                      <p className={styles.meta}>This job posting has been removed by the recruiter.</p>
+                      <ApplicationDetails application={application} />
+                      <div className={styles.actions}>
+                        <WithdrawButton applicationId={application.id} jobId={null} jobTitle="this removed job" />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
           )}
-        </>
-      )}
+        </div>
+
+        <aside className={styles.activitySidebar}>
+          <ApplicationActivitySection activity={activity} />
+        </aside>
+      </div>
     </main>
   )
 }

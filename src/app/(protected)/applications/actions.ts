@@ -29,6 +29,9 @@ export async function withdrawApplication(applicationId: string, jobId: string |
   }
 
   revalidatePath('/applications')
-  if (jobId && isJobId(jobId)) revalidatePath(`/jobs/${jobId}/apply`)
+  if (jobId && isJobId(jobId)) {
+    revalidatePath(`/jobs/${jobId}`)
+    revalidatePath(`/jobs/${jobId}/apply`)
+  }
   return {}
 }
