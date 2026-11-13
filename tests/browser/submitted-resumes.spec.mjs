@@ -120,7 +120,7 @@ test('submitted versions remain unchanged across rename, replacement and deletio
     // access, without destroying the other application's separate version.
     seeker.once('dialog', dialog => dialog.accept())
     await firstCard.getByRole('button', { name: `Withdraw application for ${first.title}` }).click()
-    await expect(seeker.getByText('1 application', { exact: true })).toBeVisible()
+    await expect(seeker.locator('main > header').getByText('1 application', { exact: true })).toBeVisible()
     expect((await recruiter.request.get(base + originalHref)).status()).toBe(404)
     await assertFile(recruiter, replacementHref, replacement)
   } finally { await Promise.all(contexts.map(context => context.close())) }
