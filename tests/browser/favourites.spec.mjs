@@ -41,6 +41,29 @@ test('job seeker saves jobs to favourites and removes them', async ({ page }) =>
   await expect(page.getByRole('link', { name: 'Frontend Developer', exact: true })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Data Intern', exact: true })).toHaveCount(0)
 
+  const card = page.getByRole('listitem').filter({ has: page.getByRole('link', { name: 'Frontend Developer', exact: true }) })
+  // Title, View Details, direct Apply, and details-to-apply all retain Favourites.
+  for (const route of ['details', 'title', 'apply', 'details-apply']) {
+    if (route === 'apply') {
+      await card.getByRole('link', { name: 'Apply for Frontend Developer', exact: true }).click()
+    } else {
+      await card.getByRole('link', { name: route === 'title' ? 'Frontend Developer' : 'View Details', exact: route === 'title' }).click()
+      await expect(page.getByRole('link', { name: 'Back to Favourites' })).toHaveAttribute('href', '/favourites')
+      if (route === 'details-apply') {
+        for (const link of await page.getByRole('link', { name: 'Apply Now', exact: true }).all()) {
+          expect(new URL(await link.getAttribute('href'), base).searchParams.get('returnTo')).toBe('/favourites')
+        }
+        await page.getByRole('link', { name: 'Apply Now', exact: true }).first().click()
+      }
+    }
+    await expect(page.getByRole('link', { name: 'Back to Favourites' })).toHaveAttribute('href', '/favourites')
+    expect(new URL(page.url()).searchParams.get('returnTo')).toBe('/favourites')
+    await page.reload()
+    await page.getByRole('link', { name: 'Back to Favourites' }).click()
+    await expect(page).toHaveURL(base + '/favourites')
+    await expect(card).toBeVisible()
+  }
+
   await page.getByRole('button', { name: 'Remove Frontend Developer from favourites' }).click()
   await expect(page.getByRole('heading', { name: 'No favourites yet' })).toBeVisible()
   await page.goto(base + '/jobs')

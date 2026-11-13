@@ -16,8 +16,8 @@ export async function submitApplication(jobId: string, _state: { error?: string;
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).single()
   if (profile?.role !== 'job_seeker') return { error: 'Only job seekers can apply.' }
   const { error } = await supabase.from('applications').insert({ job_id: jobId, user_id: userId, resume_id: resumeId })
-  if (error?.code === '23505') return { success: true }
-  if (error) return { error: 'Could not submit your application. Please try again later.' }
+  if (error && error.code !== '23505') return { error: 'Could not submit your application. Please try again later.' }
+  revalidatePath(`/jobs/${jobId}`)
   revalidatePath(`/jobs/${jobId}/apply`)
   revalidatePath('/applications')
   return { success: true }
