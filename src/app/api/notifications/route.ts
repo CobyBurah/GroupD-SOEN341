@@ -22,6 +22,10 @@ export async function POST(request: NextRequest) {
   if (!input || !['refresh', 'read', 'read_all'].includes(input.action)) {
     return NextResponse.json({ error: 'Choose a valid action.' }, { status: 400 })
   }
+  const filter = input.filter ?? 'all'
+  if (filter !== 'all' && filter !== 'unread') {
+    return NextResponse.json({ error: 'Choose All or Unread.' }, { status: 400 })
+  }
   if (input.action === 'read' && !isJobId(input.id)) {
     return NextResponse.json({ error: 'Invalid notification.' }, { status: 400 })
   }
@@ -40,9 +44,11 @@ export async function POST(request: NextRequest) {
   // Page in batches of 20; unread count is over the complete inbox.
   const requested = Number(input.limit ?? 20)
   const limit = Number.isInteger(requested) ? Math.min(200, Math.max(20, requested)) : 20
+  let notices = supabase.from('notifications').select('id, kind, message, href, created_at, read_at')
+    .eq('user_id', userId)
+  if (filter === 'unread') notices = notices.is('read_at', null)
   const [feed, count] = await Promise.all([
-    supabase.from('notifications').select('id, kind, message, href, created_at, read_at')
-      .eq('user_id', userId).order('created_at', { ascending: false }).order('id', { ascending: false }).limit(limit + 1),
+    notices.order('created_at', { ascending: false }).order('id', { ascending: false }).limit(limit + 1),
     supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', userId).is('read_at', null),
   ])
   if (feed.error || count.error) return NextResponse.json({ error: 'Could not load notifications. Please try again.' }, { status: 503 })

@@ -229,8 +229,8 @@ async function handleApplications(req, res, url) {
   res.end(JSON.stringify(output))
 }
 
-export async function startPreview({ paginateJobs = false } = {}) {
-  jobs = []; resumes = []; resumeSeq = 0; favourites = []; applications = []; notifications = []; storedFiles.clear()
+export async function startPreview({ paginateJobs = false, notificationSeed = [] } = {}) {
+  jobs = []; resumes = []; resumeSeq = 0; favourites = []; applications = []; notifications = structuredClone(notificationSeed); storedFiles.clear()
   server = createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost')
     res.setHeader('content-type', 'application/json')
@@ -361,7 +361,10 @@ await new Promise((resolve, reject) => {
 }
 
 if (process.argv.includes('--serve')) {
-  const preview = await startPreview()
+  const notificationSeed = process.argv.includes('--unread-demo')
+    ? (await import('./unread-inbox.mjs')).unreadInboxSeed()
+    : []
+  const preview = await startPreview({ notificationSeed })
   console.log(`Local fixture preview: http://127.0.0.1:${preview.appPort}`)
   console.log('Sign in with recruiter@example.test or jobseeker@example.test and any password. Uses synthetic local data only.')
   process.on('SIGTERM', async () => { await preview.close(); process.exit(0) })
