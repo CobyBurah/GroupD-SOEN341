@@ -274,3 +274,34 @@ ul.pills { margin: 12px 0 20px; }
   .applicationDetails { text-align: center; }
   .history ol { justify-items: center; border-left: 0; padding: 0; }
 }
+
+.shell .notificationBell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: white;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.notificationCount {
+  background: #f4d35e;
+  color: #072422;
+  border-radius: 1rem;
+  padding: 0.1rem 0.45rem;
+  font-weight: 700;
+}
+
+.notificationHeading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .notificationBell > span:first-of-type { display: none; }
+  .account { position: static; margin-left: 0; width: 100%; justify-content: flex-end; }
+  .nav { padding-right: 0; }
+}

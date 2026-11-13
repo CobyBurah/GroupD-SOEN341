@@ -67,6 +67,14 @@ export function JobForm({ id = null, initialValues = EMPTY_JOB }: { id?: string 
     </div>
 
     <div>
+      <label htmlFor="application_deadline">Application deadline (optional, UTC)</label>
+      <input id="application_deadline" name="application_deadline" type="date" defaultValue={values.application_deadline}
+        aria-invalid={!!state.errors?.application_deadline} aria-describedby="deadline-help" />
+      <p id="deadline-help">Job seekers who save or apply to this job receive a reminder within three days of this date.</p>
+      {state.errors?.application_deadline && <p role="alert">{state.errors.application_deadline}</p>}
+    </div>
+
+    <div>
       <label htmlFor="description">Job description *</label>
       <textarea id="description" name="description" rows={10} defaultValue={values.description} maxLength={JOB_LIMITS.description} required aria-invalid={!!state.errors?.description} aria-describedby={state.errors?.description ? 'description-error' : undefined} />
       {state.errors?.description && <p id="description-error" role="alert">{state.errors.description}</p>}

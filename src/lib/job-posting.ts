@@ -42,11 +42,11 @@ export const JOB_LIMITS = {
   title: 150, company: 150, location: 150, location_city: 100, location_region: 100, location_country: 100, category: 100, salary: 100, description: 15000,
 } as const
 
-export type JobValues = Record<keyof typeof JOB_LIMITS | 'employment_type' | 'workplace_type', string>
+export type JobValues = Record<keyof typeof JOB_LIMITS | 'employment_type' | 'workplace_type' | 'application_deadline', string>
 export type JobErrors = Partial<Record<keyof JobValues, string>>
 
 export const EMPTY_JOB: JobValues = {
-  title: '', company: '', location: '', location_city: '', location_region: '', location_country: '', category: '', employment_type: '', workplace_type: '', salary: '', description: '',
+  title: '', company: '', location: '', location_city: '', location_region: '', location_country: '', category: '', employment_type: '', workplace_type: '', salary: '', description: '', application_deadline: '',
 }
 
 export function validateJob(formData: FormData) {
@@ -93,6 +93,12 @@ export function validateJob(formData: FormData) {
   if (values.location && (!values.location_city || !values.location_country)) {
     errors.location = 'Choose a location from the suggestions.'
   }
+
+  if (values.application_deadline && (
+    !/^(?!0000)\d{4}-\d{2}-\d{2}$/.test(values.application_deadline) ||
+    !Number.isFinite(Date.parse(values.application_deadline)) ||
+    new Date(values.application_deadline).toISOString().slice(0, 10) !== values.application_deadline
+  )) errors.application_deadline = 'Enter a valid deadline date.'
 
   return { values, errors, valid: Object.keys(errors).length === 0 }
 }

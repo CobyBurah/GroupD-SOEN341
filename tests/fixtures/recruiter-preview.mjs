@@ -10,6 +10,7 @@ let jobs = []
 let resumes = [], resumeSeq = 0
 let favourites = []
 let applications = []
+let notifications = []
 const storedFiles = new Map()
 let server, app, appOutput = ''
 let apiPort, appPort
@@ -139,6 +140,41 @@ async function handleFavourites(req, res, url) {
   res.end(JSON.stringify(rows))
 }
 
+// In-memory notification fixture. Real trigger/RLS behavior is tested in PostgreSQL.
+function addNotification(user_id, kind, message, href, reminder_key = null) {
+  if (reminder_key && notifications.some(n => n.user_id === user_id && n.reminder_key === reminder_key)) return
+  notifications.push({ id: randomUUID(), user_id, kind, message, href, reminder_key,
+    created_at: new Date(Date.now() + notifications.length).toISOString(), read_at: null })
+}
+function refreshReminders(user) {
+  if (![seekerId, otherSeeker.id].includes(user.id)) return
+  const today = new Date().toISOString().slice(0, 10)
+  const end = new Date(Date.parse(today) + 3 * 86400000).toISOString().slice(0, 10)
+  for (const job of jobs) {
+    if (job.deleted_at || !job.application_deadline || job.application_deadline < today || job.application_deadline > end) continue
+    if (!favourites.some(f => f.user_id === user.id && f.job_id === job.id) && !applications.some(a => a.user_id === user.id && a.job_id === job.id)) continue
+    addNotification(user.id, 'deadline', `Application deadline for ${job.title}: ${job.application_deadline} (UTC).`, `/jobs/${job.id}`, `${job.id}:${job.application_deadline}`)
+  }
+}
+async function handleNotifications(req, res, url) {
+  const user = requestUser(req)
+  let rows = notifications.filter(n => n.user_id === user.id)
+  const idFilter = url.searchParams.get('id')
+  if (idFilter?.startsWith('eq.')) rows = rows.filter(n => n.id === idFilter.slice(3))
+  if (url.searchParams.get('read_at') === 'is.null') rows = rows.filter(n => n.read_at === null)
+  if (req.method === 'PATCH') {
+    const { read_at } = JSON.parse((await readBody(req)).toString())
+    rows.forEach(n => { n.read_at = read_at })
+    res.statusCode = 204; return res.end()
+  }
+  const count = rows.length
+  const limit = Number(url.searchParams.get('limit') ?? count)
+  rows.sort((a,b) => b.created_at.localeCompare(a.created_at) || b.id.localeCompare(a.id))
+  res.setHeader('content-range', `${count ? `0-${count-1}` : '*'}/${count}`)
+  if (req.method === 'HEAD') return res.end()
+  res.end(JSON.stringify(rows.slice(0, limit)))
+}
+
 // Applications mimic RLS: seekers see and withdraw their own, recruiters see and update
 // status on their jobs' applications. Every status change is appended to the row's history.
 async function handleApplications(req, res, url) {
@@ -158,13 +194,19 @@ async function handleApplications(req, res, url) {
     applications.push({ id: randomUUID(), job_id: job.id, user_id: user.id, resume_id: resume.id,
       submitted_resume_name: resume.file_name, submitted_resume_path: resume.storage_path, resume_snapshot_is_legacy: false,
       status: 'Applied', created_at, history: [{ status: 'Applied', changed_at: created_at }] })
+    addNotification(job.recruiter_id, 'new_application', `New application for ${job.title}.`, `/recruiter/jobs/${job.id}/applications`)
     res.statusCode = 201; return res.end()
   }
   if (req.method === 'PATCH') {
     const { status } = JSON.parse((await readBody(req)).toString() || '{}')
     rows = applications.filter(row => matches(row) && jobs.some(j => j.id === row.job_id && j.recruiter_id === user.id))
     for (const row of rows) {
-      if (row.status !== status) row.history.push({ status, changed_at: new Date().toISOString() })
+      if (row.status !== status) {
+        row.history.push({ status, changed_at: new Date().toISOString() })
+        const job = jobs.find(j => j.id === row.job_id)
+        addNotification(row.user_id, status === 'Interview' ? 'interview' : 'application_status',
+          status === 'Interview' ? `Interview invitation: your application for ${job.title} is now at Interview. Check the posting and contact the recruiter for details.` : `Your application for ${job.title} is now ${status}.`, '/applications')
+      }
       row.status = status
     }
   } else if (req.method === 'DELETE') {
@@ -188,7 +230,7 @@ async function handleApplications(req, res, url) {
 }
 
 export async function startPreview({ paginateJobs = false } = {}) {
-  jobs = []; resumes = []; resumeSeq = 0; favourites = []; applications = []; storedFiles.clear()
+  jobs = []; resumes = []; resumeSeq = 0; favourites = []; applications = []; notifications = []; storedFiles.clear()
   server = createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost')
     res.setHeader('content-type', 'application/json')
@@ -226,6 +268,10 @@ export async function startPreview({ paginateJobs = false } = {}) {
       const isSeeker = [seekerId, otherSeeker.id].includes(user.id)
       return res.end(JSON.stringify({ id: user.id, role: isSeeker ? 'job_seeker' : 'recruiter', full_name: isSeeker ? 'Demo Job Seeker' : 'Demo Recruiter', headline: '', location: '', bio: '' }))
     }
+    if (url.pathname === '/rest/v1/rpc/refresh_deadline_reminders') {
+      refreshReminders(requestUser(req)); return res.end('null')
+    }
+    if (url.pathname === '/rest/v1/notifications') return handleNotifications(req, res, url)
     if (url.pathname === '/rest/v1/resumes') return handleResumes(req, res, url)
     if (url.pathname.startsWith('/storage/v1/object/')) return handleStorage(req, res, url)
     if (url.pathname === '/rest/v1/applications') return handleApplications(req, res, url)

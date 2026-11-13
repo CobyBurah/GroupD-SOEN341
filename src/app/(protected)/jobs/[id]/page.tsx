@@ -74,6 +74,8 @@ export default async function JobDetailsPage({
         </Link>
       </header>
 
+      {job.application_deadline && <p><strong>Application deadline (UTC):</strong> {job.application_deadline}</p>}
+
       {/* Navigation back to the job listings */}
       <p className={styles.backLink}>
         <Link href={returnTo}>
