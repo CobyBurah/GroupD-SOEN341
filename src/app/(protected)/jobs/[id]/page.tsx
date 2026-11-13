@@ -83,6 +83,8 @@ export default async function JobDetailsPage({
         {applicationAction}
       </header>
 
+      {job.application_deadline && <p><strong>Application deadline (UTC):</strong> {job.application_deadline}</p>}
+
       {/* Return to the list that opened this job. */}
       <p className={styles.backLink}>
         <Link href={returnTo}>

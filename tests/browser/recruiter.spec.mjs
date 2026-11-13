@@ -35,6 +35,10 @@ test('recruiter creates, validates, edits, views pending applications and delete
   await page.getByRole('button', { name: 'Publish posting' }).click()
   await expect(page.getByText('Choose a location from the suggestions.')).toBeVisible()
 
+  // Blur validation can show before the server action finishes and remounts
+  // the form. Wait for that response before typing into the new input.
+  await expect(page.getByRole('button', { name: 'Publish posting' })).toBeEnabled()
+
   // Selecting the autocomplete result makes the location valid
   await page.getByLabel('Location').fill('Montreal')
   await page.getByRole('button', { name: 'Montreal, Quebec, Canada', exact: true }).click()

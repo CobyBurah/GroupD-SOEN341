@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 
 import { signOut } from './auth/actions'
 import styles from './ui.module.css'
+import { NotificationBell } from './notification-bell'
 
 // Rendered by the root layout so every page gets the same top bar,
 // with the log out button pinned to the top-right corner when signed in.
@@ -37,6 +38,7 @@ export async function SiteHeader() {
         <div className={styles.account}>
           {claims ? (
             <>
+              <NotificationBell />
               {claims.email && <span className={styles.who}>{claims.email}</span>}
               <form action={signOut}>
                 <button type="submit" className={styles.secondary}>Log out</button>

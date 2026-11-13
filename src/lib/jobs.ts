@@ -7,6 +7,7 @@ export const JOBS_PER_PAGE = 10
 // What one job looks like (same columns as the jobs table).
 // "| null" means the value can be empty.
 export type Job = {
+  application_deadline: string | null
   id: string
   recruiter_id: string
   title: string

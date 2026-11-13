@@ -165,3 +165,16 @@ test('posting validation accepts listed job options and only accepts selected lo
   assert.equal(validateJob(form({ category: 'Fake Category' })).valid, false)
   assert.equal(validateJob(form({ workplace_type: 'office' })).valid, false)
 })
+test('optional application deadlines accept real calendar dates and preserve invalid input for correction', () => {
+  for (const deadline of ['', '2028-02-29', '2026-11-15']) {
+    const result = validateJob(form({ application_deadline: deadline }))
+    assert.equal(result.valid, true)
+    assert.equal(result.values.application_deadline, deadline)
+  }
+  for (const deadline of ['0000-01-01', '2026-02-29', '2026-02-30', '2026-13-01', '2026-11-15T12:00:00Z', 'invalid']) {
+    const result = validateJob(form({ application_deadline: deadline }))
+    assert.equal(result.valid, false)
+    assert.equal(result.errors.application_deadline, 'Enter a valid deadline date.')
+    assert.equal(result.values.application_deadline, deadline)
+  }
+})

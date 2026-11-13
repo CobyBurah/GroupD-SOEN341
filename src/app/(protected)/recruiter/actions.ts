@@ -27,6 +27,7 @@ export async function saveJob(id: string | null, _state: JobState, formData: For
   // Whitelist editable fields. Ownership always comes from the verified session.
   const fields = {
   ...values,
+  application_deadline: values.application_deadline || null,
   location: values.location || null,
   location_city: values.location_city || null,
   location_region: values.location_region || null,
