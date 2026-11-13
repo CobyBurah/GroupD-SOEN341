@@ -1,0 +1,9 @@
+# AI usage — Sprint 3 unread notification filter
+
+- **Responsible member** Parsa Morshedlou (`bluwine`). **Tool** OpenAI Codex. **Date** November 13, 2026.
+- **User instruction** Parsa chose the inbox and unread bell for the shared story and asked for a contribution built on the current project and pushed for review. [US-17](https://github.com/CobyBurah/GroupD-SOEN341/issues/118)
+- **Context** Eldar’s merged implementation supplies the event producers, inbox, read actions and bell. Its All view can show 200 messages, while the bell counts unread messages across the account’s whole history. [Eldar’s PR #145](https://github.com/CobyBurah/GroupD-SOEN341/pull/145)
+- **Generated work** Codex added the All and Unread controls, the recipient-scoped unread query, an empty state, a browser regression test and a repeatable demo. Marking an item read in this view removes it and refreshes the existing bell. [Demo](../../docs/notifications/unread-inbox.md)
+- **Decisions** Apply the unread condition before ordering and limiting the query. Keep the selected view in the URL so refresh and browser Back restore it. Reuse the existing notifications table and read actions.
+- **Validation** Local checks passed for all 64 unit/database tests and three notification browser scenarios. The new scenario seeded 201 newer read notices, 21 older unread alerts and an unread alert belonging to a different account. It checked pagination, refresh, individual and bulk read actions, the bell count and browser Back. Type checking and the production build for the fixture passed. Lint reported one existing unused-parameter warning. [Browser regression test](../../tests/browser/notification-filter.spec.mjs)
+- **Human effort and review** Parsa selected the work area and requested publication. Personal Sprint 3 hours and manual demo results have yet to be recorded. [Contribution log](../../Sprint%20Deliverables/Sprint%233/Parsa_Contribution_Log.md)

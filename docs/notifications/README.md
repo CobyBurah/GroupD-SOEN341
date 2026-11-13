@@ -45,3 +45,5 @@ Browser coverage: recruiter deadline create/edit, saved-job deadline reminder, s
 The production test build deliberately points at the local fixture API. Rebuild with normal environment settings before using the real Supabase project. Full live integration still needs verification after migration review/application.
 
 Final observed results and screenshots: [local verification record](verification.md).
+
+The [Unread inbox demo](unread-inbox.md) shows how to find older alerts counted by the bell and verify read actions with a seeded local account.
