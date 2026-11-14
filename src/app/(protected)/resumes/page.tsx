@@ -73,7 +73,7 @@ export default async function ResumesPage() {
 
   const { data: resumes } = await supabase
     .from('resumes')
-    .select('id, file_name, size_bytes, created_at')
+    .select('id, file_name, mime_type, size_bytes, created_at')
     .order('created_at', { ascending: false })
 
   const feedbackByResume = await loadLatestFeedback(supabase, (resumes ?? []).map((resume) => resume.id))

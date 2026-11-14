@@ -7,7 +7,7 @@ import ts from 'typescript'
 // Compile the pure helpers with the project's TypeScript version, no app server required.
 const source = await readFile(new URL('../src/lib/resumes.ts', import.meta.url), 'utf8')
 const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
-const { validateResume, validateResumeName, MAX_RESUME_SIZE_BYTES } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`)
+const { validateResume, validateResumeName, splitResumeName, resumeExtensionForMimeType, MAX_RESUME_SIZE_BYTES } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`)
 
 test('resume names are trimmed and limited to 120 safe characters', () => {
   assert.deepEqual(validateResumeName('Backend resume 2026.pdf'), { ok: true, name: 'Backend resume 2026.pdf' })
@@ -20,6 +20,27 @@ test('resume names are trimmed and limited to 120 safe characters', () => {
   for (const unsafe of ['a/b', 'a\\b', 'line\nbreak', 'nul\u0000', 'del\u007f']) {
     assert.deepEqual(validateResumeName(unsafe), { ok: false, error: 'Name cannot contain slashes or control characters.' })
   }
+})
+
+test('renaming keeps the stored file extension locked', () => {
+  assert.equal(resumeExtensionForMimeType('application/pdf'), 'pdf')
+  assert.equal(resumeExtensionForMimeType('application/vnd.openxmlformats-officedocument.wordprocessingml.document'), 'docx')
+  assert.equal(resumeExtensionForMimeType('text/plain'), null)
+
+  assert.deepEqual(splitResumeName('beta.pdf', 'pdf'), { base: 'beta', extension: 'pdf' })
+  assert.deepEqual(splitResumeName('Old.PDF', 'pdf'), { base: 'Old', extension: 'pdf' })
+  assert.deepEqual(splitResumeName('Legacy name', 'pdf'), { base: 'Legacy name', extension: 'pdf' })
+
+  assert.deepEqual(validateResumeName('Backend CV', 'pdf'), { ok: true, name: 'Backend CV.pdf' })
+  assert.deepEqual(validateResumeName('  Backend CV.PDF ', 'pdf'), { ok: true, name: 'Backend CV.pdf' })
+  assert.deepEqual(validateResumeName('Backend CV.docx', 'pdf'), { ok: true, name: 'Backend CV.docx.pdf' })
+  assert.deepEqual(validateResumeName('Backend CV', 'docx'), { ok: true, name: 'Backend CV.docx' })
+  for (const empty of ['.pdf', '  .pdf ', '']) {
+    assert.deepEqual(validateResumeName(empty, 'pdf'), { ok: false, error: 'Enter a name for the resume.' })
+  }
+  assert.deepEqual(validateResumeName('x'.repeat(116), 'pdf'), { ok: true, name: 'x'.repeat(116) + '.pdf' })
+  assert.deepEqual(validateResumeName('x'.repeat(117), 'pdf'), { ok: false, error: 'Name must be 120 characters or fewer.' })
+  assert.deepEqual(validateResumeName('cv/2026', 'pdf'), { ok: false, error: 'Name cannot contain slashes or control characters.' })
 })
 
 test('each file in a multi-file upload is validated by type, signature and size', async () => {

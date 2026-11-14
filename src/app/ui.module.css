@@ -450,3 +450,20 @@ ul.pills { margin: 12px 0 20px; }
     min-width: 0;
   }
 }
+
+/* Resume rename: editable base name with a locked file extension */
+.nameWithExtension { display: flex; align-items: center; gap: 4px; }
+.shell .nameWithExtension input[type=text] { flex: 1; width: auto; min-width: 0; }
+.nameWithExtension span { color: #5d6668; flex-shrink: 0; }
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

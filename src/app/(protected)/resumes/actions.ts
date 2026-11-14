@@ -8,6 +8,7 @@ import {
   MAX_RESUMES_PER_UPLOAD,
   RESUME_BUCKET,
   validateResume,
+  resumeExtensionForMimeType,
   validateResumeName,
 } from '@/lib/resumes'
 import { createClient } from '@/lib/supabase/server'
@@ -235,12 +236,27 @@ export async function renameResume(
     return { error: 'Missing resume id.' }
   }
 
-  const validation = validateResumeName(formData.get('fileName'))
+  const supabase = await createClient()
+
+  // The extension comes from the stored file type, never from the client, so
+  // renaming can only change the base name.
+  const { data: existing } = await supabase
+    .from('resumes')
+    .select('mime_type')
+    .eq('id', resumeId)
+    .maybeSingle()
+
+  if (!existing) {
+    return { error: 'Resume not found.' }
+  }
+
+  const validation = validateResumeName(
+    formData.get('fileName'),
+    resumeExtensionForMimeType(existing.mime_type)
+  )
   if (!validation.ok) {
     return { error: validation.error }
   }
-
-  const supabase = await createClient()
 
   // RLS hides other users' rows, so .single() errors for a missing or foreign id.
   const { data: updated, error } = await supabase
