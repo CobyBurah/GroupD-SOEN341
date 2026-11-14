@@ -20,9 +20,9 @@ test('job seeker saves jobs to favourites and removes them', async ({ page }) =>
   await page.getByLabel('Email').fill('jobseeker@example.test')
   await page.getByLabel('Password').fill('any-password')
   await page.getByRole('button', { name: 'Log in' }).click()
-  await expect(page).toHaveURL(base + '/')
+  await expect(page).toHaveURL(base + '/dashboard')
 
-  await page.getByRole('link', { name: 'Favourites' }).click()
+  await page.getByRole('link', { name: 'Favourites', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Favourites', level: 1 })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'No favourites yet' })).toBeVisible()
 
@@ -77,7 +77,7 @@ test('recruiters do not get favourites', async ({ page }) => {
   await page.getByLabel('Email').fill('recruiter@example.test')
   await page.getByLabel('Password').fill('any-password')
   await page.getByRole('button', { name: 'Log in' }).click()
-  await expect(page).toHaveURL(base + '/')
+  await expect(page).toHaveURL(base + '/recruiter')
   await expect(page.getByRole('link', { name: 'Favourites' })).toHaveCount(0)
   await page.goto(base + '/favourites')
   await expect(page.getByText('Only job seekers can save favourite jobs.')).toBeVisible()

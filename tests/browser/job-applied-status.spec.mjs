@@ -31,7 +31,7 @@ async function signIn(page, email) {
   await page.getByLabel('Email').fill(email)
   await page.getByLabel('Password').fill('any-password')
   await page.getByRole('button', { name: 'Log in' }).click()
-  await expect(page).toHaveURL(base + '/')
+  await expect(page).toHaveURL(base + (email.includes('recruiter') ? '/recruiter' : '/dashboard'))
   return base
 }
 

@@ -266,7 +266,13 @@ export async function startPreview({ paginateJobs = false } = {}) {
         return res.end(JSON.stringify(url.searchParams.get('id').includes(seekerId) ? [{ id: seekerId, full_name: 'Demo Job Seeker', headline: '', location: '' }] : []))
       }
       const isSeeker = [seekerId, otherSeeker.id].includes(user.id)
-      return res.end(JSON.stringify({ id: user.id, role: isSeeker ? 'job_seeker' : 'recruiter', full_name: isSeeker ? 'Demo Job Seeker' : 'Demo Recruiter', headline: '', location: '', bio: '' }))
+      const role = isSeeker ? 'job_seeker' : 'recruiter'
+      return res.end(JSON.stringify({ id: user.id, role, roles: [role], full_name: isSeeker ? 'Demo Job Seeker' : 'Demo Recruiter', headline: '', location: '', bio: '' }))
+    }
+    // Preview accounts hold a single role, so "Log in as" never changes the active role.
+    if (url.pathname === '/rest/v1/rpc/set_active_role') {
+      const user = requestUser(req)
+      return res.end(JSON.stringify([seekerId, otherSeeker.id].includes(user.id) ? 'job_seeker' : 'recruiter'))
     }
     if (url.pathname === '/rest/v1/rpc/refresh_deadline_reminders') {
       refreshReminders(requestUser(req)); return res.end('null')

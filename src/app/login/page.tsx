@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+import { ROLE_LABELS, ROLES } from '@/lib/profiles'
+
 import styles from '../ui.module.css'
 
 import { login } from './actions'
@@ -17,6 +19,16 @@ export default function LoginPage() {
           <label htmlFor="password">Password</label>
           <input id="password" name="password" type="password" autoComplete="current-password" required />
         </div>
+        <fieldset>
+          <legend>Log in as</legend>
+          {ROLES.map((role) => (
+            <label key={role}>
+              <input type="radio" name="role" value={role} defaultChecked={role === 'job_seeker'} />
+              {ROLE_LABELS[role]}
+            </label>
+          ))}
+          <p className={styles.hint}>If your account only has one role, you&apos;ll be signed in with that role.</p>
+        </fieldset>
         <button formAction={login}>Log in</button>
       </form>
       <p>
