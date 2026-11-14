@@ -34,7 +34,7 @@ Prepared, reviewed and published 22 acceptance-test scenarios covering the main 
 
 Codex assisted with implementation, documentation and acceptance-test preparation. Eldar's AI usage records describe the generated work and validation activities:
 
-- [Recruiter posting-management AI log](../../AI_Log/Eldar_Sprint2/2026-10-18-recruiter-management.md)
+- [Recruiter posting-management AI log](../../AI_Log/Eldar_AI_Log/archive/2026-10-18-recruiter-management.md)
 - Acceptance-test preparation/publication AI notes are saved locally and await separate publication; the published acceptance issues linked above provide the current GitHub evidence.
 
 The local acceptance audit recorded 23 passing unit/database tests and 9 passing browser tests, with 2 browser tests failing on console-resource 404 errors. These automated checks were run with AI assistance and do not constitute Eldar's completed manual acceptance testing. The published real-Supabase acceptance scenarios remain NOT RUN; this log does not claim that all acceptance tests passed.
