@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
 import { getFavouriteJobs } from '@/lib/favourites'
+import { getAppliedJobIds } from '@/lib/seeker-applications'
 import { JobCard } from '../jobs/jobs-card'
 import { FavouriteButton } from './favourite-button'
 import styles from '@/app/ui.module.css'
@@ -30,6 +31,7 @@ export default async function FavouritesPage() {
   }
 
   const jobs = await getFavouriteJobs(userId)
+  const appliedIds = await getAppliedJobIds(userId, jobs.map((job) => job.id))
   const returnTo = encodeURIComponent('/favourites')
 
   return (
@@ -52,13 +54,17 @@ export default async function FavouritesPage() {
           {jobs.map((job) => (
             <JobCard key={job.id} job={job} href={`/jobs/${job.id}?returnTo=${returnTo}`}>
               <FavouriteButton jobId={job.id} jobTitle={job.title} favourited />
-              <Link
-                className={styles.secondary}
-                href={`/jobs/${job.id}/apply?returnTo=${returnTo}`}
-                aria-label={`Apply for ${job.title}`}
-              >
-                Apply
-              </Link>
+              {appliedIds.has(job.id) ? (
+                <span className={`${styles.statusBadge} ${styles.statusApplied}`}>Applied</span>
+              ) : (
+                <Link
+                  className={styles.secondary}
+                  href={`/jobs/${job.id}/apply?returnTo=${returnTo}`}
+                  aria-label={`Apply for ${job.title}`}
+                >
+                  Apply
+                </Link>
+              )}
               <Link className={styles.primary} href={`/jobs/${job.id}?returnTo=${returnTo}`}>
                 View Details
                 <span className={styles.arrow}>→</span>

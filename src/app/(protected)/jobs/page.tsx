@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getJobs, getJobFilterOptions, JOBS_PER_PAGE } from '@/lib/jobs'
 import { normalizeFilterOrder } from '@/lib/job-filtering'
 import { getFavouriteJobIds } from '@/lib/favourites'
+import { getAppliedJobIds } from '@/lib/seeker-applications'
 import { JobCard } from './jobs-card'
 import { JobSearch } from './job-search'
 import { JobFilters } from './job-filters'
@@ -107,10 +108,13 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
     .eq('id', claims?.claims.sub ?? '')
     .maybeSingle()
 
-  // Job seekers see a heart on each job; fill it in for the ones they already saved
-  const favouriteIds = profile?.role === 'job_seeker'
-    ? await getFavouriteJobIds(claims?.claims.sub ?? '')
-    : new Set<string>()
+  // Load saved and applied jobs together, only for the signed-in job seeker.
+  const [favouriteIds, appliedIds] = profile?.role === 'job_seeker'
+    ? await Promise.all([
+      getFavouriteJobIds(claims?.claims.sub ?? ''),
+      getAppliedJobIds(claims?.claims.sub ?? '', jobs.map((job) => job.id)),
+    ])
+    : [new Set<string>(), new Set<string>()]
 
   return (
     <main>
@@ -152,9 +156,13 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
                       <>
                         <FavouriteButton jobId={job.id} jobTitle={job.title} favourited={favouriteIds.has(job.id)} />
 
-                        <Link className={styles.secondary} href={`/jobs/${job.id}/apply?returnTo=${returnTo}`} aria-label={`Apply for ${job.title}`}>
-                          Apply
-                        </Link>
+                        {appliedIds.has(job.id) ? (
+                          <span className={`${styles.statusBadge} ${styles.statusApplied}`}>Applied</span>
+                        ) : (
+                          <Link className={styles.secondary} href={`/jobs/${job.id}/apply?returnTo=${returnTo}`} aria-label={`Apply for ${job.title}`}>
+                            Apply
+                          </Link>
+                        )}
 
                         <Link className={styles.primary} href={`/jobs/${job.id}?returnTo=${returnTo}`}>
                           <span className={styles.detailsDesktop}>View Details</span>
