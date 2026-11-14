@@ -406,4 +406,45 @@ ul.pills { margin: 12px 0 20px; }
     min-width: 0;
   }
 }
+/* Show "Status" in grey, like a placeholder, until a status is picked */
+.shell .applicationFilterField select:has(option[value=""]:checked) {
+  color: #8a9496;
+}
 
+/* Keep the options in the open dropdown list dark */
+.shell .applicationFilterField select option {
+  color: var(--cc-ink, #123);
+}
+
+/* "Date applied" label and the two date boxes on one line */
+.applicationFilterLabel {
+  font-weight: 600;
+}
+
+.applicationFilterDateRange {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shell .applicationFilters .applicationFilterDateRange input[type=date] {
+  width: auto;
+  min-width: 165px;
+}
+
+/* Grey date text while a box is empty, like a placeholder */
+.shell .applicationFilters .applicationFilterDateRange input[type=date]:invalid {
+  color: #8a9496;
+}
+
+
+@media (max-width: 640px) {
+  .applicationFilterDateRange {
+    width: 100%;
+  }
+
+  .shell .applicationFilters .applicationFilterDateRange input[type=date] {
+    flex: 1;
+    min-width: 0;
+  }
+}
