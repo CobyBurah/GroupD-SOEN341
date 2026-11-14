@@ -24,7 +24,7 @@ Eldar identified the following two requirements as his Sprint 2 contribution and
 - **Validation and remaining work:** Database policy tests passed during the local audit. The recruiter browser flow verified the empty applications state; populated recruiter UI and full real-Supabase acceptance execution remain pending in this session. PR #63 separately reports its author's live checks; those are not presented as checks performed by Eldar or Codex in this session.
 - **Evidence:** [Received-applications acceptance test #98](https://github.com/CobyBurah/GroupD-SOEN341/issues/98) and [review task #82](https://github.com/CobyBurah/GroupD-SOEN341/issues/82).
 
-The [individual contribution log](../../Sprint%20Deliverables/Sprint%232/Eldar_Contribution_Log.md) records these two approximately one-hour activities. Acceptance-test preparation time remains unspecified and is not added to the two-hour total.
+The [individual contribution log](../../../Sprint%20Deliverables/Sprint%232/Eldar_Contribution_Log.md) records these two approximately one-hour activities. Acceptance-test preparation time remains unspecified and is not added to the two-hour total.
 
 ## Requests and generated output
 
