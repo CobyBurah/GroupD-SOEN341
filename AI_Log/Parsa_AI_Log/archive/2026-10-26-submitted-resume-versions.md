@@ -15,7 +15,7 @@ Parsa selected submitted-resume version preservation as an improvement connected
 - **Evidence:** [User story #40](https://github.com/CobyBurah/GroupD-SOEN341/issues/40), [received-applications acceptance test #98](https://github.com/CobyBurah/GroupD-SOEN341/issues/98), [PR #116](https://github.com/CobyBurah/GroupD-SOEN341/pull/116), and [implementation commit](https://github.com/CobyBurah/GroupD-SOEN341/commit/de8b8e64a718cf16a457b243d28433a43f59f4a4).
 - **Human time reported:** Approximately 2 hours total, including the supporting testing/documentation and publication work described below; no per-step breakdown was supplied.
 
-The [individual contribution log](../../Sprint%20Deliverables/Sprint%232/Parsa_Contribution_Log.md) records the same approximately two-hour total.
+The [individual contribution log](../../../Sprint%20Deliverables/Sprint%232/Parsa_Contribution_Log.md) records the same approximately two-hour total.
 
 ## Requests and generated output
 
@@ -54,7 +54,7 @@ The prompts above are excerpts of relevant instructions, not a complete transcri
 - [Implementation commit `de8b8e6`](https://github.com/CobyBurah/GroupD-SOEN341/commit/de8b8e64a718cf16a457b243d28433a43f59f4a4).
 - [Publication-record commit `c04887e`](https://github.com/CobyBurah/GroupD-SOEN341/commit/c04887e03145cc3bb363b27d5d092e7756a85b97).
 - [Successful GitHub CI run for `c04887e`](https://github.com/CobyBurah/GroupD-SOEN341/actions/runs/40358366736).
-- [Implementation, validation and manual demo notes](../../docs/recruiter/submitted-resume-versions.md).
+- [Implementation, validation and manual demo notes](../../../docs/recruiter/submitted-resume-versions.md).
 
 ## Validation limits
 

@@ -19,4 +19,4 @@
 
 ## Validation and AI assistance
 
-Codex ran the automated checks against the local browser fixture and database tests. The filter scenario demonstrates a bell count of 21, then 20 after marking the oldest invitation read, then zero after marking all read. [Nov 13 AI log](../../AI_Log/Parsa_Sprint3/2026-11-13-unread-filter.md) · [Nov 10 prototype AI log](https://github.com/CobyBurah/GroupD-SOEN341/blob/5445e5529f2ec827237b6b0092730b82588c5729/AI_Log/Parsa_Sprint3/2026-11-10-notification-inbox.md)
+Codex ran the automated checks against the local browser fixture and database tests. The filter scenario demonstrates a bell count of 21, then 20 after marking the oldest invitation read, then zero after marking all read. [Sprint 3 AI log, including both sessions](../../AI_Log/Parsa_AI_Log/Sprint%233.md)
