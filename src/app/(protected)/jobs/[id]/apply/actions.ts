@@ -20,5 +20,7 @@ export async function submitApplication(jobId: string, _state: { error?: string;
   revalidatePath(`/jobs/${jobId}`)
   revalidatePath(`/jobs/${jobId}/apply`)
   revalidatePath('/applications')
+  revalidatePath('/jobs')
+  revalidatePath('/favourites')
   return { success: true }
 }

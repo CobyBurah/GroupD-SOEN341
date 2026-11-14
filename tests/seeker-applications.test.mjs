@@ -14,13 +14,14 @@ source = source.replace(/^import .* from .*$/gm, '')
 source = `const { createClient } = globalThis.__seekerApplicationsTest;\n${source}`
 
 const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
-const { getSeekerApplications } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`)
+const { getSeekerApplications, getAppliedJobIds } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`)
 
 function mockQuery(result) {
   const calls = []
   const query = {
     select(...args) { calls.push(['select', ...args]); return this },
     eq(...args) { calls.push(['eq', ...args]); return this },
+    in(...args) { calls.push(['in', ...args]); return this },
     order(...args) { calls.push(['order', ...args]); return this },
     then(resolve, reject) { return Promise.resolve(result).then(resolve, reject) },
   }
@@ -71,4 +72,31 @@ test('throws when applications cannot be loaded', async () => {
   mockQuery({ data: null, error: { message: 'boom' } })
 
   await assert.rejects(getSeekerApplications('user-1'), /Could not load applications: boom/)
+})
+
+test('loads only applied job IDs for the current user and visible jobs without history', async () => {
+  const calls = mockQuery({ data: [{ job_id: 'job-2' }], error: null })
+
+  assert.deepEqual(await getAppliedJobIds('user-1', ['job-1', 'job-2']), new Set(['job-2']))
+  assert.deepEqual(calls, [
+    ['from', 'applications'],
+    ['select', 'job_id'],
+    ['eq', 'user_id', 'user-1'],
+    ['in', 'job_id', ['job-1', 'job-2']],
+  ])
+})
+
+test('returns no applied jobs when none match or there is no listing or signed-in user', async () => {
+  mockQuery({ data: [], error: null })
+  assert.deepEqual(await getAppliedJobIds('user-1', ['job-1']), new Set())
+
+  const calls = mockQuery({ data: null, error: null })
+  assert.deepEqual(await getAppliedJobIds('user-1', []), new Set())
+  assert.deepEqual(await getAppliedJobIds('', ['job-1']), new Set())
+  assert.deepEqual(calls, [])
+})
+
+test('does not treat an applied-job lookup failure as permission to apply', async () => {
+  mockQuery({ data: null, error: { message: 'boom' } })
+  await assert.rejects(getAppliedJobIds('user-1', ['job-1']), /Could not load applied jobs: boom/)
 })

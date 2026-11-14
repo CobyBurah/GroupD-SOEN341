@@ -22,6 +22,19 @@ export type SeekerApplication = {
 
 type ApplicationRow = Omit<SeekerApplication, 'job'> & { job: (Job & { deleted_at?: string | null }) | null }
 
+// Only the current user's applied jobs on the visible listing page; no history is needed.
+export async function getAppliedJobIds(userId: string, jobIds: string[]): Promise<Set<string>> {
+  if (!userId || jobIds.length === 0) return new Set<string>()
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('applications')
+    .select('job_id')
+    .eq('user_id', userId)
+    .in('job_id', jobIds)
+  if (error) throw new Error('Could not load applied jobs: ' + error.message)
+  return new Set((data ?? []).map((row) => row.job_id as string))
+}
+
 // Every application the user has submitted, most recent first.
 export async function getSeekerApplications(userId: string): Promise<SeekerApplication[]> {
   const supabase = await createClient()
