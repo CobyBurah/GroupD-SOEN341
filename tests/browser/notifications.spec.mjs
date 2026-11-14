@@ -10,7 +10,7 @@ async function login(page, email) {
   await page.getByLabel('Email').fill(email)
   await page.getByLabel('Password').fill('any-password')
   await page.getByRole('button', { name: 'Log in', exact: true }).click()
-  await expect(page).toHaveURL(base() + '/')
+  await expect(page).toHaveURL(base() + (email.includes('recruiter') ? '/recruiter' : '/dashboard'))
 }
 
 test('recruiter deadline, application alerts, interview, read state and private inbox', async ({ page, browser }, testInfo) => {

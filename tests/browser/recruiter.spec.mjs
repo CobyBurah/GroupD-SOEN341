@@ -88,7 +88,7 @@ test('job seekers cannot create, edit or delete recruiter postings', async ({ pa
   await page.getByLabel('Email').fill('jobseeker@example.test')
   await page.getByLabel('Password').fill('any-password')
   await page.getByRole('button', { name: 'Log in' }).click()
-  await expect(page).toHaveURL(base + '/')
+  await expect(page).toHaveURL(base + '/dashboard')
   await expect(page.getByRole('link', { name: 'My postings' })).toHaveCount(0)
 
   for (const path of ['/recruiter', '/recruiter/jobs/new', `/recruiter/jobs/${job.id}/edit`, `/recruiter/jobs/${job.id}/delete`]) {

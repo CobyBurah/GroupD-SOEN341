@@ -17,7 +17,7 @@ async function openResume(page, name) {
   await page.getByLabel('Email').fill('jobseeker@example.test')
   await page.getByLabel('Password').fill('any-password')
   await page.getByRole('button', { name: 'Log in' }).click()
-  await expect(page).toHaveURL(base + '/')
+  await expect(page).toHaveURL(base + '/dashboard')
   await page.goto(base + '/resumes')
   await page.getByLabel('Upload resumes (PDF or DOCX, up to 5 MB each)').setInputFiles([pdf(name)])
   await page.getByRole('button', { name: 'Upload', exact: true }).click()

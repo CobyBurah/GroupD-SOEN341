@@ -1,8 +1,10 @@
 import Link from 'next/link'
 
+import { isRole, otherRole, parseRoles, ROLE_LABELS, type Role } from '@/lib/profiles'
 import { createClient } from '@/lib/supabase/server'
 
 import { signOut } from './auth/actions'
+import { switchRole } from './auth/role-actions'
 import styles from './ui.module.css'
 import { NotificationBell } from './notification-bell'
 
@@ -13,11 +15,14 @@ export async function SiteHeader() {
   const { data } = await supabase.auth.getClaims()
   const claims = data?.claims
 
-  let recruiter = false
+  let role: Role = 'job_seeker'
+  let dualRole = false
   if (claims?.sub) {
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', claims.sub).single()
-    recruiter = profile?.role === 'recruiter'
+    const { data: profile } = await supabase.from('profiles').select('role, roles').eq('id', claims.sub).single()
+    if (isRole(profile?.role)) role = profile.role
+    dualRole = parseRoles(profile?.roles).length > 1
   }
+  const recruiter = role === 'recruiter'
 
   return (
     <header className={styles.topbar}>
@@ -39,6 +44,15 @@ export async function SiteHeader() {
           {claims ? (
             <>
               <NotificationBell />
+              {dualRole && (
+                <>
+                  <span className={styles.mode}>{ROLE_LABELS[role]} mode</span>
+                  <form action={switchRole}>
+                    <input type="hidden" name="role" value={otherRole(role)} />
+                    <button type="submit" className={styles.secondary}>Switch to {ROLE_LABELS[otherRole(role)]}</button>
+                  </form>
+                </>
+              )}
               {claims.email && <span className={styles.who}>{claims.email}</span>}
               <form action={signOut}>
                 <button type="submit" className={styles.secondary}>Log out</button>
