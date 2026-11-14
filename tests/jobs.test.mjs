@@ -54,6 +54,14 @@ test('job search applies keyword, location and selected filters', async () => {
   assert.ok(calls.some((call) => call[0] === 'in' && call[1] === 'employment_type' && call[2][0] === 'full_time'))
   assert.ok(calls.some((call) => call[0] === 'in' && call[1] === 'workplace_type' && call[2][0] === 'hybrid'))
 })
+test('keyword search also matches the workplace type', async () => {
+  for (const [keyword, saved] of [['Hybrid', '%Hybrid%'], ['remote', '%remote%'], ['On-site', '%Onsite%'], ['on site', '%onsite%']]) {
+    const calls = mockQuery({ data: [{ id: 'job-1' }], count: 1, error: null })
+    await getJobs(keyword, '', [], [], [], 1)
+    const search = calls.find(([name]) => name === 'or')[1]
+    assert.ok(search.includes(`workplace_type.ilike."${saved}"`), `${keyword} should search workplace_type`)
+  }
+})
 
 test('jobs are limited to 10 per page', async () => {
   const calls = mockQuery({ data: [{ id: 'job' }], count: 25, error: null })
