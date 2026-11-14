@@ -58,7 +58,9 @@ test('job seeker uploads several resumes at once, renames and deletes them', asy
   expect((await file.body()).toString()).toContain('%PDF-1.4\n% alpha.pdf')
 
   const beta = row('beta.pdf')
-  await expect(beta.getByLabel('Resume name')).toHaveValue('beta.pdf')
+  // Only the base name is editable; the extension is shown but locked.
+  await expect(beta.getByLabel('Resume name')).toHaveValue('beta')
+  await expect(beta.getByText('.pdf', { exact: true })).toBeVisible()
   // A blank field is stopped by the browser (required); whitespace reaches the server check.
   await beta.getByLabel('Resume name').fill('')
   await beta.getByRole('button', { name: 'Rename' }).click()
@@ -72,11 +74,15 @@ test('job seeker uploads several resumes at once, renames and deletes them', asy
   await beta.getByLabel('Resume name').fill('Software Engineer CV 2026')
   await beta.getByRole('button', { name: 'Rename' }).click()
   await expect(page.getByText('Resume renamed.')).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Software Engineer CV 2026', exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Software Engineer CV 2026.pdf', exact: true })).toBeVisible()
   await expect(page.getByRole('link', { name: 'beta.pdf', exact: true })).toHaveCount(0)
   await page.reload()
-  await expect(page.getByRole('link', { name: 'Software Engineer CV 2026', exact: true })).toBeVisible()
-  await expect(row('Software Engineer CV 2026').getByLabel('Resume name')).toHaveValue('Software Engineer CV 2026')
+  await expect(page.getByRole('link', { name: 'Software Engineer CV 2026.pdf', exact: true })).toBeVisible()
+  await expect(row('Software Engineer CV 2026.pdf').getByLabel('Resume name')).toHaveValue('Software Engineer CV 2026')
+  // Typing the extension again doesn't double it.
+  await row('Software Engineer CV 2026.pdf').getByLabel('Resume name').fill('Final CV.pdf')
+  await row('Software Engineer CV 2026.pdf').getByRole('button', { name: 'Rename' }).click()
+  await expect(page.getByRole('link', { name: 'Final CV.pdf', exact: true })).toBeVisible()
 
   page.on('dialog', dialog => dialog.accept())
   await row('gamma.docx').getByRole('button', { name: 'Delete' }).click()

@@ -8,6 +8,8 @@ import {
   MAX_RESUMES_PER_UPLOAD,
   MAX_UPLOAD_TOTAL_BYTES,
   formatFileSize,
+  resumeExtensionForMimeType,
+  splitResumeName,
 } from '@/lib/resumes'
 import type { StoredResumeFeedback } from '@/lib/resume-feedback'
 import styles from '@/app/ui.module.css'
@@ -89,6 +91,7 @@ export function ResumeUploadForm() {
 type Resume = {
   id: string
   file_name: string
+  mime_type: string
   size_bytes: number
   created_at: string
 }
@@ -114,6 +117,10 @@ export function ResumeRow({
   )
   const [deleteState, deleteAction, deletePending] = useActionState(deleteResume, initialDeleteState)
   const [replaceClientError, setReplaceClientError] = useState<string | null>(null)
+  const { base: nameBase, extension } = splitResumeName(
+    resume.file_name,
+    resumeExtensionForMimeType(resume.mime_type)
+  )
 
   return (
     <li className={`${styles.row} ${styles.resume}`}>
@@ -130,14 +137,23 @@ export function ResumeRow({
         <input type="hidden" name="resumeId" value={resume.id} />
         <div>
           <label htmlFor={`rename-${resume.id}`}>Resume name</label>
-          <input
-            id={`rename-${resume.id}`}
-            name="fileName"
-            type="text"
-            defaultValue={resume.file_name}
-            maxLength={MAX_RESUME_NAME_LENGTH}
-            required
-          />
+          <div className={styles.nameWithExtension}>
+            <input
+              id={`rename-${resume.id}`}
+              name="fileName"
+              type="text"
+              defaultValue={nameBase}
+              maxLength={MAX_RESUME_NAME_LENGTH - (extension ? extension.length + 1 : 0)}
+              aria-describedby={extension ? `rename-${resume.id}-extension` : undefined}
+              required
+            />
+            {extension && <span aria-hidden="true">.{extension}</span>}
+          </div>
+          {extension && (
+            <span id={`rename-${resume.id}-extension`} className={styles.srOnly}>
+              The .{extension} extension is kept automatically.
+            </span>
+          )}
         </div>
         {renameState.error && <p role="alert">{renameState.error}</p>}
         {renameState.message && <p aria-live="polite">{renameState.message}</p>}

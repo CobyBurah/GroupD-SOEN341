@@ -19,7 +19,28 @@ const RESUME_TYPES = {
   },
 } as const
 
-type ResumeExtension = keyof typeof RESUME_TYPES
+export type ResumeExtension = keyof typeof RESUME_TYPES
+
+export function resumeExtensionForMimeType(mimeType: unknown): ResumeExtension | null {
+  const match = (Object.keys(RESUME_TYPES) as ResumeExtension[]).find(
+    (extension) => RESUME_TYPES[extension].mimeType === mimeType
+  )
+  return match ?? null
+}
+
+function stripExtension(name: string, extension: ResumeExtension): string {
+  const suffix = `.${extension}`
+  return name.toLowerCase().endsWith(suffix) ? name.slice(0, -suffix.length) : name
+}
+
+// Splits a stored name into the editable base and its locked extension.
+// Older names renamed before the extension was locked keep their full text as the base.
+export function splitResumeName(
+  fileName: string,
+  extension: ResumeExtension | null
+): { base: string; extension: ResumeExtension | null } {
+  return { base: extension ? stripExtension(fileName, extension) : fileName, extension }
+}
 
 export type ResumeValidation =
   | { ok: true; extension: ResumeExtension; mimeType: string }
@@ -65,8 +86,15 @@ export const MAX_RESUME_NAME_LENGTH = 120
 
 export type ResumeNameValidation = { ok: true; name: string } | { ok: false; error: string }
 
-export function validateResumeName(raw: unknown): ResumeNameValidation {
-  const name = typeof raw === 'string' ? raw.trim() : ''
+// With an extension, only the base name is user-editable: a typed copy of the
+// extension is dropped and the real one is always appended.
+export function validateResumeName(
+  raw: unknown,
+  extension?: ResumeExtension | null
+): ResumeNameValidation {
+  const trimmed = typeof raw === 'string' ? raw.trim() : ''
+  const base = extension ? stripExtension(trimmed, extension).trim() : trimmed
+  const name = base && extension ? `${base}.${extension}` : base
 
   if (!name) {
     return { ok: false, error: 'Enter a name for the resume.' }
@@ -76,7 +104,7 @@ export function validateResumeName(raw: unknown): ResumeNameValidation {
     return { ok: false, error: `Name must be ${MAX_RESUME_NAME_LENGTH} characters or fewer.` }
   }
 
-  if (/[\u0000-\u001f\u007f/\\]/.test(name)) {
+  if (/[\u0000-\u001f\u007f/\\]/.test(base)) {
     return { ok: false, error: 'Name cannot contain slashes or control characters.' }
   }
 
