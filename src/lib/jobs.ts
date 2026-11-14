@@ -74,11 +74,13 @@ export async function getJobs(keyword = '', location = '', categories: string[] 
   //only jobs that haven't been deleted
   let query = supabase.from('jobs').select('*', {count: 'exact'}).is('deleted_at', null)
 
-  //if there's a keyword, only keep jobs whose title, company, category, location or employment type contains it
+   //if there's a keyword, only keep jobs whose title, company, category, location, employment type or workplace type contains it
   if(keyword !== ''){
     const search = '"%' + keyword + '%"'
     const typeSearch = '"%' + keyword.replaceAll(' ', '_') + '%"'
-    query = query.or('title.ilike.' + search + ',company.ilike.' + search + ',category.ilike.' + search + ',location.ilike.' + search + ',employment_type.ilike.' + typeSearch)
+    //workplace types are saved as onsite, hybrid or remote, so "On-site" and "on site" need the dash and space removed
+    const workplaceSearch = '"%' + keyword.replaceAll(' ', '').replaceAll('-', '') + '%"'
+    query = query.or('title.ilike.' + search + ',company.ilike.' + search + ',category.ilike.' + search + ',location.ilike.' + search + ',employment_type.ilike.' + typeSearch + ',workplace_type.ilike.' + workplaceSearch)
   }
 
   //if a location is entered, keep jobs whose location contains it
