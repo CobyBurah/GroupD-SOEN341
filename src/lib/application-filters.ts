@@ -1,9 +1,7 @@
 //Filters for the recruiter's Applications for job page
 //Filters are in the URL 
 
-import {
-    isApplicationStatus, type ApplicationStatus
-} from '@/lib/applications'
+import { isApplicationStatus, type ApplicationStatus } from '@/lib/applications'
 
 export type ApplicationFilters = { status: ApplicationStatus | null
     from: string | null
