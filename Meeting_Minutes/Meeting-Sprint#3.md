@@ -79,3 +79,44 @@ During this meeting, we re-validated missing parts from the feature of the Recru
 | AI-Powered Resume Feedback, start (US-10) | Coby & Noah | November 15 | in progress|
 | Unit tests and acceptance tests for each feature | All members | November 16 | not started |
 | Contribution logs, AI logs and Sprint 3 reports | All members | November 16 | not started |
+
+
+# Meeting #3 - Sprint 3
+
+November 15 (4:00-5:00)
+
+## Attendees: 
+| Member | Present | 
+|--------|---------|
+| Coby | Present |
+| Sabrina | Present | 
+| Eldar | Present |
+| Nour | Present | 
+| Noah | Present |
+| Parsa | Present |
+
+ 
+## Sprint Discussions  
+During this meeting, we went over every Sprint 3 task and process to re-evaluate what was finished, what was still in progress, and what still needed to be completed. All feature tasks are finished: Recruiter Application Filtering, Job Search Activity Metrics, Notifications and Reminders, and AI-Powered Resume Feedback. The enhancements are also done. The only remaining item is the Sprint 3 document to submit, which is still in progress.
+
+## Decisions 
+* All Sprint 3 feature tasks are confirmed as complete
+* The enhancements are confirmed as complete (Coby)
+* Nour is responsible for completing the Sprint 3 document to submit
+* Sabrina is responsible for logging these meeting minutes
+* Each member makes sure their contribution log and AI log are up to date before submission
+  
+
+## Action Items 
+| Action Item | Responsible | Deadline | Status |
+|-------------|-------------|----------|--------|
+| Meeting Minutes logging | Sabrina | November 15 | completed |
+| Job Search Activity Metrics (US-16) | Nour | November 15 | completed |
+| Recruiter Application Filtering (US-19) | Sabrina | November 15 | completed |
+| Notifications and Reminders (US-17) | Eldar & Parsa | November 15 | completed |
+| AI-Powered Resume Feedback (US-18) | Coby & Noah | November 15 | completed |
+| Enhancements | Coby | November 15 | completed |
+| Unit tests and acceptance tests for each feature | All members | November 15 | completed |
+| Sprint 3 document to submit | Nour | November 16 | in progress |
+| Contribution logs and AI logs | All members | November 16 | completed |
+
