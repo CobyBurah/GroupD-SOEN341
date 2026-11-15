@@ -136,7 +136,7 @@ export default async function ApplicationsPage({ searchParams }: ApplicationsPag
               ) : (
                 <ul className={styles.list}>
                   {shown.map((application) => application.job ? (
-                    <JobCard key={application.id} job={application.job} href={`/jobs/${application.job.id}?returnTo=${returnTo}`} details={<ApplicationDetails application={application} />}>
+                    <JobCard key={application.id} job={application.job} href={`/jobs/${application.job.id}?returnTo=${returnTo}`} details={<>{application.job.archived_at && <p className={styles.meta}>This posting is closed to new applications.</p>}<ApplicationDetails application={application} /></>}>
                       <WithdrawButton applicationId={application.id} jobId={application.job.id} jobTitle={application.job.title} />
                       <Link className={styles.primary} href={`/jobs/${application.job.id}?returnTo=${returnTo}`}>
                         View job

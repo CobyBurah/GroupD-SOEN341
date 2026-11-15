@@ -21,8 +21,8 @@ export async function getFavouriteJobs(userId: string) {
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
   if (error) throw new Error('Could not load favourites: ' + error.message)
-  // A job removed by its recruiter comes back as null, so leave it out.
+  // A job removed or archived by its recruiter is no longer open, so leave it out.
   return (data ?? [])
     .map((row) => row.job as unknown as (Job & { deleted_at: string | null }) | null)
-    .filter((job): job is Job & { deleted_at: string | null } => job !== null && !job.deleted_at)
+    .filter((job): job is Job & { deleted_at: string | null } => job !== null && !job.deleted_at && !job.archived_at)
 }

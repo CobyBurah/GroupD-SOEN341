@@ -8,6 +8,8 @@ export const JOBS_PER_PAGE = 10
 // "| null" means the value can be empty.
 export type Job = {
   application_deadline: string | null
+  // Set when the recruiter archives (closes) the posting; null while it is open.
+  archived_at: string | null
   id: string
   recruiter_id: string
   title: string
@@ -38,6 +40,7 @@ export async function getJobFilterOptions(): Promise<JobFilterOptions> {
     .from('jobs')
     .select('location, location_region, location_country, category')
     .is('deleted_at', null)
+    .is('archived_at', null)
 
   if (result.error) {
     throw new Error('Could not load job filters: ' + result.error.message)
@@ -71,8 +74,8 @@ export async function getJobs(keyword = '', location = '', categories: string[] 
   //connecting to the supabase
   const supabase = await createClient()
 
-  //only jobs that haven't been deleted
-  let query = supabase.from('jobs').select('*', {count: 'exact'}).is('deleted_at', null)
+  //only jobs that haven't been deleted or archived (closed) by the recruiter
+  let query = supabase.from('jobs').select('*', {count: 'exact'}).is('deleted_at', null).is('archived_at', null)
 
    //if there's a keyword, only keep jobs whose title, company, category, location, employment type or workplace type contains it
   if(keyword !== ''){
@@ -139,7 +142,8 @@ export async function getJobs(keyword = '', location = '', categories: string[] 
 }
 
 // Get one job using its id.
-// Used by the job details page.
+// Used by the job details page. Archived jobs are still returned so seekers who
+// applied can open them; the page shows them as closed.
 export async function getJob(id: string) {
   // Connect to Supabase
   const supabase = await createClient()

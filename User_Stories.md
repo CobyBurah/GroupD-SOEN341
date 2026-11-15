@@ -240,3 +240,88 @@ so that I can apply to it right away.
 - [ ] Adding the enable/disable notification feature in user settings
 ---
 
+
+## Sprint 3 user stories
+
+Each story is a GitHub issue, with its tasks and acceptance tests as sub-issues.
+
+### US-16: Job search activity metrics ([#117](https://github.com/CobyBurah/GroupD-SOEN341/issues/117))
+
+**Owner:** Nour
+
+**User story:**
+As a job seeker, I want to see how many applications I have submitted over time, so that I can track my job-search activity and stay motivated.
+
+**Acceptance criteria:**
+- [x] The My applications page shows a "Your activity" section.
+- [x] It shows a chart of applications submitted over time.
+- [x] It shows the total number of applications, how many were submitted this week, and how many this month.
+- [x] If the job seeker has no applications, a message is shown.
+
+**Acceptance tests:** AT-US16-01 ([#141](https://github.com/CobyBurah/GroupD-SOEN341/issues/141)) and AT-US16-02 ([#142](https://github.com/CobyBurah/GroupD-SOEN341/issues/142)), automated in `tests/browser/applications.spec.mjs`.
+
+### US-17: In-app notifications and reminders ([#118](https://github.com/CobyBurah/GroupD-SOEN341/issues/118))
+
+**Owners:** Parsa, Eldar
+
+**User story:**
+As a user, I want to receive in-app notifications about my applications and job postings, so that I don't miss status updates, interview invitations, deadlines or new applications.
+
+**Acceptance criteria:**
+- [x] A job seeker gets a notification when the status of one of their applications changes.
+- [x] A job seeker gets a notification when they are invited to an interview.
+- [x] A job seeker gets a reminder when a job they saved or applied to has a deadline within 3 days.
+- [x] A recruiter gets a notification when someone applies to one of their job postings.
+- [x] The header shows a bell with the number of unread notifications.
+- [x] Users can open a notifications page, newest first, and mark notifications as read.
+- [x] Users can only see their own notifications.
+
+**Acceptance tests:** AT-US17-01 to AT-US17-04 ([#152](https://github.com/CobyBurah/GroupD-SOEN341/issues/152) to [#155](https://github.com/CobyBurah/GroupD-SOEN341/issues/155)), automated in `tests/browser/notifications.spec.mjs` and `tests/notifications.test.mjs`.
+
+### US-18: AI-assisted resume feedback ([#119](https://github.com/CobyBurah/GroupD-SOEN341/issues/119))
+
+**Owners:** Coby, Noah
+
+**User story:**
+As a job seeker, I want to request AI-generated feedback on my resume, so that I can identify improvements before applying for jobs.
+
+**Acceptance criteria:**
+- [x] Users can select an uploaded resume and request feedback.
+- [x] The system processes the resume with a Generative AI model (local Ollama, llama3.1:8b).
+- [x] The user receives understandable feedback and improvement suggestions.
+- [x] If the AI service fails, an error is shown instead of fabricated feedback.
+
+**Acceptance tests:** AT-US18-01 to AT-US18-06 ([#134](https://github.com/CobyBurah/GroupD-SOEN341/issues/134) to [#139](https://github.com/CobyBurah/GroupD-SOEN341/issues/139)), automated in `tests/browser/resume-feedback.spec.mjs` and `tests/resume-feedback*.test.mjs`.
+
+### US-19: Recruiter application filtering ([#123](https://github.com/CobyBurah/GroupD-SOEN341/issues/123))
+
+**Owner:** Sabrina
+
+**User story:**
+As a recruiter, I want to filter the applications received for my job postings, so that I can review candidates more efficiently.
+
+**Acceptance criteria:**
+- [x] Recruiters can filter applications for one of their postings by status.
+- [x] Recruiters can filter applications by application date.
+- [x] Recruiters can return to viewing all applications.
+- [x] A message is shown when no applications match the filter.
+- [x] Candidate review and status updates keep working.
+
+**Acceptance tests:** AT-US19-01 ([#148](https://github.com/CobyBurah/GroupD-SOEN341/issues/148)) and AT-US19-02 ([#149](https://github.com/CobyBurah/GroupD-SOEN341/issues/149)). Unit tests are in `tests/application-filters.test.mjs`.
+
+### US-20: Archive and restore job postings
+
+**Owner:** Noah
+
+**User story:**
+As a recruiter, I want to archive a job posting when it is filled and restore it later, so that it stops receiving applications without losing the candidates who already applied.
+
+**Acceptance criteria:**
+- [x] Recruiters can archive one of their active postings from the dashboard, and restore it later.
+- [x] The dashboard separates active and archived postings and shows the number of applications received for each posting.
+- [x] Archived postings are hidden from job search and cannot receive new applications or be saved.
+- [x] Applications to an archived posting stay available to the recruiter, and applicants still see the job in their history.
+- [x] Archived postings send no deadline reminders.
+- [x] Only the posting's owner can archive or restore it (enforced by RLS).
+
+**Acceptance tests:** AT-US20-01 to AT-US20-03 (`docs/recruiter/archive-acceptance-tests.md`), automated in `tests/browser/job-archive.spec.mjs` and `tests/job-archive.test.mjs`.

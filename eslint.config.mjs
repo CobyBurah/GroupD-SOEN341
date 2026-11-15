@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     'next-env.d.ts',
     'test-results/**',
     'playwright-report/**',
+    // Local agent worktrees hold full copies of the repo.
+    '.claude/**',
   ]),
 ])
 

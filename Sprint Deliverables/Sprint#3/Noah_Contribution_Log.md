@@ -22,11 +22,17 @@
 | Splitting US-18 into GitHub issues | Split #119 into 6 task sub-issues and 6 acceptance-test sub-issues, following the team's conventions. Moved #119 to In progress. | ~30 min | [#128](https://github.com/CobyBurah/GroupD-SOEN341/issues/128)–[#139](https://github.com/CobyBurah/GroupD-SOEN341/issues/139) |
 | CI fix | Both CI jobs on PR #140 failed because package-lock.json was missing two packages that CI's npm requires. Rebuilt the lock file and checked that every CI step passes. | ~30 min | [PR #140](https://github.com/CobyBurah/GroupD-SOEN341/pull/140) (commit `66f77d3`) |
 
-**Total estimated time for the work above: approximately 6 hours 15 minutes**, across 1 PR ([#140](https://github.com/CobyBurah/GroupD-SOEN341/pull/140), 2 commits) and 12 sub-issues of [#119](https://github.com/CobyBurah/GroupD-SOEN341/issues/119).
+| Sprint 3 audit | Checked the repo, the GitHub issues, PRs and branches, and the Supabase migrations against the Sprint 3 guidelines. Found that posting archive was missing, plus several documentation gaps. | ~1 hour | This log; `Sprint Deliverables/Sprint#3/Sprint3_Workplan.md` |
+| US-20: Archive and restore job postings | Migration 0019 (`archived_at`, RLS that blocks applications and favourites on archived postings, reminders skip archived postings). Dashboard sections for active and archived postings, application counts, Archive and Restore actions, and a closed notice for seekers. 4 unit and RLS tests and 1 Playwright acceptance test. | ~2 hours 30 min | `supabase/migrations/0019_job_archive.sql`; `tests/job-archive.test.mjs`; `tests/browser/job-archive.spec.mjs`; `docs/recruiter/archive-acceptance-tests.md` |
+| Fixes from the audit | Deadline reminders now reach dual-role users in recruiter mode. Migration 0020 applies the Supabase advisor fixes (revokes RPC access to the trigger functions, adds foreign-key indexes). Fixed the local lint ignore and an unused-argument warning. | ~45 min | `supabase/migrations/0020_security_hardening.sql`; `eslint.config.mjs` |
+| Sprint 3 documentation | Added US-16 to US-20 to `User_Stories.md`, wrote the Sprint 3 workplan, and updated the README feature list and test commands. | ~45 min | `User_Stories.md`; `Sprint Deliverables/Sprint#3/Sprint3_Workplan.md`; `README.md` |
+
+**Total estimated time for the work above: approximately 11 hours 15 minutes**, across PR [#140](https://github.com/CobyBurah/GroupD-SOEN341/pull/140), the US-20 enhancement PR, and 12 sub-issues of [#119](https://github.com/CobyBurah/GroupD-SOEN341/issues/119).
 
 ## Current status
 
-- PR [#140](https://github.com/CobyBurah/GroupD-SOEN341/pull/140) is open, and both CI checks pass (lint/typecheck/tests/build and Playwright). Merging it closes #119, the 6 tasks and the 4 passed acceptance tests, and the project board moves them to Done.
+- PR [#140](https://github.com/CobyBurah/GroupD-SOEN341/pull/140) is merged. It closed #119, the 6 tasks and the 4 passed acceptance tests.
+- The US-20 archive PR adds migrations 0019 and 0020. Both have to be applied to the team Supabase project in order.
 - [AT-US18-04](https://github.com/CobyBurah/GroupD-SOEN341/issues/137) (scanned resume) and [AT-US18-05](https://github.com/CobyBurah/GroupD-SOEN341/issues/138) (privacy with a second account) still need a manual run. Automated tests cover them in the meantime.
 - Before the demo, warm up the model (`ollama run llama3.1:8b "hi" --keepalive 60m`). The first request took 116 seconds, against a 120 second timeout.
 - The PR claims migration number 0016, so other Sprint 3 branches should start at 0017.

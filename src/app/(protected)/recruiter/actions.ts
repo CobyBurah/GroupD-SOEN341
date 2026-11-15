@@ -70,7 +70,27 @@ export async function deleteJob(id: string, _state: DeleteState, formData: FormD
   redirect('/recruiter?notice=deleted')
 }
 
-export type StatusState = { status?: ApplicationStatus; message?: string; saved?: boolean }
+// Archive (close) or restore one of the recruiter's own postings. Archived postings
+// leave job search and stop accepting applications, but keep every application.
+export async function setJobArchived(id: string, archived: boolean): Promise<void> {
+  const session = await recruiterSession()
+  if (!session.ok) redirect('/dashboard')
+  const failed = `/recruiter?notice=${archived ? 'archive-failed' : 'restore-failed'}`
+  if (!isJobId(id)) redirect(failed)
+  let result
+  try {
+    result = await session.supabase.from('jobs').update({ archived_at: archived ? new Date().toISOString() : null })
+      .eq('id', id).eq('recruiter_id', session.userId).is('deleted_at', null).select('id').maybeSingle()
+  } catch {
+    redirect(failed)
+  }
+  if (result.error || !result.data) redirect(failed)
+  invalidateJobs(id)
+  revalidatePath('/favourites')
+  redirect(`/recruiter?notice=${archived ? 'archived' : 'restored'}`)
+}
+
+export type StatusState ={ status?: ApplicationStatus; message?: string; saved?: boolean }
 
 export async function updateApplicationStatus(jobId: string, applicationId: string, _state: StatusState, formData: FormData): Promise<StatusState> {
   const session = await recruiterSession()

@@ -8,7 +8,7 @@ export type WithdrawState = { message?: string }
 
 // Deletes one of the signed-in seeker's applications. Its history is removed
 // with it, and the seeker can apply to the job again afterwards.
-export async function withdrawApplication(applicationId: string, jobId: string | null, _state: WithdrawState): Promise<WithdrawState> {
+export async function withdrawApplication(applicationId: string, jobId: string | null): Promise<WithdrawState> {
   if (!isJobId(applicationId)) return { message: 'Application not found.' }
   const supabase = await createClient()
   const { data: claims } = await supabase.auth.getClaims()

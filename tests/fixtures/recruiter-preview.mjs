@@ -127,7 +127,7 @@ async function handleFavourites(req, res, url) {
   const matches = row => row.user_id === user.id && filters.every(([key, value]) => row[key] === value.slice(3))
   if (req.method === 'POST') {
     const fields = JSON.parse((await readBody(req)).toString() || '{}')
-    const job = jobs.find(j => j.id === fields.job_id && j.deleted_at === null)
+    const job = jobs.find(j => j.id === fields.job_id && j.deleted_at === null && !j.archived_at)
     if (user.id !== seekerId || fields.user_id !== user.id || !job) { res.statusCode = 403; return res.end(JSON.stringify({ code: '42501', message: 'new row violates row-level security policy for table "favourites"' })) }
     if (favourites.some(row => row.user_id === user.id && row.job_id === job.id)) { res.statusCode = 409; return res.end(JSON.stringify({ code: '23505', message: 'duplicate key value violates unique constraint "favourites_pkey"' })) }
     favourites.push({ user_id: user.id, job_id: job.id, created_at: new Date(Date.now() + favourites.length).toISOString() })
@@ -151,7 +151,7 @@ function refreshReminders(user) {
   const today = new Date().toISOString().slice(0, 10)
   const end = new Date(Date.parse(today) + 3 * 86400000).toISOString().slice(0, 10)
   for (const job of jobs) {
-    if (job.deleted_at || !job.application_deadline || job.application_deadline < today || job.application_deadline > end) continue
+    if (job.deleted_at || job.archived_at || !job.application_deadline || job.application_deadline < today || job.application_deadline > end) continue
     if (!favourites.some(f => f.user_id === user.id && f.job_id === job.id) && !applications.some(a => a.user_id === user.id && a.job_id === job.id)) continue
     addNotification(user.id, 'deadline', `Application deadline for ${job.title}: ${job.application_deadline} (UTC).`, `/jobs/${job.id}`, `${job.id}:${job.application_deadline}`)
   }
@@ -186,7 +186,7 @@ async function handleApplications(req, res, url) {
   let rows
   if (req.method === 'POST') {
     const fields = JSON.parse((await readBody(req)).toString() || '{}')
-    const job = jobs.find(j => j.id === fields.job_id && j.deleted_at === null)
+    const job = jobs.find(j => j.id === fields.job_id && j.deleted_at === null && !j.archived_at)
     const resume = resumes.find(r => r.id === fields.resume_id && r.user_id === user.id)
     if (user.id !== seekerId || fields.user_id !== user.id || !job || !resume) return deny()
     if (applications.some(row => row.user_id === user.id && row.job_id === job.id)) { res.statusCode = 409; return res.end(JSON.stringify({ code: '23505', message: 'duplicate key value violates unique constraint "applications_job_id_user_id_key"' })) }
@@ -287,12 +287,13 @@ export async function startPreview({ paginateJobs = false } = {}) {
     if (url.pathname !== '/rest/v1/jobs') { res.statusCode = 404; return res.end('{}') }
     const matches = job => ['id', 'recruiter_id'].every(field => !url.searchParams.has(field) || url.searchParams.get(field) === `eq.${job[field]}`)
       && (url.searchParams.get('deleted_at') !== 'is.null' || job.deleted_at === null)
+      && (url.searchParams.get('archived_at') !== 'is.null' || !job.archived_at)
     let rows
     if (req.method === 'POST' || req.method === 'PATCH') {
       let body = ''; for await (const chunk of req) body += chunk
       const fields = JSON.parse(body)
       if (req.method === 'POST') {
-        const created = { ...fields, id: randomUUID(), created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null }
+        const created = { ...fields, id: randomUUID(), created_at: new Date().toISOString(), updated_at: new Date().toISOString(), deleted_at: null, archived_at: null }
         jobs.push(created); rows = [created]
       } else {
         rows = jobs.filter(matches)
