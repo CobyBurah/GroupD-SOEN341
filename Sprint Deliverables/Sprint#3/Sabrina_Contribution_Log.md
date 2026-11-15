@@ -16,7 +16,7 @@
 | Job search bug fix | Fixed the Sprint 2 bug where searching "Hybrid", "Remote" or "On-site" returned no jobs by including the workplace type in the keyword search, and added a unit test for it. | ~45 min | [Bug #122](https://github.com/CobyBurah/GroupD-SOEN341/issues/122); [Commit ca80d4b](https://github.com/CobyBurah/GroupD-SOEN341/commit/ca80d4b418c0fe407a0962fd01e2cd20cab32248); [PR #150](https://github.com/CobyBurah/GroupD-SOEN341/pull/150) |
 | AI usage log | Kept my Sprint 3 AI usage log updated with prompts, outputs, changes made and validation steps. | ~45 min | [Sabrina AI log, Sprint 3](https://github.com/CobyBurah/GroupD-SOEN341/blob/main/AI_Log/Sabrina_AI_logs/Sprint%20%233.md) |
 
-**Total estimated time: around 9 hours 30 minutes.**
+**Total estimated time: around 6 hours.**
 
 ## Validation and AI assistance
 
