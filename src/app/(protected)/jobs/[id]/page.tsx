@@ -48,7 +48,7 @@ export default async function JobDetailsPage({
   const applicationsUrl = returnTo.startsWith('/applications') ? returnTo : '/applications'
   const applicationAction = application ? (
     <Link href={applicationsUrl} className={styles.primary}>View my applications</Link>
-  ) : applicationError ? null : (
+  ) : applicationError || job.archived_at ? null : (
     <Link href={`/jobs/${job.id}/apply?returnTo=${encodeURIComponent(returnTo)}`} className={styles.primary}>Apply Now</Link>
   )
 
@@ -91,6 +91,10 @@ export default async function JobDetailsPage({
           {backLabel}
         </Link>
       </p>
+
+      {job.archived_at && (
+        <p className={styles.notice} role="status">This posting is closed and no longer accepts applications.</p>
+      )}
 
       {application && (
         <p className={styles.notice} role="status">You have applied for this job. Status: {application.status}.</p>

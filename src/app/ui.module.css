@@ -120,6 +120,8 @@
 
 /* Lists of rows separated by dividers, like the job listings. */
 .list { list-style: none; padding: 0; margin: 0; }
+.postingSection { margin-top: 36px; }
+.postingSection form { margin: 0; }
 .row, .shell main > section { padding: 36px 0; border-bottom: 2px solid var(--cc-line); min-width: 0; }
 .shell main > section h2 { margin-bottom: 12px; }
 .rowTitle { margin: 0 0 4px; overflow-wrap: anywhere; }

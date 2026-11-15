@@ -161,7 +161,8 @@ npm run lint        # ESLint (Next.js core-web-vitals + TypeScript rules)
 npm run typecheck   # tsc --noEmit
 npm test            # unit tests (in-process PostgreSQL via PGlite)
 npm run build       # production build
-npm run test:browser  # Playwright browser tests (run `npm run build` first; first time: npx playwright install chromium)
+npm run build:test    # build against the local fake Supabase used by the browser tests
+npm run test:browser  # Playwright browser tests (run `npm run build:test` first; first time: npx playwright install chromium)
 ```
 
 # Proposed Features
@@ -174,11 +175,15 @@ npm run test:browser  # Playwright browser tests (run `npm run build` first; fir
 <li> Application history dashboard </li>
 <li> Applications deadline notifications and reminders </li>
 <li> Saved jobs and favourites </li>
-<li> Generative AI feature: AI generated interview questions based on the selected job posting (TBC) </li>
+<li> Job search activity metrics: applications submitted over time (US-16) </li>
+<li> In-app notifications: status changes, interview invitations and deadline reminders (US-17) </li>
+<li> Generative AI feature: AI-powered resume feedback using a local Ollama model (US-18) </li>
 
 ## Recruiter Features 
 <li> Recruiter profile management </li>
-<li> Job posting management </li>
+<li> Job posting management: create, edit, archive, restore and delete postings, with application counts (US-05, US-20) </li>
+<li> Filter received applications by status and date (US-19) </li>
+<li> In-app notifications for new applications (US-17) </li>
 <li> Application management </li>
 <li> Application status updates </li>
 

@@ -28,6 +28,7 @@ export default async function ApplyPage({ params, searchParams }: {
     <p className={styles.description}>{job.description}</p>
     <section><h2>Your application</h2>
       {existing ? <p className={styles.notice} role="status">You have applied for this job. Status: {existing.status}. <Link href={returnTo.startsWith('/applications') ? returnTo : '/applications'}>View my applications</Link></p>
+        : job.archived_at ? <p className={styles.notice} role="status">This posting is closed and no longer accepts applications.</p>
         : applicationError || resumeError ? <p role="alert">Applications are temporarily unavailable. Please try again later.</p>
         : resumes?.length ? <ApplicationForm jobId={id} resumes={resumes} />
         : <p>Upload a resume before applying. <Link href="/resumes">Manage resumes</Link></p>}
