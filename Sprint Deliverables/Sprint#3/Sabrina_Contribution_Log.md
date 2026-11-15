@@ -16,10 +16,26 @@
 | Job search bug fix | Fixed the Sprint 2 bug where searching "Hybrid", "Remote" or "On-site" returned no jobs by including the workplace type in the keyword search, and added a unit test for it. | ~45 min | [Bug #122](https://github.com/CobyBurah/GroupD-SOEN341/issues/122); [Commit ca80d4b](https://github.com/CobyBurah/GroupD-SOEN341/commit/ca80d4b418c0fe407a0962fd01e2cd20cab32248); [PR #150](https://github.com/CobyBurah/GroupD-SOEN341/pull/150) |
 | AI usage log | Kept my Sprint 3 AI usage log updated with prompts, outputs, changes made and validation steps. | ~45 min | [Sabrina AI log, Sprint 3](https://github.com/CobyBurah/GroupD-SOEN341/blob/main/AI_Log/Sabrina_AI_logs/Sprint%20%233.md) |
 
-**Total estimated time: around 6 hours.**
+**Total estimated time: around 6 hours**, across 2 merged PRs ([#147](https://github.com/CobyBurah/GroupD-SOEN341/pull/147), [#150](https://github.com/CobyBurah/GroupD-SOEN341/pull/150)) plus meeting minutes, acceptance tests and my AI log. The final checks included:
+
+* `npm run lint`
+* `npm run typecheck`
+* `npm test`
+* The browser tests (run automatically by the team CI on each of my pull requests)
+* Manual testing on the app (filtering by status, date ranges, "Show all applications", no matching applications, updating a status while a filter is on, and searching "Hybrid", "Remote" and "On-site" on Browse Jobs)
+* Creating test postings and applications with two job seeker accounts to check that filters only affect the selected job posting
+
+Before merging, lint and typecheck passed and all 75 unit/integration tests passed, including my 11 new filter tests and my new workplace-type search test.
 
 ## Validation and AI assistance
 
-I used AI (Claude) during Sprint 3 for implementation guidance, validating my code, debugging and testing. I reviewed and adjusted the suggestions before using them, and fixed issues found during testing.
+I used AI (Claude) during Sprint 3 mainly for implementation guidance, debugging and validating my code. I reviewed the suggestions before using them and made changes when they did not fit the project or did not work correctly during testing.
 
-The final implementations were tested locally (unit tests, lint, type check and manual testing in the browser) and checked through GitHub CI before merging.
+* Filter logic: AI suggested a first version, however I did it a slightly different way myself and it helped me fixed my own errors (a misspelled type name and a missing `value` in `firstValue`) that I didn't catch.
+* Filter form and page changes: AI showed me which lines to change. I made the changes myself and fixed my own bugs (single quotes instead of backticks in the page link, an unused import).
+* Filter design: I decided on the final look myself (renaming "All statuses" to "search status", putting the date filter on one line under "Date applied" since what I was doing myself first I didn't like it visually)
+* Unit tests: AI wrote the 11 filter tests. I ran them and fixed a failure caused by how I had formatted an import.
+* Bug found during testing: AI caught that the status dropdown kept its old value after clicking "Show all applications", and it was fixed before merging.
+* Git: AI helped me use separate branches for the feature and the bug fix, and recover from leftover files when switching branches.
+
+The final implementation was tested and adjusted locally before merging. Each AI interaction is documented in my AI log with what was suggested, how I validated it and what I changed.
