@@ -2,11 +2,11 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { notificationHref, type NotificationFeed } from '@/lib/notifications'
+import { notificationHref, type InboxFilter, type NotificationFeed } from '@/lib/notifications'
 import { requestNotifications } from '@/app/notification-bell'
 import styles from '@/app/ui.module.css'
 
-export function NotificationInbox() {
+export function NotificationInbox({ filter }: { filter: InboxFilter }) {
   const [feed, setFeed] = useState<NotificationFeed | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -18,7 +18,7 @@ export function NotificationInbox() {
     inFlight.current = true
     setBusy(true)
     try {
-      const data = await requestNotifications(action, id, limit.current)
+      const data = await requestNotifications(action, id, limit.current, filter)
       setFeed(data)
       setError('')
       window.dispatchEvent(new Event('notifications-changed'))
@@ -27,7 +27,7 @@ export function NotificationInbox() {
       }
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not load notifications.') }
     finally { inFlight.current = false; setBusy(false) }
-  }, [])
+  }, [filter])
   useEffect(() => {
     const initial = setTimeout(() => void load(), 0)
     const refresh = () => { if (!document.hidden) void load() }
@@ -38,6 +38,10 @@ export function NotificationInbox() {
   return <main>
     <header className={styles.header}><div><h1>Notifications</h1>
       <p>Application updates, interview invitations and deadline reminders.</p></div></header>
+    <nav className={styles.statusFilters} aria-label="Filter notifications">
+      <Link href="/notifications" scroll={false} aria-current={filter === 'all' ? 'page' : undefined}>All</Link>
+      <Link href="/notifications?filter=unread" scroll={false} aria-current={filter === 'unread' ? 'page' : undefined}>Unread</Link>
+    </nav>
     <div className={styles.actions}>
       <button className={styles.secondary} disabled={busy} onClick={() => void load()}>Refresh</button>
       <button disabled={busy || !feed?.unread} onClick={() => void load('read_all')}>Mark all as read</button>
@@ -47,8 +51,11 @@ export function NotificationInbox() {
     {!feed && !error && <p role="status">Loading notifications…</p>}
     {feed && <>
       <p className={styles.muted}>{feed.unread} unread · Updates every 30 seconds while this tab is visible.</p>
-      {feed.notifications.length === 0 ? <section className={styles.card}><h2>No notifications yet</h2>
-        <p>Your updates will appear here. Saved and applied-to jobs with a deadline within three days generate reminders.</p></section>
+      {feed.notifications.length === 0 ? <section className={styles.card}>
+        <h2>{filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}</h2>
+        {filter === 'unread' ? <Link href="/notifications">View all notifications</Link>
+          : <p>Your updates will appear here. Saved and applied-to jobs with a deadline within three days generate reminders.</p>}
+      </section>
         : <ul className={styles.list}>{feed.notifications.map(item => <li key={item.id} className={styles.row}>
           <div className={styles.notificationHeading}><strong>{item.read_at ? 'Read' : 'Unread'}</strong>
             <time dateTime={item.created_at}>{new Date(item.created_at).toLocaleString()}</time></div>
@@ -59,7 +66,7 @@ export function NotificationInbox() {
           </div>
         </li>)}</ul>}
       {feed.hasMore && <button disabled={busy || feed.notifications.length >= 200} onClick={() => { limit.current += 20; void load() }}>Load more</button>}
-      {feed.hasMore && feed.notifications.length >= 200 && <p>Showing the latest 200 notifications. Mark all as read includes older notifications.</p>}
+      {feed.hasMore && feed.notifications.length >= 200 && <p>Showing the latest 200 {filter === 'unread' ? 'unread notifications' : 'notifications'}. Mark all as read includes older notifications.</p>}
     </>}
   </main>
 }

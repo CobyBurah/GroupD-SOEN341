@@ -33,7 +33,7 @@ The same contribution includes database, route, account-cleanup and browser regr
 
 Codex assisted with implementation, tests, documentation and publication. Parsa selected the improvement, requested implementation, provided the extracted handoff after the initial GitHub permission failure, and completed GitHub CLI authorization to publish the branch and PR.
 
-- [Submitted-resume version AI log](../../AI_Log/Parsa_Sprint2/submitted-resume-versions.md)
+- [Submitted-resume version AI log](../../AI_Log/Parsa_AI_Log/Sprint%232.md)
 - [Successful GitHub CI run](https://github.com/CobyBurah/GroupD-SOEN341/actions/runs/40358366736)
 
 Local validation recorded 35 passing automated tests and 24 passing browser tests. Type checking, the production build and the browser-test build passed; lint reported no errors and one existing unused-parameter warning. Both GitHub CI jobs subsequently passed for commit `c04887e`.

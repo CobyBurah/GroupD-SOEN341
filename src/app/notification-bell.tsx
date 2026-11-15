@@ -2,13 +2,13 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
-import type { NotificationFeed } from '@/lib/notifications'
+import type { InboxFilter, NotificationFeed } from '@/lib/notifications'
 import styles from './ui.module.css'
 
-export async function requestNotifications(action = 'refresh', id?: string, limit = 20): Promise<NotificationFeed> {
+export async function requestNotifications(action = 'refresh', id?: string, limit = 20, filter: InboxFilter = 'all'): Promise<NotificationFeed> {
   const response = await fetch('/api/notifications', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action, id, limit }), cache: 'no-store',
+    body: JSON.stringify({ action, id, limit, filter }), cache: 'no-store',
   })
   const data = await response.json().catch(() => ({ error: 'Notifications are unavailable. Please try again.' }))
   if (!response.ok) throw new Error(data.error || 'Could not load notifications.')

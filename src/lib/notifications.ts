@@ -7,6 +7,8 @@ export type Notification = {
   read_at: string | null
 }
 
+export type InboxFilter = 'all' | 'unread'
+
 export type NotificationFeed = { notifications: Notification[]; unread: number; hasMore: boolean }
 
 export function notificationHref(href: string) {
