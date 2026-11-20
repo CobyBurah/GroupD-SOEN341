@@ -1,0 +1,42 @@
+name: SonarCloud
+
+# Static analysis for bugs, code smells, duplication and maintainability.
+# Needs a one-time setup (see docs/quality/static-analysis.md):
+#   1. Import the repository at https://sonarcloud.io (free for public repos).
+#   2. Turn off "Automatic Analysis" in the SonarCloud project settings.
+#   3. Add the SONAR_TOKEN repository secret.
+# Until the secret exists the scan step is skipped, so this workflow stays green.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: sonarcloud-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  sonarcloud:
+    name: SonarCloud scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Full history so SonarCloud can attribute new issues to commits.
+          fetch-depth: 0
+      - name: Skip when SonarCloud is not configured
+        if: env.SONAR_TOKEN == ''
+        run: echo "::notice::SONAR_TOKEN is not set; skipping the SonarCloud scan."
+      - uses: SonarSource/sonarqube-scan-action@v5
+        if: env.SONAR_TOKEN != ''
+        env:
+          SONAR_HOST_URL: https://sonarcloud.io
