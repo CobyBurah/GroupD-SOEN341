@@ -1,0 +1,39 @@
+name: Unit tests
+
+# node:test suites in tests/*.test.mjs. Database tests run the real SQL
+# migrations on PGlite (in-process PostgreSQL), so no Supabase project or
+# secrets are needed. Results are published as a JUnit report.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: unit-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  node-test:
+    name: node:test + PGlite
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run unit tests
+        run: node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=unit-tests.xml tests/*.test.mjs
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: unit-test-results
+          path: unit-tests.xml
+          retention-days: 30

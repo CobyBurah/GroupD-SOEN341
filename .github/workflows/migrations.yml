@@ -1,0 +1,40 @@
+name: Database migrations
+
+# Applies every migration in supabase/migrations, in order, to an empty
+# in-process PostgreSQL (PGlite) with a stand-in for Supabase auth/storage,
+# then checks that row level security is enabled on every public table.
+# Catches SQL errors, wrong migration order and tables left without RLS
+# before anyone runs a migration on the shared Supabase project.
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+      - 'scripts/ci/check-migrations.mjs'
+      - '.github/workflows/migrations.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+  workflow_dispatch:
+
+concurrency:
+  group: migrations-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  migrations:
+    name: Migrations apply cleanly (PGlite)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: node scripts/ci/check-migrations.mjs
