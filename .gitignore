@@ -33,3 +33,7 @@ yarn-error.log*
 # local browser test artifacts
 /test-results/
 /playwright-report/
+
+# Local AI-assistant instruction files (AGENTS.md is re-created by `next dev`)
+AGENTS.md
+CLAUDE.md
