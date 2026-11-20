@@ -55,6 +55,14 @@ export default async function DashboardPage() {
           <Link className={styles.primary} href="/resumes">Manage resumes <span className={styles.arrow}>→</span></Link>
         </div>
       </li>
+      <li className={styles.row}>
+        <h2 className={styles.rowTitle}>AI job matches</h2>
+        <p className={styles.meta}>Get open postings that fit one of your resumes, with the reasons and the skills to strengthen.</p>
+        <div className={styles.bottomRow}>
+          <span />
+          <Link className={styles.primary} href="/job-matches">Find matches <span className={styles.arrow}>→</span></Link>
+        </div>
+      </li>
     </ul>
   </main>
 }

@@ -18,8 +18,9 @@ const {
   parseResumeFeedback, prepareResumeText, RESUME_FEEDBACK_SCHEMA, RESUME_FEEDBACK_SYSTEM_PROMPT,
   MAX_RESUME_TEXT_CHARS, MIN_RESUME_TEXT_CHARS,
 } = await import(feedbackUrl)
+const matchingUrl = await compile('job-matching.ts')
 const { requestResumeFeedback, getOllamaConfig, OllamaUnavailableError, OllamaInvalidResponseError } = await import(
-  await compile('ollama.ts', s => s.replace("from '@/lib/resume-feedback'", `from '${feedbackUrl}'`))
+  await compile('ollama.ts', s => s.replace("from '@/lib/resume-feedback'", `from '${feedbackUrl}'`).replace("from '@/lib/job-matching'", `from '${matchingUrl}'`))
 )
 // Bare package specifiers cannot resolve from a data: URL, so inject them.
 globalThis.__resumeText = { extractText, mammoth }
