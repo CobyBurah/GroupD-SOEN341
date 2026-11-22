@@ -16,8 +16,6 @@ All workflows run on pull requests to `main` and on pushes to `main`, use Node.j
 | [`migrations.yml`](../../.github/workflows/migrations.yml) | `Migrations apply cleanly (PGlite)` | All 21 migrations apply in order on an empty PostgreSQL with Supabase auth/storage stubs, and every public table has RLS enabled (runs when a migration changes) | log |
 | [`pr-checks.yml`](../../.github/workflows/pr-checks.yml) | `PR is linked, labelled and described` | The PR closes an issue, has a label and the sprint milestone, fills in "What and why", and uses a `<type>/<description>` branch name | job summary |
 
-Dependabot ([`.github/dependabot.yml`](../../.github/dependabot.yml)) opens weekly update PRs, and those PRs go through the same checks.
-
 ## Branch protection
 
 `main` requires a pull request with one approving review from another team member, resolved conversations, and these passing checks: ESLint, TypeScript, node:test + PGlite, Next.js production build, Playwright (Chromium), npm audit, CodeQL (javascript-typescript), PR is linked, labelled and described. It is set by `node scripts/github/sprint4-github.mjs protect` ([`scripts/github/sprint4-github.mjs`](../../scripts/github/sprint4-github.mjs)).
