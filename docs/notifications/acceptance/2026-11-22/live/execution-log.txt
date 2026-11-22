@@ -1,0 +1,6 @@
+PASS Four real QA accounts can log in
+PASS AT-US17-02 new applications and duplicate isolation
+PASS AT-US17-01 all status changes and persisted reads
+PASS AT-US17-03 live deadline boundaries and deduplication
+PASS AT-US17-04 privacy, paging, unread, failure and mobile
+LIVE ACCEPTANCE COMPLETE

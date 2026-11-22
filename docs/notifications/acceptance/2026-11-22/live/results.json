@@ -1,0 +1,79 @@
+{
+  "revision": "eac5a1ce8793a1ac48441bc471bde59a960029e0",
+  "environment": "qgmkgmzchregytvtkdum.supabase.co",
+  "results": [
+    {
+      "name": "Four real QA accounts can log in",
+      "status": "PASS",
+      "details": "Separate Chromium contexts and single-role accounts; no fixture API.",
+      "time": "2026-11-22T16:48:19.026Z"
+    },
+    {
+      "name": "AT-US17-02 new applications and duplicate isolation",
+      "status": "PASS",
+      "details": "Two genuine seeker submissions created two owner alerts; duplicate insert rejected; other recruiter sees none. Correct detail link followed.",
+      "time": "2026-11-22T16:48:23.783Z"
+    },
+    {
+      "name": "AT-US17-01 all status changes and persisted reads",
+      "status": "PASS",
+      "details": "All four statuses shown via real UI; unchanged Rejected generates no extra alert; second seeker sees no status alerts.",
+      "time": "2026-11-22T16:48:29.790Z"
+    },
+    {
+      "name": "AT-US17-03 live deadline boundaries and deduplication",
+      "status": "PASS",
+      "details": "Today/+3 included; +4/yesterday/no date/deleted/archived/unrelated excluded. Saved+applied and repeat refresh deduplicated. Changed deadline added one reminder; old read state and count survived logout/login.",
+      "time": "2026-11-22T16:48:33.355Z"
+    },
+    {
+      "name": "AT-US17-04 privacy, paging, unread, failure and mobile",
+      "status": "PASS",
+      "details": "Real RLS denied forgery/content/recipient/delete and cross-user access. 32 messages paginated; mark-all cleared every unread and left recruiter inbox unchanged. Unread filter/bell, anonymous redirect/401, foreign-origin403, invalid-id400, foreign-id no-op, empty second recruiter, mobile and browser-simulated503/retry passed.",
+      "time": "2026-11-22T16:48:40.300Z"
+    }
+  ],
+  "fixture": {
+    "accounts": [
+      {
+        "label": "seeker-a",
+        "email": "qa-s4-211-20261122-seeker-a@example.com",
+        "id": "e935c958-79e1-4881-a4b9-c14584b95458"
+      },
+      {
+        "label": "seeker-b",
+        "email": "qa-s4-211-20261122-seeker-b@example.com",
+        "id": "b3099bc1-131c-4c21-9fc4-42567da0f002"
+      },
+      {
+        "label": "recruiter-a",
+        "email": "qa-s4-211-20261122-recruiter-a@example.com",
+        "id": "411106d4-d539-4448-bdf7-e3ec2f83e470"
+      },
+      {
+        "label": "recruiter-b",
+        "email": "qa-s4-211-20261122-recruiter-b@example.com",
+        "id": "e9fa207a-40e6-463a-8e29-ee7a2911a254"
+      }
+    ],
+    "jobs": [
+      "ea480462-a0f4-4f13-b9fe-648e8f27f898",
+      "46eaffef-a200-4582-88c7-02e7762667b0",
+      "22f92293-f0ae-4b29-8a68-6daccdffc063",
+      "0ee32bde-1746-4699-8030-2c7399e4e458",
+      "5bdc4afd-ff49-45c8-a855-93abdbb3f450",
+      "379ae480-9b17-4fb3-942b-366536768bb4",
+      "fa9136a2-01e5-4caa-b97f-fdbf919df051",
+      "80230ad2-5edd-409d-91fa-36e6927f392a",
+      "e24cd4f5-10b1-41fa-9d58-94b3ca863767"
+    ],
+    "applications": [
+      "a9afce1d-e681-4873-976f-4743221802d9",
+      "bf75682d-e800-493c-9cf8-33730fe439e6"
+    ],
+    "resumes": [
+      "bcc6b9b6-a6f9-41cf-add5-777d2ee28681",
+      "c5e268c0-0c86-4990-b949-1ecfc2e0cab3"
+    ]
+  }
+}
