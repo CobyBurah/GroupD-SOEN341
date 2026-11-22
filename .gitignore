@@ -37,3 +37,11 @@ yarn-error.log*
 # Local AI-assistant instruction files (AGENTS.md is re-created by `next dev`)
 AGENTS.md
 CLAUDE.md
+
+# Local editor and assistant state
+/.codex/
+/.agents/
+/.claude/
+/.cursor/
+/.idea/
+/.vscode/

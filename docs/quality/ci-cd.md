@@ -18,7 +18,7 @@ All workflows run on pull requests to `main` and on pushes to `main`, use Node.j
 
 ## Branch protection
 
-`main` requires a pull request with one approving review from another team member, resolved conversations, and these passing checks: ESLint, TypeScript, node:test + PGlite, Next.js production build, Playwright (Chromium), npm audit, CodeQL (javascript-typescript), PR is linked, labelled and described. It is set by `node scripts/github/sprint4-github.mjs protect` ([`scripts/github/sprint4-github.mjs`](../../scripts/github/sprint4-github.mjs)).
+The team review policy calls for a pull request with one approving review from another team member, resolved conversations, and these passing checks: ESLint, TypeScript, node:test + PGlite, Next.js production build, Playwright (Chromium), npm audit, CodeQL (javascript-typescript), PR is linked, labelled and described. Earlier setup used `scripts/github/sprint4-github.mjs protect`, but that script is not tracked here. See [GitHub maintenance](../../scripts/github/README.md). Verify the actual protection settings before relying on this policy description.
 
 ## Running the same checks locally
 
