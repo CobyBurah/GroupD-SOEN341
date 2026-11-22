@@ -72,6 +72,11 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   const userId = claims?.claims.sub
   if (!userId) return errorResponse('unauthorized')
 
+  // Only a job seeker can save feedback (RLS on resume_feedback). Check the active role first so a
+  // recruiter-mode request is refused before the slow model call instead of failing on save.
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle()
+  if (profile?.role !== 'job_seeker') return errorResponse('not_found')
+
   const { data: resume, error: resumeError } = await supabase.from('resumes')
     .select('storage_path, mime_type').eq('id', id).maybeSingle()
   if (resumeError || !resume) return errorResponse('not_found')
