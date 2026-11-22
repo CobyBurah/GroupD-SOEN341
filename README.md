@@ -1,4 +1,4 @@
-﻿# GroupD-SOEN341-Team Members 
+# GroupD-SOEN341-Team Members
 <li>Noah Dahan noah11dahan-cpu </li>
 <li>Nour Belkacemi NourBelka</li>
 <li>Eldar Sadeghi EldarSadeghi</li>
@@ -6,16 +6,16 @@
 <li>Parsa Morshedlou bluwine </li>
 <li>Sabrina Marsillo sm3339</li>
 
-# Project Description 
-CareerConnect is a web application designed to make job searching easier for everyone. Users can create and manage their profiles, search and apply for jobs, and track their applications. The goal is to help both job seekers and recruiters stay organized by keeping everything in one place. 
+# Project Description
+CareerConnect is a web application designed to make job searching easier for everyone. Users can create and manage their profiles, search and apply for jobs, and track their applications. The goal is to help both job seekers and recruiters stay organized by keeping everything in one place.
 
-# Identified Problem 
-It is difficult for job seekers to keep track of their job search activities when they apply for a number of positions on various websites. Application deadlines, which resume version was sent, the dates of interviews, and the status of each application can be hard to keep track of. It can also be challenging for applicants to know if their resumes fit a job's requirements. Recruiters have similar problems, and they need a simple or easier way to post job openings and track applications. Given these problems, a platform that can help organize job searches, track applications and improve communication between job seekers and recruiters would make it much more beneficial. 
+# Identified Problem
+It is difficult for job seekers to keep track of their job search activities when they apply for a number of positions on various websites. Application deadlines, which resume version was sent, the dates of interviews, and the status of each application can be hard to keep track of. It can also be challenging for applicants to know if their resumes fit a job's requirements. Recruiters have similar problems, and they need a simple or easier way to post job openings and track applications. Given these problems, a platform that can help organize job searches, track applications and improve communication between job seekers and recruiters would make it much more beneficial.
 
 # Proposed Solution
-CareerConnect will provide a single online platform where job seekers can create profiles, manage resumes, look for job openings, easily apply for jobs, and keep track of their progress. Recruiters will be able to post job listing and track the job applicants being received. This platform will also be able to have reminders and AI-powered tools to help users stay organized and make their job search much easier. 
+CareerConnect will provide a single online platform where job seekers can create profiles, manage resumes, look for job openings, easily apply for jobs, and keep track of their progress. Recruiters will be able to post job listing and track the job applicants being received. This platform will also be able to have reminders and AI-powered tools to help users stay organized and make their job search much easier.
 
-# Technologies 
+# Technologies
 <li> Programming Language: TypeScript</li>
 <li> Framework: Next.js </li>
 <li> Database: Supabase</li>
@@ -57,7 +57,7 @@ Before running the project locally, make sure the following are installed:
 
 3. Install the project dependencies:
    ````bash
-   npm install
+   npm ci
    ````
 
 4. Create a `.env.local` file in the root of the project and use `.env.example` as a template.
@@ -108,12 +108,16 @@ The database structure lives in `supabase/migrations/`. Open the Supabase dashbo
 | 0014 | `0014_application_history.sql` | Application status history and seeker withdrawal |
 | 0015 | `0015_submitted_resume_versions.sql` | Preserves submitted resume versions and restricts access to retained files |
 | 0016 | `0016_resume_feedback.sql` | Stores AI-generated resume feedback for job seekers |
+| 0017 | `0017_notifications.sql` | Private notifications, application-event alerts and deadline reminders |
+| 0018 | `0018_dual_roles.sql` | Multiple roles per account and active-role switching |
+| 0019 | `0019_job_archive.sql` | Archive/restore postings and exclude closed postings from new activity |
+| 0020 | `0020_security_hardening.sql` | Restricts helper function access and hardens database policies |
 
 A migration that ran successfully says **"Success. No rows returned."** If one fails, fix the error before moving on to the next one.
 
 ### 2. Add the sample jobs
 
-`supabase/data_jobs.sql` adds 12 sample jobs so the job list, search and filters have data to show. It is kept outside the migrations folder because it is test data, not part of the database structure. Run it **after all the migrations**.
+`scripts/sql/seed-jobs.sql` adds 12 sample jobs so the job list, search and filters have data to show. It is kept outside the migrations folder because it is test data, not part of the database structure. Run it **after all the migrations**.
 
 Every job must belong to a recruiter. Jobs posted through the recruiter dashboard are linked to the recruiter automatically, but this file is a SQL script, so it uses the id of the team's test recruiter account.
 
@@ -121,7 +125,7 @@ On a new Supabase project, the database starts empty, so you need to create a re
 
 1. Run the app and **sign up as a recruiter**.
 2. In Supabase, go to **Table Editor → profiles** and copy the `id` of that recruiter.
-3. In `supabase/data_jobs.sql`, replace the id `b7198249-22d3-4187-8d7b-284476c8a656` with your recruiter's id. Don't commit this change.
+3. In `scripts/sql/seed-jobs.sql`, replace the id `b7198249-22d3-4187-8d7b-284476c8a656` with your recruiter's id. Don't commit this change.
 4. Paste the file into the **SQL Editor** and run it.
 
 The sample jobs don't include a workplace type. To mark the two remote sample jobs as remote (like migration 0013 does for existing jobs), run:
@@ -154,7 +158,7 @@ Only text-based PDF and DOCX resumes can be reviewed; scanned images contain no 
 
 ### Checks and Continuous Integration
 
-Every pull request and every push to `main` runs the GitHub Actions workflow in `.github/workflows/ci.yml`. None of these checks need Supabase credentials, so you can run the same ones locally before pushing:
+GitHub Actions runs separate workflows in `.github/workflows/` for lint, typecheck, unit tests, build, browser tests, dependency audit, CodeQL and PR traceability. Migration checks run when migration-related paths change or when manually dispatched. See [CI/CD](docs/quality/ci-cd.md) for details. The local checks below use an in-process database or a synthetic browser fixture; they do not require access to the shared Supabase project:
 
 ```bash
 npm run lint        # ESLint (Next.js core-web-vitals + TypeScript rules)
@@ -164,6 +168,28 @@ npm run build       # production build
 npm run build:test    # build against the local fake Supabase used by the browser tests
 npm run test:browser  # Playwright browser tests (run `npm run build:test` first; first time: npx playwright install chromium)
 ```
+
+# Repository structure
+
+| Location | Contents |
+|---|---|
+| `src/app/` | Next.js pages, layouts and frontend components; colocated server actions handle form submissions |
+| `src/app/api/` | Backend HTTP route handlers |
+| `src/lib/` | Shared domain logic, validation and Supabase clients (some helpers are also used by the frontend) |
+| `supabase/migrations/` | Ordered database schema, functions, storage setup and access policies |
+| `tests/` | Unit/database tests; `tests/browser/` holds Playwright tests and `tests/fixtures/` local test services |
+| `docs/` | Feature guides, acceptance specifications, evidence and quality documentation; start at the [documentation index](docs/README.md) |
+| `Meeting_Minutes/` | Team meeting records |
+| `Sprint Deliverables/` | Workplans, contribution logs and sprint reports |
+| `AI_Log/` | Each member's AI usage logs and supporting reports |
+| `scripts/ci/` | CI helpers, including migration verification |
+| `scripts/sql/` | Optional sample-data seed and read-only QA cleanup preview |
+| `scripts/github/` | GitHub maintenance workflow documentation |
+| `.github/workflows/` | CI and analysis workflows |
+| `.github/ISSUE_TEMPLATE/` | Bug, task and acceptance-test templates |
+| Root configuration | Dependency lockfile, Next.js/TypeScript/ESLint/Playwright settings, environment example and Git conventions |
+
+Before opening a PR, follow the [code-review guide](docs/quality/code-review.md). Never commit `.env` files, credentials or local tool state. SQL support scripts are separate from schema migrations; running the seed twice adds duplicate sample jobs. [QA cleanup](scripts/sql/README.md) requires a reviewed list under issue #203.
 
 # Proposed Features
 ## Job Seeker Features
@@ -179,7 +205,7 @@ npm run test:browser  # Playwright browser tests (run `npm run build:test` first
 <li> In-app notifications: status changes, interview invitations and deadline reminders (US-17) </li>
 <li> Generative AI feature: AI-powered resume feedback using a local Ollama model (US-18) </li>
 
-## Recruiter Features 
+## Recruiter Features
 <li> Recruiter profile management </li>
 <li> Job posting management: create, edit, archive, restore and delete postings, with application counts (US-05, US-20) </li>
 <li> Filter received applications by status and date (US-19) </li>
@@ -192,4 +218,3 @@ npm run test:browser  # Playwright browser tests (run `npm run build:test` first
 <li> Login and logout </li>
 <li> Forgot password and password reset by email </li>
 <li> Account deletion </li>
-
