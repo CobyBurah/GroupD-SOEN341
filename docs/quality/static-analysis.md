@@ -8,7 +8,7 @@ Sprint 4 adds static analysis to CI so security and quality problems are found o
 |---|---|---|---|---|
 | **CodeQL** (`security-and-quality` queries) | Security vulnerabilities (injection, XSS, unsafe redirects, secrets) and code quality in TypeScript/JavaScript and in the GitHub Actions workflows | [`codeql.yml`](../../.github/workflows/codeql.yml) | PRs, pushes to `main`, weekly | **Security > Code scanning** on GitHub, and inline on the PR diff |
 | **npm audit** | Known vulnerabilities (CVEs) in production dependencies, high severity and above fail the job | [`dependency-audit.yml`](../../.github/workflows/dependency-audit.yml) | PRs, pushes to `main`, weekly | Job log; `npm audit --omit=dev` locally |
-| **Dependency review** | Blocks PRs that add a dependency with a known high-severity vulnerability | `dependency-audit.yml` | PRs | PR checks |
+| **Dependency review** | Blocks PRs that add a dependency with a known high-severity vulnerability (skipped with a notice until the repository owner enables the Dependency graph in Settings > Code security) | `dependency-audit.yml` | PRs | PR checks |
 | **Dependabot** | Opens weekly PRs for npm and GitHub Actions updates | [`.github/dependabot.yml`](../../.github/dependabot.yml) | Weekly | Pull requests labelled `dependencies` |
 | **ESLint** (`eslint-config-next`, core web vitals + TypeScript rules) | Code style, React hooks rules, Next.js rules; warnings fail CI (`--max-warnings=0`) | [`lint.yml`](../../.github/workflows/lint.yml) | PRs, pushes to `main` | Job log and the `eslint-report` artifact |
 | **TypeScript** (`tsc --noEmit`, strict mode) | Type errors | [`typecheck.yml`](../../.github/workflows/typecheck.yml) | PRs, pushes to `main` | Job log |
