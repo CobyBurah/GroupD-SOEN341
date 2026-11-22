@@ -42,7 +42,35 @@ export function matchesJobSearchFilter(row, conditions, operator = 'or') {
 export function matchesJobSearch(value, { operator, pattern, values }) {
   if (value === null || value === undefined) return false
   if (operator === 'in') return values.includes(value)
-  return operator === 'imatch' ? new RegExp(pattern, 'iu').test(value) : matchesLike(value, pattern)
+  return operator === 'imatch' ? matchesLiteralImatch(value, pattern) : matchesLike(value, pattern)
+}
+
+// Production emits escaped literals, optionally preceded by this fixed location
+// word boundary. Interpret only that subset; never execute a request's regex.
+function matchesLiteralImatch(value, pattern) {
+  const prefix = '(^|[\\s,;:/().-])'
+  const wordPrefix = pattern.startsWith(prefix)
+  const body = wordPrefix ? pattern.slice(prefix.length) : pattern
+  const metacharacters = '$.*+?^{}()|[]\\'
+  let literal = ''
+  for (let index = 0; index < body.length; index++) {
+    const character = body[index]
+    if (character === '\\') {
+      const escaped = body[++index]
+      if (!escaped || !metacharacters.includes(escaped)) throw new Error('Unsupported imatch pattern')
+      literal += escaped
+    } else {
+      if (metacharacters.includes(character)) throw new Error('Unsupported imatch pattern')
+      literal += character
+    }
+  }
+  const text = value.toLowerCase()
+  const search = literal.toLowerCase()
+  if (!wordPrefix) return text.includes(search)
+  for (let index = text.indexOf(search); index !== -1; index = text.indexOf(search, index + 1)) {
+    if (index === 0 || /[\s,;:/().-]/u.test(text[index - 1])) return true
+  }
+  return false
 }
 
 // Match SQL LIKE escapes separately from PostgREST's quoted-value escapes.

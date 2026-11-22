@@ -90,7 +90,7 @@ source = `const { createClient } = globalThis.__jobSearchTest;\n${source}`
 const postingSource = await readFile(new URL('../src/lib/job-posting.ts', import.meta.url), 'utf8')
 const searchSource = await readFile(new URL('../src/lib/job-search.ts', import.meta.url), 'utf8')
 const compiled = ts.transpileModule(postingSource + '\n' + searchSource + '\n' + source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
-const { getJobs, normalizeSearchText, escapeLikePattern, getLocationSuggestions } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`)
+const { getJobs, normalizeSearchText, escapeLikePattern, escapeRegexPattern, locationWordPatterns, getLocationSuggestions } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`)
 
 before(async () => {
   await db.exec(`CREATE TABLE jobs (
@@ -171,6 +171,50 @@ test('the browser fixture decodes quoted values before evaluating SQL LIKE escap
     assert.equal(matches ?? false, expected)
   }
   assert.throws(() => parseJobSearchFilter('(title.ilike."unterminated)'))
+})
+
+test('the browser fixture interprets escaped imatch literals consistently with PostgreSQL', async () => {
+  for (const [value, search, expected] of [
+    ['A*Star Engineer', '*', true], ['AXStar Engineer', '*', false],
+    ['data_file 100% C:\\Tools', '_', true], ['dataXfile', '_', false],
+    ['1000', '%', false], ['C:Tools', '\\', false], ['C:\\Tools', '\\', true],
+    ['Developer', 'developer', true], ['MONTRÉAL', 'Montréal', true],
+    ['Meta [x].+?^$(){}|\\*" 100%_', 'Meta [x].+?^$(){}|\\*" 100%_', true],
+    ['Research, ("East") O\'Reilly', ', ("East") O\'Reilly', true],
+    ['(a+)+$', '(a+)+$', true], ['aaaa', '(a+)+$', false],
+    [null, '*', false],
+  ]) {
+    const pattern = escapeRegexPattern(search)
+    const conditions = parseJobSearchFilter('(title.imatch.' + JSON.stringify(pattern) + ')')
+    assert.equal(matchesJobSearchFilter({ title: value }, conditions), expected, search)
+    const { rows: [{ matches }] } = await db.query('SELECT $1::text ~* $2 AS matches', [value, pattern])
+    assert.equal(matches ?? false, expected, search)
+  }
+})
+
+test('the browser fixture preserves the fixed location boundary prefix without evaluating regex', async () => {
+  const [pattern] = locationWordPatterns('mont can')
+  for (const [value, expected] of [
+    ['Montreal, Canada', true], ['East Montreal, Canada', true], ['Ammontreal, Canada', false],
+    ['Ammontreal, Montreal', true], ['New-Montreal', true], ['New/Montreal', true],
+    ['New\tMontreal', true], ['New\nMontreal', true], ['(Montreal)', true],
+    ['New:Montreal', true], ['New.Montreal', true], ['New;Montreal', true],
+    ['New_Montreal', false], ['Toronto', false], ['', false],
+  ]) {
+    const conditions = parseJobSearchFilter('(location.imatch.' + JSON.stringify(pattern) + ')')
+    assert.equal(matchesJobSearchFilter({ location: value }, conditions), expected, value)
+    const { rows: [{ matches }] } = await db.query('SELECT $1::text ~* $2 AS matches', [value, pattern])
+    assert.equal(matches, expected, value)
+  }
+})
+
+test('the browser fixture rejects regex syntax outside the generated literal imatch subset', () => {
+  const [prefixPattern] = locationWordPatterns('mont can')
+  const prefix = prefixPattern.slice(0, -'mont'.length)
+  for (const pattern of ['(a+)+$', '(a|aa)+$', '.*', '^Developer$', 'dev|engineer', '[a-z]', '\\w+', '\\1', '(?=dev)dev', 'a{2,100}', 'Developer\\', '(?i)developer', prefix + '+mont']) {
+    const conditions = parseJobSearchFilter('(title.imatch.' + JSON.stringify(pattern) + ')')
+    assert.throws(() => matchesJobSearchFilter({ title: 'Developer' }, conditions), /Unsupported imatch pattern/, pattern)
+  }
 })
 
 async function withSearchJobs(rows, run) {
