@@ -1,3 +1,5 @@
+import type { EmailOtpType } from '@supabase/supabase-js'
+
 export const PASSWORD_MIN_LENGTH = 8
 
 export type PasswordState = {
@@ -25,4 +27,12 @@ export function safeNextPath(next: string | null, fallback = '/') {
     return fallback
   }
   return next
+}
+
+const EMAIL_OTP_TYPES: readonly EmailOtpType[] = ['signup', 'invite', 'magiclink', 'recovery', 'email_change', 'email']
+
+// Email links carry ?type= from the URL; only accept the values Supabase defines instead of
+// casting whatever the link says.
+export function parseEmailOtpType(value: string | null): EmailOtpType | null {
+  return EMAIL_OTP_TYPES.find((type) => type === value) ?? null
 }
