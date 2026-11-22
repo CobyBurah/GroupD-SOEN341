@@ -36,6 +36,7 @@ export async function SiteHeader() {
               {!recruiter && <Link href="/applications">My applications</Link>}
               {!recruiter && <Link href="/favourites">Favourites</Link>}
               {!recruiter && <Link href="/resumes">Resumes</Link>}
+              {!recruiter && <Link href="/job-matches">AI matches</Link>}
               <Link href="/profile">My profile</Link>
             </>
           )}
