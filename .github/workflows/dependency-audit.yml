@@ -1,0 +1,77 @@
+name: Dependency audit
+
+# Vulnerable dependencies: npm audit on every run, plus GitHub's dependency
+# review on pull requests (blocks PRs that add high-severity vulnerabilities).
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '41 6 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: dependency-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  npm-audit:
+    name: npm audit (production dependencies)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Save audit report
+        if: always()
+        run: npm audit --omit=dev --json > npm-audit.json || true
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: npm-audit-report
+          path: npm-audit.json
+          retention-days: 30
+      - name: Fail on high or critical vulnerabilities
+        run: npm audit --omit=dev --audit-level=high
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      # Dependency review needs the repository's Dependency graph
+      # (Settings > Code security). Until the owner enables it, skip with a
+      # notice instead of failing; npm audit above still blocks vulnerable
+      # production dependencies.
+      - name: Check that the Dependency graph is enabled
+        id: graph
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.request('GET /repos/{owner}/{repo}/dependency-graph/sbom', context.repo)
+              core.setOutput('enabled', 'true')
+            } catch (error) {
+              if (error.status !== 404) throw error
+              core.setOutput('enabled', 'false')
+              core.notice('Dependency graph is disabled (Settings > Code security); skipping dependency review.')
+            }
+      - uses: actions/checkout@v5
+        if: steps.graph.outputs.enabled == 'true'
+      - uses: actions/dependency-review-action@v4
+        if: steps.graph.outputs.enabled == 'true'
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
