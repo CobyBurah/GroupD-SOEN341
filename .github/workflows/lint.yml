@@ -1,0 +1,41 @@
+name: Lint
+
+# Coding standards: ESLint with the Next.js core-web-vitals and TypeScript rules.
+# The JSON report is kept as an artifact so fixes can be linked to it.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  eslint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run ESLint
+        run: npm run lint -- --max-warnings=0
+      - name: Save ESLint report
+        if: always()
+        run: npx eslint . --format json --output-file eslint-report.json || true
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: eslint-report
+          path: eslint-report.json
+          retention-days: 30
