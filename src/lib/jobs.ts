@@ -1,8 +1,23 @@
 // Get jobs from the Supabase "jobs" table
 
 import { createClient } from '@/lib/supabase/server'
+import { EMPLOYMENT_TYPES, WORKPLACE_TYPES } from '@/lib/job-posting'
+import { normalizeSearchText, escapeLikePattern, escapeRegexPattern, locationWordPatterns } from '@/lib/job-search'
+
+export { normalizeSearchText, escapeLikePattern } from '@/lib/job-search'
 
 export const JOBS_PER_PAGE = 10
+
+// PostgREST turns * into % for ILIKE, so use a literal regex for that character.
+// SQL pattern escaping and PostgREST quoted-value escaping are separate layers.
+function quotedSearchPattern(value: string, regex: boolean): string {
+  const pattern = regex ? escapeRegexPattern(value) : '%' + escapeLikePattern(value) + '%'
+  return quoteFilterValue(pattern)
+}
+
+function quoteFilterValue(pattern: string): string {
+  return '"' + pattern.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"'
+}
 
 // What one job looks like (same columns as the jobs table).
 // "| null" means the value can be empty.
@@ -77,19 +92,52 @@ export async function getJobs(keyword = '', location = '', categories: string[] 
   //only jobs that haven't been deleted or archived (closed) by the recruiter
   let query = supabase.from('jobs').select('*', {count: 'exact'}).is('deleted_at', null).is('archived_at', null)
 
-   //if there's a keyword, only keep jobs whose title, company, category, location, employment type or workplace type contains it
-  if(keyword !== ''){
-    const search = '"%' + keyword + '%"'
-    const typeSearch = '"%' + keyword.replaceAll(' ', '_') + '%"'
-    //workplace types are saved as onsite, hybrid or remote, so "On-site" and "on site" need the dash and space removed
-    const workplaceSearch = '"%' + keyword.replaceAll(' ', '').replaceAll('-', '') + '%"'
-    query = query.or('title.ilike.' + search + ',company.ilike.' + search + ',category.ilike.' + search + ',location.ilike.' + search + ',employment_type.ilike.' + typeSearch + ',workplace_type.ilike.' + workplaceSearch)
+  // Every keyword term is required, but each can match a different field.
+  // Punctuation within terms stays literal, including SQL/PostgREST symbols.
+  const searchTerms = normalizeSearchText(keyword).split(' ').filter(Boolean)
+  const searchFilters = searchTerms.map(term => {
+    const regex = term.includes('*')
+    const operator = regex ? 'imatch' : 'ilike'
+    const search = quotedSearchPattern(term, regex)
+    const conditions = [
+      ['title', search], ['company', search], ['category', search], ['location', search],
+    ].map(([column, pattern]) => column + '.' + operator + '.' + pattern)
+    const labelSearch = term.toLowerCase()
+    const matchingEmploymentTypes = Object.entries(EMPLOYMENT_TYPES)
+      .filter(([, label]) => label.toLowerCase().includes(labelSearch))
+      .map(([value]) => value)
+    // Keep "on site" and "onsite" as aliases for the visible "On-site" label.
+    const workplaceAlias = labelSearch.replaceAll(' ', '').replaceAll('-', '')
+    const matchingWorkplaceTypes = Object.entries(WORKPLACE_TYPES)
+      .filter(([, label]) => label.toLowerCase().includes(labelSearch) ||
+        (workplaceAlias !== '' && label.toLowerCase().replaceAll('-', '').includes(workplaceAlias)))
+      .map(([value]) => value)
+    // These values come from the fixed label maps, never from raw user input.
+    if (matchingEmploymentTypes.length) conditions.push('employment_type.in.(' + matchingEmploymentTypes.join(',') + ')')
+    if (matchingWorkplaceTypes.length) conditions.push('workplace_type.in.(' + matchingWorkplaceTypes.join(',') + ')')
+    return 'or(' + conditions.join(',') + ')'
+  })
+
+  // Keep phrase matches and also allow location word prefixes in any order,
+  // across structured components or the full location of older postings.
+  const locationText = normalizeSearchText(location)
+  const locationPatterns = locationWordPatterns(locationText)
+  if (locationPatterns.length) {
+    const operator = locationText.includes('*') ? 'imatch' : 'ilike'
+    const phrase = 'location.' + operator + '.' + quotedSearchPattern(locationText, operator === 'imatch')
+    const words = locationPatterns.map(pattern => 'or(' +
+      ['location', 'location_city', 'location_region', 'location_country']
+        .map(column => column + '.imatch.' + quoteFilterValue(pattern)).join(',') + ')')
+    searchFilters.push('or(' + phrase + ',and(' + words.join(',') + '))')
+  } else if(locationText !== ''){
+    query = locationText.includes('*')
+      ? query.regexIMatch('location', escapeRegexPattern(locationText))
+      : query.ilike('location', '%' + escapeLikePattern(locationText) + '%')
   }
 
-  //if a location is entered, keep jobs whose location contains it
-  if(location !== ''){
-    query = query.ilike('location', `%${location}%`)
-  }
+  // Build one logical filter so keyword and location groups stay ANDed.
+  if (searchFilters.length === 1) query = query.or(searchFilters[0].slice(3, -1))
+  else if (searchFilters.length > 1) query = query.or('and(' + searchFilters.join(',') + ')')
 
   //if employment types are selected, keep jobs matching any of those types
   if(employmentTypes.length > 0){

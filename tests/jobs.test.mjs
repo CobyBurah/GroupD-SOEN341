@@ -11,9 +11,12 @@ globalThis.__jobsTest = {
 
 let source = await readFile(new URL('../src/lib/jobs.ts', import.meta.url), 'utf8')
 source = source.replace(/^import .* from .*$/gm, '')
+source = source.replace(/^export \{.*\} from .*$/gm, '')
 source = `const { createClient } = globalThis.__jobsTest;\n${source}`
 
-const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
+const postingSource = await readFile(new URL('../src/lib/job-posting.ts', import.meta.url), 'utf8')
+const searchSource = await readFile(new URL('../src/lib/job-search.ts', import.meta.url), 'utf8')
+const compiled = ts.transpileModule(postingSource + '\n' + searchSource + '\n' + source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
 const { getJobs, getJobFilterOptions, JOBS_PER_PAGE } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`)
 
 function mockQuery(...results) {
@@ -55,11 +58,11 @@ test('job search applies keyword, location and selected filters', async () => {
   assert.ok(calls.some((call) => call[0] === 'in' && call[1] === 'workplace_type' && call[2][0] === 'hybrid'))
 })
 test('keyword search also matches the workplace type', async () => {
-  for (const [keyword, saved] of [['Hybrid', '%Hybrid%'], ['remote', '%remote%'], ['On-site', '%Onsite%'], ['on site', '%onsite%']]) {
+  for (const [keyword, saved] of [['Hybrid', 'hybrid'], ['remote', 'remote'], ['On-site', 'onsite'], ['on site', 'onsite']]) {
     const calls = mockQuery({ data: [{ id: 'job-1' }], count: 1, error: null })
     await getJobs(keyword, '', [], [], [], 1)
     const search = calls.find(([name]) => name === 'or')[1]
-    assert.ok(search.includes(`workplace_type.ilike."${saved}"`), `${keyword} should search workplace_type`)
+    assert.ok(search.includes(`workplace_type.in.(${saved})`), `${keyword} should match the displayed workplace label`)
   }
 })
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useRef, useState } from 'react'
+import { getLocationSuggestions } from '@/lib/job-search'
 
 import styles from '@/app/ui.module.css'
 
@@ -46,13 +47,7 @@ export function JobSearch({
   const [locationValue, setLocationValue] = useState(location)
   const [showLocations, setShowLocations] = useState(false)
 
-  const suggestions = useMemo(() => {
-    const search = locationValue.trim().toLowerCase()
-
-    return locationOptions
-      .filter((option) => !search || option.toLowerCase().includes(search))
-      .slice(0, 8)
-  }, [locationValue, locationOptions])
+  const suggestions = useMemo(() => getLocationSuggestions(locationOptions, locationValue), [locationValue, locationOptions])
 
   function selectLocation(option: string) {
     setLocationValue(option)
