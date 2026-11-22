@@ -17,7 +17,7 @@ import styles from '@/app/ui.module.css'
 // The page receives the URL's search and filter values
 type JobsPageProps = {
   searchParams: Promise<{
-    keyword?: string
+    keyword?: string | string[]
     location?: string | string[]
     category?: string | string[]
     employmentType?: string | string[]
@@ -48,7 +48,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
   })
   const listingQuery = listingParams.toString()
   const returnTo = encodeURIComponent(listingQuery ? `/jobs?${listingQuery}` : '/jobs')
-  const keyword = params.keyword ?? ''
+  const keyword = toSingle(params.keyword)
   const location = toSingle(params.location)
   const categories = toArray(params.category)
   const employmentTypes = toArray(params.employmentType)

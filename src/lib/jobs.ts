@@ -1,8 +1,28 @@
 // Get jobs from the Supabase "jobs" table
 
 import { createClient } from '@/lib/supabase/server'
+import { EMPLOYMENT_TYPES, WORKPLACE_TYPES } from '@/lib/job-posting'
 
 export const JOBS_PER_PAGE = 10
+
+export function normalizeSearchText(value: string): string {
+  return value.trim().replace(/\s+/g, ' ')
+}
+
+export function escapeLikePattern(value: string): string {
+  return value.replace(/[\\%_]/g, '\\$&')
+}
+
+function escapeRegexPattern(value: string): string {
+  return value.replace(/[$.*+?^{}()|[\]\\]/g, '\\$&')
+}
+
+// PostgREST turns * into % for ILIKE, so use a literal regex for that character.
+// SQL pattern escaping and PostgREST quoted-value escaping are separate layers.
+function quotedSearchPattern(value: string, regex: boolean): string {
+  const pattern = regex ? escapeRegexPattern(value) : '%' + escapeLikePattern(value) + '%'
+  return '"' + pattern.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"'
+}
 
 // What one job looks like (same columns as the jobs table).
 // "| null" means the value can be empty.
@@ -77,18 +97,37 @@ export async function getJobs(keyword = '', location = '', categories: string[] 
   //only jobs that haven't been deleted or archived (closed) by the recruiter
   let query = supabase.from('jobs').select('*', {count: 'exact'}).is('deleted_at', null).is('archived_at', null)
 
-   //if there's a keyword, only keep jobs whose title, company, category, location, employment type or workplace type contains it
-  if(keyword !== ''){
-    const search = '"%' + keyword + '%"'
-    const typeSearch = '"%' + keyword.replaceAll(' ', '_') + '%"'
-    //workplace types are saved as onsite, hybrid or remote, so "On-site" and "on site" need the dash and space removed
-    const workplaceSearch = '"%' + keyword.replaceAll(' ', '').replaceAll('-', '') + '%"'
-    query = query.or('title.ilike.' + search + ',company.ilike.' + search + ',category.ilike.' + search + ',location.ilike.' + search + ',employment_type.ilike.' + typeSearch + ',workplace_type.ilike.' + workplaceSearch)
+   // Search free text literally and type labels as displayed on the job card.
+  const searchText = normalizeSearchText(keyword)
+  if(searchText !== ''){
+    const regex = searchText.includes('*')
+    const operator = regex ? 'imatch' : 'ilike'
+    const search = quotedSearchPattern(searchText, regex)
+    const conditions = [
+      ['title', search], ['company', search], ['category', search], ['location', search],
+    ].map(([column, pattern]) => column + '.' + operator + '.' + pattern)
+    const labelSearch = searchText.toLowerCase()
+    const matchingEmploymentTypes = Object.entries(EMPLOYMENT_TYPES)
+      .filter(([, label]) => label.toLowerCase().includes(labelSearch))
+      .map(([value]) => value)
+    // Keep "on site" and "onsite" as aliases for the visible "On-site" label.
+    const workplaceAlias = labelSearch.replaceAll(' ', '').replaceAll('-', '')
+    const matchingWorkplaceTypes = Object.entries(WORKPLACE_TYPES)
+      .filter(([, label]) => label.toLowerCase().includes(labelSearch) ||
+        (workplaceAlias !== '' && label.toLowerCase().replaceAll('-', '').includes(workplaceAlias)))
+      .map(([value]) => value)
+    // These values come from the fixed label maps, never from raw user input.
+    if (matchingEmploymentTypes.length) conditions.push('employment_type.in.(' + matchingEmploymentTypes.join(',') + ')')
+    if (matchingWorkplaceTypes.length) conditions.push('workplace_type.in.(' + matchingWorkplaceTypes.join(',') + ')')
+    query = query.or(conditions.join(','))
   }
 
   //if a location is entered, keep jobs whose location contains it
-  if(location !== ''){
-    query = query.ilike('location', `%${location}%`)
+  const locationText = normalizeSearchText(location)
+  if(locationText !== ''){
+    query = locationText.includes('*')
+      ? query.regexIMatch('location', escapeRegexPattern(locationText))
+      : query.ilike('location', '%' + escapeLikePattern(locationText) + '%')
   }
 
   //if employment types are selected, keep jobs matching any of those types

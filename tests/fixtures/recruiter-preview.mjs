@@ -1,6 +1,7 @@
 import { createServer } from 'node:http'
 import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
+import { matchesJobSearch, parseJobSearchFilter } from './job-search.mjs'
 
 // Local-only fake HTTP service for UI integration. Actual RLS is tested separately
 // against PostgreSQL in recruiter.test.mjs. No shared Supabase project is contacted.
@@ -305,10 +306,6 @@ export async function startPreview({ paginateJobs = false, notificationSeed = []
       return res.end(JSON.stringify(rows[0]))
     }
     if (paginateJobs && req.method === 'GET') {
-      const matchesLike = (value, pattern) => {
-        const escaped = pattern.replace(/^"|"$/g, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-        return new RegExp(`^${escaped.replaceAll('%', '.*').replaceAll('_', '.')}$`, 'i').test(value ?? '')
-      }
       for (const column of ['category', 'employment_type', 'workplace_type']) {
         const filter = url.searchParams.get(column)
         if (filter?.startsWith('in.(')) {
@@ -317,11 +314,19 @@ export async function startPreview({ paginateJobs = false, notificationSeed = []
         }
       }
       const location = url.searchParams.get('location')
-      if (location?.startsWith('ilike.')) rows = rows.filter(row => matchesLike(row.location, location.slice(6)))
+      if (location?.startsWith('ilike.') || location?.startsWith('imatch.')) {
+        const [operator, ...pattern] = location.split('.')
+        rows = rows.filter(row => matchesJobSearch(row.location, { operator, pattern: pattern.join('.') }))
+      }
       const keyword = url.searchParams.get('or')
       if (keyword) {
-        const conditions = keyword.slice(1, -1).split(',').map(condition => condition.split('.ilike.'))
-        rows = rows.filter(row => conditions.some(([column, pattern]) => matchesLike(row[column], pattern)))
+        try {
+          const conditions = parseJobSearchFilter(keyword)
+          rows = rows.filter(row => conditions.some(condition => matchesJobSearch(row[condition.column], condition)))
+        } catch {
+          res.statusCode = 400
+          return res.end(JSON.stringify({ code: 'PGRST100', message: 'Invalid keyword filter' }))
+        }
       }
       const total = rows.length
       const ordering = (url.searchParams.get('order') ?? '').split(',').filter(Boolean).map(value => value.split('.'))
