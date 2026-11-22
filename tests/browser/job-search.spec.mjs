@@ -90,6 +90,88 @@ test('ordinary field searches, employment names and workplace variants still wor
   await search(page, 'time', ['Designer', 'Backend Engineer'])
 })
 
+test('multi-word keywords match partial words in any order and across visible fields', async ({ page }) => {
+  const developer = await postJob({ title: 'QA-S4 Junior TypeScript Developer (edited)', company: 'Northstar Labs', location: 'Montreal, Quebec, Canada', employment_type: 'full_time', workplace_type: 'onsite' })
+  await postJob({ title: 'Junior Designer', company: 'Northstar Labs', employment_type: 'full_time', workplace_type: 'onsite' }, 1)
+  await postJob({ title: 'Developer', company: 'Elsewhere', workplace_type: 'remote' }, 2)
+  const base = await signIn(page)
+  await page.goto(base + '/jobs')
+  for (const keyword of ['jun dev', 'dev jun', 'script north', 'queb dev', 'dev full time', 'dev on site', 'dev onsite']) {
+    await search(page, keyword, [developer.title])
+  }
+  for (const keyword of ['jun absent', 'jun remote', 'jun _', 'jun %', 'jun \\', 'jun *']) await search(page, keyword, [])
+  const literal = await postJob({ title: 'Junior Developer _ % \\ *', company: 'Literal Symbols' }, 3)
+  for (const keyword of ['jun _', '% dev', '\\ dev', '* dev']) await search(page, keyword, [literal.title])
+})
+
+test('location suggestions and submitted searches support normalized, reordered location prefixes', async ({ page }) => {
+  const jobs = []
+  for (const [index, location] of ['East Montreal, Canada', 'Montreal, Quebec, Canada', 'New York, USA', 'NewYork, USA', 'Ammontreal, Canada'].entries()) {
+    jobs.push(await postJob({ title: 'Developer ' + index, location }, index))
+  }
+  const base = await signIn(page)
+  const params = new URLSearchParams({ keyword: 'dev', category: 'Software', employmentType: 'contract', workplaceType: 'hybrid' })
+  await page.goto(`${base}/jobs?${params}`)
+  const input = page.getByRole('textbox', { name: 'Location', exact: true })
+  await input.fill('mont')
+  await expect(page.getByRole('button', { name: jobs[1].location, exact: true })).toBeVisible()
+  const suggestionLabels = await page.locator('button').filter({ hasText: /Montreal|Ammontreal/ }).allTextContents()
+  expect(suggestionLabels).toEqual([jobs[1].location, jobs[4].location, jobs[0].location])
+  for (const [location, expected, suggested] of [
+    ['  New   York ', [jobs[2].title], [jobs[2].location]],
+    ['can mont', [jobs[1].title, jobs[0].title], [jobs[0].location, jobs[1].location]],
+    ['mont que', [jobs[1].title], [jobs[1].location]],
+  ]) {
+    await input.fill(location)
+    for (const label of suggested) await expect(page.getByRole('button', { name: label, exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: jobs[3].location, exact: true })).toHaveCount(0)
+    await page.getByRole('button', { name: 'Search', exact: true }).click()
+    await expect(page).toHaveURL(url => url.searchParams.get('location') === location)
+    await expect(titles(page)).toHaveText(expected)
+  }
+  await input.fill('can mont')
+  await expect(page.getByRole('button', { name: jobs[4].location, exact: true })).toHaveCount(0)
+  await page.getByRole('button', { name: jobs[1].location, exact: true }).click()
+  await expect(page).toHaveURL(url => url.searchParams.get('location') === jobs[1].location)
+  await expect(titles(page)).toHaveText([jobs[1].title])
+  for (const [key, value] of params) expect(new URL(page.url()).searchParams.get(key)).toBe(value)
+})
+
+test('multi-term keyword and location matching preserve filters, counts, pagination and return navigation', async ({ page }) => {
+  const fields = { company: 'Northstar Labs', location: 'Montreal, Quebec, Canada', employment_type: 'full_time', workplace_type: 'remote' }
+  const jobs = []
+  for (let index = 0; index < 25; index++) jobs.push(await postJob({ ...fields, title: 'Junior TypeScript Developer ' + index }, index))
+  for (const [index, decoy] of [
+    { title: 'Junior Designer' }, { company: 'Elsewhere' }, { location: 'Montreal, USA' },
+    { category: 'Marketing' }, { employment_type: 'part_time' }, { workplace_type: 'onsite' },
+    { archived_at: '2026-01-01T00:00:00Z' }, { deleted_at: '2026-01-01T00:00:00Z' },
+  ].entries()) await postJob({ ...fields, title: 'Junior TypeScript Developer decoy', ...decoy }, 30 + index)
+  const base = await signIn(page)
+  const params = new URLSearchParams({ keyword: ' north  dev remote ', location: ' can mont ', category: 'Software', employmentType: 'full_time', workplaceType: 'remote' })
+  await page.goto(`${base}/jobs?${params}`)
+  const expected = [...jobs].reverse()
+  await expect(titles(page)).toHaveText(expected.slice(0, 10).map(job => job.title))
+  await expect(page.locator('main > header').getByText('25 open roles', { exact: true })).toBeVisible()
+  const nav = page.getByRole('navigation', { name: 'Job pages' })
+  for (const [number, start, end] of [['2', 10, 20], ['3', 20, 25]]) {
+    await nav.getByRole('link', { name: number, exact: true }).click()
+    await expect(titles(page)).toHaveText(expected.slice(start, end).map(job => job.title))
+    await page.reload()
+    await expect(titles(page)).toHaveText(expected.slice(start, end).map(job => job.title))
+  }
+  const listing = page.url()
+  await page.getByRole('link', { name: /View Details/ }).first().click()
+  await page.getByRole('link', { name: /Back to jobs/i }).click()
+  await expect(page).toHaveURL(listing)
+  await expect(titles(page)).toHaveText(expected.slice(20).map(job => job.title))
+  const invalid = new URL(listing)
+  invalid.searchParams.set('page', '999')
+  await page.goto(invalid.href)
+  await expect(titles(page)).toHaveText(expected.slice(0, 10).map(job => job.title))
+  expect(new URL(page.url()).searchParams.has('page')).toBe(false)
+  for (const [key, value] of params) expect(new URL(page.url()).searchParams.get(key)).toBe(value)
+})
+
 test('literal search combines filters and preserves pagination, reload and return navigation', async ({ page }) => {
   const jobs = []
   for (let index = 0; index < 25; index++) {

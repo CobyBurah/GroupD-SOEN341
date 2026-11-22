@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises'
 import { PGlite } from '@electric-sql/pglite'
 import { createClient } from '@supabase/supabase-js'
 import ts from 'typescript'
-import { matchesLike, matchesJobSearch, parseJobSearchFilter } from './fixtures/job-search.mjs'
+import { matchesLike, matchesJobSearchFilter, parseJobSearchFilter } from './fixtures/job-search.mjs'
 
 // Exercise the real Supabase URL builder and PostgreSQL ILIKE, without contacting Supabase.
 const db = new PGlite()
@@ -44,13 +44,17 @@ const client = createClient('http://127.0.0.1:54329', 'local-test-key', {
       }
       for (const group of url.searchParams.getAll('or')) {
         const conditions = parseJobSearchFilter(group)
-        assert.ok(conditions.length >= 4 && conditions.length <= 6)
-        assert.deepEqual(conditions.filter(item => item.operator !== 'in').map(item => item.column), columns)
-        where.push('(' + conditions.map(({ column, operator, pattern, values: selected }) => {
+        const conditionSql = ({ column, operator, pattern, values: selected, conditions: children }) => {
+          if (children) {
+            assert.ok(['and', 'or'].includes(operator))
+            return '(' + children.map(conditionSql).join(operator === 'and' ? ' AND ' : ' OR ') + ')'
+          }
+          assert.ok([...columns, 'employment_type', 'workplace_type', 'location_city', 'location_region', 'location_country'].includes(column))
           if (operator !== 'in') return matchSql(column, operator, pattern)
           assert.ok(['employment_type', 'workplace_type'].includes(column))
           return `${column} = ANY(${parameter(selected)}::text[])`
-        }).join(' OR ') + ')')
+        }
+        where.push('(' + conditions.map(conditionSql).join(' OR ') + ')')
       }
       const location = url.searchParams.get('location')
       if (location) {
@@ -81,14 +85,17 @@ const client = createClient('http://127.0.0.1:54329', 'local-test-key', {
 globalThis.__jobSearchTest = { createClient: async () => client }
 let source = await readFile(new URL('../src/lib/jobs.ts', import.meta.url), 'utf8')
 source = source.replace(/^import .* from .*$/gm, '')
+source = source.replace(/^export \{.*\} from .*$/gm, '')
 source = `const { createClient } = globalThis.__jobSearchTest;\n${source}`
 const postingSource = await readFile(new URL('../src/lib/job-posting.ts', import.meta.url), 'utf8')
-const compiled = ts.transpileModule(postingSource + '\n' + source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
-const { getJobs, normalizeSearchText, escapeLikePattern } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`)
+const searchSource = await readFile(new URL('../src/lib/job-search.ts', import.meta.url), 'utf8')
+const compiled = ts.transpileModule(postingSource + '\n' + searchSource + '\n' + source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
+const { getJobs, normalizeSearchText, escapeLikePattern, getLocationSuggestions } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`)
 
 before(async () => {
   await db.exec(`CREATE TABLE jobs (
     id text PRIMARY KEY, title text, company text, category text, location text,
+    location_city text, location_region text, location_country text,
     employment_type text, workplace_type text, created_at timestamptz DEFAULT '2026-01-01',
     archived_at timestamptz, deleted_at timestamptz
   )`)
@@ -170,8 +177,8 @@ async function withSearchJobs(rows, run) {
   try {
     for (const fields of rows) {
       const job = { title: 'Location fixture', company: 'Acme', category: 'Software', location: 'Montreal', employment_type: 'contract', workplace_type: 'hybrid', ...fields }
-      await db.query('INSERT INTO jobs (id,title,company,category,location,employment_type,workplace_type) VALUES ($1,$2,$3,$4,$5,$6,$7)',
-        [job.id, job.title, job.company, job.category, job.location, job.employment_type, job.workplace_type])
+      await db.query('INSERT INTO jobs (id,title,company,category,location,employment_type,workplace_type,location_city,location_region,location_country) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',
+        [job.id, job.title, job.company, job.category, job.location, job.employment_type, job.workplace_type, job.location_city ?? null, job.location_region ?? null, job.location_country ?? null])
     }
     await run()
   } finally {
@@ -275,10 +282,9 @@ test('asterisks and regex punctuation remain literal in keyword and location sea
       const result = await getJobs(keyword)
       assert.deepEqual(result.jobs.map(job => job.id), ids)
       assert.equal(result.total, ids.length)
-      const [condition] = parseJobSearchFilter(requests.at(-1).searchParams.get('or'))
-      assert.equal(condition.operator, 'imatch')
-      assert.equal(matchesJobSearch(keyword === '*' ? 'A*Star Engineer' : keyword, condition), true)
-      assert.equal(matchesJobSearch('Meta anything', condition), false)
+      const conditions = parseJobSearchFilter(requests.at(-1).searchParams.get('or'))
+      assert.equal(matchesJobSearchFilter({ title: keyword === '*' ? 'A*Star Engineer' : keyword }, conditions), true)
+      assert.equal(matchesJobSearchFilter({ title: 'Meta anything' }, conditions), false)
     }
     assert.deepEqual((await getJobs('', location.toLowerCase())).jobs.map(job => job.id), ['literal-meta'])
   })
@@ -295,5 +301,119 @@ test('literal asterisk searches keep filtered counts and pagination correct', as
       assert.equal(result.total, 25)
       assert.deepEqual(result.jobs.map(job => job.id), rows.slice(start, end).map(job => job.id))
     }
+  })
+})
+
+test('keyword terms match partial words in any order and across fields, requiring every term', async () => {
+  await withSearchJobs([
+    { id: 'terms-developer', title: 'QA-S4 Junior TypeScript Developer (edited)', company: 'Northstar Labs', location: 'Montreal, Quebec, Canada', employment_type: 'full_time', workplace_type: 'onsite' },
+    { id: 'terms-designer', title: 'Junior Designer', company: 'Northstar Labs', employment_type: 'full_time', workplace_type: 'onsite' },
+    { id: 'terms-other-company', title: 'Developer', company: 'Elsewhere', location: 'Toronto', workplace_type: 'remote' },
+  ], async () => {
+    for (const keyword of ['jun dev', 'dev jun', '  DEV   junior ', 'script', 'dev north', 'north software dev', 'queb dev', 'full dev', 'dev time', 'dev on site', 'onsite jun dev']) {
+      const result = await getJobs(keyword)
+      assert.deepEqual(result.jobs.map(job => job.id), ['terms-developer'], keyword)
+      assert.equal(result.total, 1, keyword)
+    }
+    for (const keyword of ['jun absent', 'jun remote', 'jun _', 'jun %', 'jun \\', 'jun *', 'jun full_time']) {
+      assert.equal((await getJobs(keyword)).total, 0, keyword)
+    }
+    assert.deepEqual((await getJobs('jun jun')).jobs.map(job => job.id), ['terms-designer', 'terms-developer'])
+  })
+})
+
+test('literal symbols stay literal when combined with other keyword terms', async () => {
+  const symbols = ['_', '%', '\\', '*', 'x",company.ilike.%,title.ilike."', '(East)', "O'Reilly", '"Quoted"']
+  await withSearchJobs([
+    ...symbols.map((symbol, index) => ({ id: `terms-symbol-${index}`, title: 'Junior TypeScript Developer', company: 'Literal ' + symbol })),
+    { id: 'terms-symbol-decoy', title: 'Junior TypeScript Developer', company: 'No punctuation', employment_type: 'full_time' },
+  ], async () => {
+    for (let index = 0; index < symbols.length; index++) {
+      const result = await getJobs(symbols[index] + ' script')
+      const expected = symbols.map((symbol, i) => symbol.includes(symbols[index]) ? `terms-symbol-${i}` : null).filter(Boolean)
+      assert.deepEqual(result.jobs.map(job => job.id), expected, symbols[index])
+      assert.equal(result.total, expected.length)
+    }
+  })
+})
+
+test('location terms match word prefixes in any order, including structured and legacy locations', async () => {
+  await withSearchJobs([
+    { id: 'places-legacy', location: 'Montreal, Quebec, Canada' },
+    { id: 'places-structured', location: 'MTL', location_city: 'Montreal', location_region: 'Quebec', location_country: 'Canada' },
+    { id: 'places-wrong-country', location: 'Montreal, Quebec, USA' },
+    { id: 'places-inside-word', location: 'Ammontreal, Quebec, Canada' },
+    { id: 'places-spaced', location: 'New York, USA' },
+    { id: 'places-unspaced', location: 'NewYork, USA' },
+    { id: 'places-accent', location: 'Montréal, Québec, Canada' },
+  ], async () => {
+    for (const [location, expected] of [
+      [' mont   can ', ['places-accent', 'places-legacy', 'places-structured']],
+      ['can mont', ['places-accent', 'places-legacy', 'places-structured']],
+      ['mont que can', ['places-legacy', 'places-structured']],
+      ['can que mont', ['places-legacy', 'places-structured']],
+    ]) {
+      const result = await getJobs('', location)
+      assert.deepEqual(result.jobs.map(job => job.id), expected, location)
+      assert.equal(result.total, expected.length)
+    }
+    assert.deepEqual((await getJobs('', 'can qué')).jobs.map(job => job.id), ['places-accent'])
+    assert.deepEqual((await getJobs('', 'usa york new')).jobs.map(job => job.id), ['places-spaced'])
+    assert.deepEqual((await getJobs('', 'New York')).jobs.map(job => job.id), ['places-spaced'])
+    // Existing single-term and whole-phrase substring matches remain available.
+    assert.deepEqual((await getJobs('Location fixture', 'treal')).jobs.map(job => job.id), ['places-inside-word', 'places-legacy', 'places-wrong-country'])
+    assert.deepEqual((await getJobs('', 'treal, Quebec')).jobs.map(job => job.id), ['places-inside-word', 'places-legacy', 'places-wrong-country'])
+    assert.equal((await getJobs('', 'mont nonexistent')).total, 0)
+  })
+})
+
+test('multi-term location symbols are literal in phrase and prefix branches', async () => {
+  const symbols = ['_', '%', '\\', '*', 'x",company.ilike.%,title.ilike."', '(East)', "O'Reilly", '"Quoted"']
+  await withSearchJobs([
+    ...symbols.map((symbol, index) => ({ id: `places-symbol-${index}`, location: `Sector ${symbol}, Canada` })),
+    { id: 'places-symbol-decoy', location: 'Sector ordinary, Canada' },
+  ], async () => {
+    for (let index = 0; index < symbols.length; index++) {
+      const result = await getJobs('', 'can ' + symbols[index])
+      const expected = symbols.map((symbol, i) => symbol.includes(symbols[index]) ? `places-symbol-${i}` : null).filter(Boolean)
+      assert.deepEqual(result.jobs.map(job => job.id), expected, symbols[index])
+      assert.equal(result.total, expected.length)
+    }
+  })
+})
+
+test('location suggestions normalize whitespace, rank prefixes and agree with legacy location queries', async () => {
+  const options = ['East Montreal, Canada', 'Montreal, Quebec, Canada', 'New York, USA', 'NewYork, USA', 'Quebec, Canada']
+  await withSearchJobs(options.map((location, index) => ({ id: `suggestion-${index}`, location })), async () => {
+    for (const input of ['  New   York ', 'can mont', 'mont que', 'usa york', 'treal', 'absent', '_', '%', '\\']) {
+      const suggested = getLocationSuggestions(options, input)
+      const result = await getJobs('Location fixture', input)
+      assert.deepEqual(suggested.slice().sort(), result.jobs.map(job => job.location).sort(), input)
+    }
+    assert.deepEqual(getLocationSuggestions(options, 'mont'), ['Montreal, Quebec, Canada', 'East Montreal, Canada'])
+    assert.deepEqual(getLocationSuggestions(options, ' \t '), options)
+    assert.equal(getLocationSuggestions(Array.from({ length: 12 }, (_, index) => 'Montreal ' + index), 'mont').length, 8)
+    assert.equal(options[0], 'East Montreal, Canada', 'ranking must not mutate the source options')
+  })
+})
+
+test('multi-term keywords and locations remain ANDed with filters before counting and paginating', async () => {
+  const matching = Array.from({ length: 25 }, (_, index) => ({
+    id: 'terms-page-' + String(index).padStart(2, '0'), title: 'Junior TypeScript Developer ' + index,
+    company: 'Northstar Labs', location: 'Montreal, Quebec, Canada', employment_type: 'full_time', workplace_type: 'remote',
+  }))
+  const decoys = [
+    { title: 'Junior Designer' }, { company: 'Other Company' }, { location: 'Montreal, USA' },
+    { category: 'Marketing' }, { employment_type: 'part_time' }, { workplace_type: 'onsite' },
+  ].map((fields, index) => ({ ...matching[0], id: 'terms-page-decoy-' + index, ...fields }))
+  await withSearchJobs([...matching, ...decoys], async () => {
+    for (const [page, expectedPage, start, end] of [[1, 1, 0, 10], [2, 2, 10, 20], [3, 3, 20, 25], [999, 1, 0, 10]]) {
+      const result = await getJobs(' north   dev remote ', ' can mont ', ['Software'], ['full_time'], ['remote'], page)
+      assert.equal(result.page, expectedPage)
+      assert.equal(result.total, 25)
+      assert.deepEqual(result.jobs.map(job => job.id), matching.slice(start, end).map(job => job.id))
+    }
+    assert.equal((await getJobs('north absent', 'can mont')).total, 0)
+    assert.equal((await getJobs('north dev', 'can absent')).total, 0)
   })
 })

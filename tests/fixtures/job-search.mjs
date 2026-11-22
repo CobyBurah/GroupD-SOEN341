@@ -1,4 +1,4 @@
-// The subset of PostgREST's OR grammar used by job keyword searches.
+// The subset of PostgREST's logical filter grammar used by job searches.
 // Commas inside quoted values do not separate conditions; \" and \\ are decoded once.
 export function parseJobSearchFilter(filter) {
   if (!filter.startsWith('(') || !filter.endsWith(')')) throw new Error('Invalid OR filter')
@@ -22,12 +22,21 @@ export function parseJobSearchFilter(filter) {
   if (quoted || escaped || depth !== 0) throw new Error('Unterminated filter')
   conditions.push(filter.slice(start, -1))
   return conditions.map(condition => {
+    const group = /^(and|or)(\(.*\))$/s.exec(condition)
+    if (group) return { operator: group[1], conditions: parseJobSearchFilter(group[2]) }
     const list = /^([a-z_]+)\.in\.\(([a-z_,]+)\)$/.exec(condition)
     if (list) return { column: list[1], operator: 'in', values: list[2].split(',') }
     const match = /^([a-z_]+)\.(ilike|imatch)\.("(?:[^"\\]|\\.)*"|[^",]*)$/.exec(condition)
     if (!match) throw new Error('Invalid keyword condition')
     return { column: match[1], operator: match[2], pattern: match[3].startsWith('"') ? JSON.parse(match[3]) : match[3] }
   })
+}
+
+export function matchesJobSearchFilter(row, conditions, operator = 'or') {
+  const match = condition => condition.conditions
+    ? matchesJobSearchFilter(row, condition.conditions, condition.operator)
+    : matchesJobSearch(row[condition.column], condition)
+  return operator === 'and' ? conditions.every(match) : conditions.some(match)
 }
 
 export function matchesJobSearch(value, { operator, pattern, values }) {

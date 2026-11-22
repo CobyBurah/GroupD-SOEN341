@@ -1,7 +1,7 @@
 import { createServer } from 'node:http'
 import { spawn } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
-import { matchesJobSearch, parseJobSearchFilter } from './job-search.mjs'
+import { matchesJobSearch, matchesJobSearchFilter, parseJobSearchFilter } from './job-search.mjs'
 
 // Local-only fake HTTP service for UI integration. Actual RLS is tested separately
 // against PostgreSQL in recruiter.test.mjs. No shared Supabase project is contacted.
@@ -322,7 +322,7 @@ export async function startPreview({ paginateJobs = false, notificationSeed = []
       if (keyword) {
         try {
           const conditions = parseJobSearchFilter(keyword)
-          rows = rows.filter(row => conditions.some(condition => matchesJobSearch(row[condition.column], condition)))
+          rows = rows.filter(row => matchesJobSearchFilter(row, conditions))
         } catch {
           res.statusCode = 400
           return res.end(JSON.stringify({ code: 'PGRST100', message: 'Invalid keyword filter' }))

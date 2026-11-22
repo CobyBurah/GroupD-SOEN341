@@ -11,10 +11,12 @@ globalThis.__jobsTest = {
 
 let source = await readFile(new URL('../src/lib/jobs.ts', import.meta.url), 'utf8')
 source = source.replace(/^import .* from .*$/gm, '')
+source = source.replace(/^export \{.*\} from .*$/gm, '')
 source = `const { createClient } = globalThis.__jobsTest;\n${source}`
 
 const postingSource = await readFile(new URL('../src/lib/job-posting.ts', import.meta.url), 'utf8')
-const compiled = ts.transpileModule(postingSource + '\n' + source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
+const searchSource = await readFile(new URL('../src/lib/job-search.ts', import.meta.url), 'utf8')
+const compiled = ts.transpileModule(postingSource + '\n' + searchSource + '\n' + source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
 const { getJobs, getJobFilterOptions, JOBS_PER_PAGE } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`)
 
 function mockQuery(...results) {
