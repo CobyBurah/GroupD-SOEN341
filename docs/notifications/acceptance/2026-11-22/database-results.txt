@@ -1,0 +1,10 @@
+✔ notification triggers, reminder boundaries and recipient-only access use real PostgreSQL (3797.637333ms)
+✔ notification destinations cannot point outside supported app pages (88.615042ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4261.2305
