@@ -325,3 +325,34 @@ As a recruiter, I want to archive a job posting when it is filled and restore it
 - [x] Only the posting's owner can archive or restore it (enforced by RLS).
 
 **Acceptance tests:** AT-US20-01 to AT-US20-03 (`docs/recruiter/archive-acceptance-tests.md`), automated in `tests/browser/job-archive.spec.mjs` and `tests/job-archive.test.mjs`.
+
+## Sprint 4 user stories and validation
+
+### US-21 — AI job matching suggestions
+
+**Owner** Noah. **Story** [#167](https://github.com/CobyBurah/GroupD-SOEN341/issues/167).
+
+As a job seeker, I want suggestions for open jobs that fit my resume and profile, with reasons and skills to strengthen, so I can decide which postings to explore.
+
+**Acceptance criteria**
+
+- Select an owned resume from the AI matches page.
+- Suggest eligible postings that are open, unexpired and unapplied.
+- Show a score, grounded reasons, skills to strengthen, posting details and an application link for each result.
+- Keep only job IDs supplied to the model and validate the returned scores and content.
+- Show an empty state when there is no suitable posting.
+- Show an actionable error when the AI service fails or returns invalid output.
+- Reject unreadable resumes before a model request.
+- Enforce signed-in job-seeker access and resume ownership. Matches are generated on request.
+
+Use cases #168–173, implementation tasks #174–179 and acceptance tests #180–185 trace this story. Noah's November 21 live results are recorded with the tested environment. [Use cases](docs/job-matching/use-cases.md) · [Acceptance tests](docs/job-matching/acceptance-tests.md) · [Live results](docs/ai-validation/sprint4-acceptance-results.md)
+
+### US-18 — Resume feedback validation follow-up
+
+**Owner** Noah, with Coby as the original story co-owner. [Validation #188](https://github.com/CobyBurah/GroupD-SOEN341/issues/188) · [Feature verification #213](https://github.com/CobyBurah/GroupD-SOEN341/issues/213).
+
+Continue the Sprint 3 feedback story by checking representative resumes, empty/scanned files, unrelated experience, instructions embedded in resume text, service failures and account boundaries. Feedback should stay grounded in the supplied resume, preserve useful improvement suggestions, persist for its owner and disappear when that resume is deleted.
+
+The prompt-injection defect and regression are tracked by #186 and #187. The validation record includes the early recruiter-role refusal found during the live run. [Validation plan](docs/ai-validation/resume-feedback.md) · [Observed results](docs/ai-validation/sprint4-acceptance-results.md)
+
+[All Sprint 4 responsibilities and dates](Sprint%20Deliverables/Sprint%234/Sprint4_Workplan.md)
