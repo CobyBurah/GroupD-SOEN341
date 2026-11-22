@@ -21,6 +21,7 @@ function reset() {
   calls = []
   state = {
     signedIn: true,
+    profile: { data: { role: 'job_seeker' }, error: null },
     resume: { data: { id: validId, storage_path: 'owner/cv.pdf', mime_type: 'application/pdf' }, error: null },
     download: { data: new Blob([resumeText]), error: null },
     feedbackRows: { data: [], error: null },
@@ -38,7 +39,7 @@ function query(table) {
     order(field, opts) { calls.push(['order', table, field, opts]); return chain },
     limit(n) { calls.push(['limit', table, n]); return Promise.resolve(state.feedbackRows) },
     insert(row) { calls.push(['insert', table, row]); return chain },
-    maybeSingle: async () => state.resume,
+    maybeSingle: async () => (table === 'profiles' ? state.profile : state.resume),
     single: async () => state.insert,
   }
   return chain
@@ -124,6 +125,9 @@ test('POST maps every failure to its status and code without calling the model o
   await expectError(401, 'unauthorized', () => { state.signedIn = false })
   await expectError(404, 'not_found', () => { state.id = 'bad-id' })
   assert.deepEqual(calls, [])
+  await expectError(404, 'not_found', () => { state.profile = { data: { role: 'recruiter' }, error: null } })
+  assert.equal(has('download'), false)
+  await expectError(404, 'not_found', () => { state.profile = { data: null, error: null } })
   await expectError(404, 'not_found', () => { state.resume = { data: null, error: null } })
   assert.equal(has('download'), false)
   await expectError(404, 'not_found', () => { state.resume = { data: null, error: { message: 'denied' } } })
