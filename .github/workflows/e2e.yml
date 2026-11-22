@@ -34,7 +34,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run build:test
       - run: npm run test:browser -- --reporter=list,html
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: playwright-report

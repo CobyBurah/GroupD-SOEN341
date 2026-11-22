@@ -33,7 +33,7 @@ jobs:
       - name: Save ESLint report
         if: always()
         run: npx eslint . --format json --output-file eslint-report.json || true
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: eslint-report
