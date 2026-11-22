@@ -2,6 +2,7 @@ const RETURN_DESTINATIONS = [
   { path: '/jobs', label: '← Back to Jobs' },
   { path: '/applications', label: '← Back to My applications' },
   { path: '/favourites', label: '← Back to Favourites' },
+  { path: '/job-matches', label: '← Back to AI job matches' },
 ]
 
 // Return links stay within the lists that can open a job.
