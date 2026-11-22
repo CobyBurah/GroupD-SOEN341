@@ -6,7 +6,7 @@ import ts from 'typescript'
 // Compile the pure helpers with the project's TypeScript version, no app server required.
 const source = await readFile(new URL('../src/lib/passwords.ts', import.meta.url), 'utf8')
 const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
-const { validateNewPassword, safeNextPath } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`)
+const { validateNewPassword, safeNextPath, parseEmailOtpType } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`)
 function form(password, confirmPassword = password) {
   const data = new FormData()
   data.set('password', password)
@@ -32,4 +32,13 @@ test('email link redirects stay on this site', () => {
     assert.equal(safeNextPath(unsafe), '/')
   }
   assert.equal(safeNextPath(null, '/dashboard'), '/dashboard')
+})
+
+test('email link types are limited to the ones Supabase defines', () => {
+  for (const type of ['signup', 'invite', 'magiclink', 'recovery', 'email_change', 'email']) {
+    assert.equal(parseEmailOtpType(type), type)
+  }
+  for (const bad of [null, '', 'RECOVERY', 'admin', 'recovery ', 'sms']) {
+    assert.equal(parseEmailOtpType(bad), null)
+  }
 })
