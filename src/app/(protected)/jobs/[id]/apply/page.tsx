@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { getJob } from '@/lib/jobs'
 import { getJobReturnLink } from '@/lib/job-navigation'
+import { isPastDeadline } from '@/lib/job-posting'
 import { createClient } from '@/lib/supabase/server'
 import { ApplicationForm } from './application-form'
 import styles from '@/app/ui.module.css'
@@ -29,6 +30,7 @@ export default async function ApplyPage({ params, searchParams }: {
     <section><h2>Your application</h2>
       {existing ? <p className={styles.notice} role="status">You have applied for this job. Status: {existing.status}. <Link href={returnTo.startsWith('/applications') ? returnTo : '/applications'}>View my applications</Link></p>
         : job.archived_at ? <p className={styles.notice} role="status">This posting is closed and no longer accepts applications.</p>
+        : isPastDeadline(job.application_deadline) ? <p className={styles.notice} role="status">The application deadline for this posting has passed.</p>
         : applicationError || resumeError ? <p role="alert">Applications are temporarily unavailable. Please try again later.</p>
         : resumes?.length ? <ApplicationForm jobId={id} resumes={resumes} />
         : <p>Upload a resume before applying. <Link href="/resumes">Manage resumes</Link></p>}

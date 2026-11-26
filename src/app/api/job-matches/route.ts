@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { isJobId } from '@/lib/job-posting'
-import { MIN_MATCH_SCORE, buildSeekerText, openDeadlineFilter, selectCandidates, type JobMatchesResponse, type JobMatchResult, type MatchableJob } from '@/lib/job-matching'
+import { MIN_MATCH_SCORE, buildSeekerText, selectCandidates, type JobMatchesResponse, type JobMatchResult, type MatchableJob } from '@/lib/job-matching'
+import { openDeadlineFilter } from '@/lib/jobs'
 import { OllamaInvalidResponseError, OllamaUnavailableError, getOllamaConfig, requestJobMatches } from '@/lib/ollama'
 import { MIN_RESUME_TEXT_CHARS, prepareResumeText } from '@/lib/resume-feedback'
 import { ResumeTextExtractionError, UnsupportedResumeTypeError, extractResumeText } from '@/lib/resume-text'

@@ -28,6 +28,11 @@ for (let index = 0; index < 25; index++) {
 jobs.push({ ...jobs.at(-1), id: 'wrong-filter', category: 'Marketing' })
 jobs.push({ ...jobs.at(-1), id: 'archived', category: 'Software', archived_at: '2026-01-01T00:00:00Z' })
 jobs.push({ ...jobs.at(-1), id: 'deleted', archived_at: null, deleted_at: '2026-01-01T00:00:00Z' })
+// Deadlines relative to today (UTC): the posting due today is still open.
+const utcDay = offset => new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10)
+for (const [id, deadline] of [['deadline-expired', utcDay(-1)], ['deadline-today', utcDay(0)], ['deadline-later', utcDay(30)], ['deadline-none', null]]) {
+  jobs.push({ id, title: 'Deadline Checker', company: 'Clockwork', category: 'Operations', location: 'Laval', employment_type: 'contract', workplace_type: 'remote', application_deadline: deadline })
+}
 
 const client = createClient('http://127.0.0.1:54329', 'local-test-key', {
   auth: { persistSession: false, autoRefreshToken: false },
@@ -48,6 +53,10 @@ const client = createClient('http://127.0.0.1:54329', 'local-test-key', {
           if (children) {
             assert.ok(['and', 'or'].includes(operator))
             return '(' + children.map(conditionSql).join(operator === 'and' ? ' AND ' : ' OR ') + ')'
+          }
+          if (operator === 'is' || operator === 'gte') {
+            assert.equal(column, 'application_deadline')
+            return operator === 'is' ? `${column} IS NULL` : `${column} >= ${parameter(pattern)}::date`
           }
           assert.ok([...columns, 'employment_type', 'workplace_type', 'location_city', 'location_region', 'location_country'].includes(column))
           if (operator !== 'in') return matchSql(column, operator, pattern)
@@ -97,11 +106,11 @@ before(async () => {
     id text PRIMARY KEY, title text, company text, category text, location text,
     location_city text, location_region text, location_country text,
     employment_type text, workplace_type text, created_at timestamptz DEFAULT '2026-01-01',
-    archived_at timestamptz, deleted_at timestamptz
+    archived_at timestamptz, deleted_at timestamptz, application_deadline date
   )`)
   for (const job of jobs) {
-    await db.query('INSERT INTO jobs (id,title,company,category,location,employment_type,workplace_type,archived_at,deleted_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
-      [job.id, job.title, job.company, job.category, job.location, job.employment_type, job.workplace_type, job.archived_at ?? null, job.deleted_at ?? null])
+    await db.query('INSERT INTO jobs (id,title,company,category,location,employment_type,workplace_type,archived_at,deleted_at,application_deadline) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',
+      [job.id, job.title, job.company, job.category, job.location, job.employment_type, job.workplace_type, job.archived_at ?? null, job.deleted_at ?? null, job.application_deadline ?? null])
   }
 })
 after(async () => { await db.close() })
@@ -131,11 +140,20 @@ for (const [name, keyword, expected, total = expected.length] of [
   })
 }
 
+test('postings leave the listings the day after their deadline', async () => {
+  const result = await getJobs('Deadline Checker')
+  assert.deepEqual(result.jobs.map(job => job.id).sort(), ['deadline-later', 'deadline-none', 'deadline-today'])
+  assert.equal(result.total, 3)
+  const unfiltered = await getJobs('', 'Laval')
+  assert.ok(!unfiltered.jobs.some(job => job.id === 'deadline-expired'))
+})
+
 test('whitespace-only searches behave like an empty keyword', async () => {
   const empty = await getJobs()
   requests.length = 0
   assert.deepEqual(await getJobs(' \t\n '), empty)
-  assert.equal(requests.at(-1).searchParams.has('or'), false)
+  // Only the open-deadline group remains; no keyword group is sent.
+  assert.deepEqual(requests.at(-1).searchParams.getAll('or').map(group => group.includes('application_deadline')), [true])
 })
 
 test('normalization and SQL escaping preserve literal punctuation', () => {

@@ -26,6 +26,10 @@ export function parseJobSearchFilter(filter) {
     if (group) return { operator: group[1], conditions: parseJobSearchFilter(group[2]) }
     const list = /^([a-z_]+)\.in\.\(([a-z_,]+)\)$/.exec(condition)
     if (list) return { column: list[1], operator: 'in', values: list[2].split(',') }
+    // Open-deadline filter: application_deadline.is.null / application_deadline.gte.YYYY-MM-DD.
+    if (/^[a-z_]+\.is\.null$/.test(condition)) return { column: condition.split('.')[0], operator: 'is', pattern: null }
+    const date = /^([a-z_]+)\.gte\.(\d{4}-\d{2}-\d{2})$/.exec(condition)
+    if (date) return { column: date[1], operator: 'gte', pattern: date[2] }
     const match = /^([a-z_]+)\.(ilike|imatch)\.("(?:[^"\\]|\\.)*"|[^",]*)$/.exec(condition)
     if (!match) throw new Error('Invalid keyword condition')
     return { column: match[1], operator: match[2], pattern: match[3].startsWith('"') ? JSON.parse(match[3]) : match[3] }
@@ -40,7 +44,9 @@ export function matchesJobSearchFilter(row, conditions, operator = 'or') {
 }
 
 export function matchesJobSearch(value, { operator, pattern, values }) {
+  if (operator === 'is') return value === null || value === undefined
   if (value === null || value === undefined) return false
+  if (operator === 'gte') return value >= pattern
   if (operator === 'in') return values.includes(value)
   return operator === 'imatch' ? matchesLiteralImatch(value, pattern) : matchesLike(value, pattern)
 }

@@ -13,7 +13,7 @@ const matchingUrl = await compile('job-matching.ts')
 const feedbackUrl = await compile('resume-feedback.ts')
 const {
   tokenize, keywordScore, selectCandidates, buildSeekerText, buildJobMatchPrompt, parseJobMatches,
-  JOB_MATCH_SCHEMA, JOB_MATCH_SYSTEM_PROMPT, MAX_CANDIDATES, MAX_JOB_DESCRIPTION_CHARS, openDeadlineFilter,
+  JOB_MATCH_SCHEMA, JOB_MATCH_SYSTEM_PROMPT, MAX_CANDIDATES, MAX_JOB_DESCRIPTION_CHARS,
 } = await import(matchingUrl)
 const { requestJobMatches, OllamaUnavailableError, OllamaInvalidResponseError } = await import(
   await compile('ollama.ts', s => s.replace("from '@/lib/resume-feedback'", `from '${feedbackUrl}'`).replace("from '@/lib/job-matching'", `from '${matchingUrl}'`))
@@ -107,9 +107,4 @@ test('requestJobMatches sends the schema and prompt to Ollama and maps failures 
   await assert.rejects(requestJobMatches('S', [frontend], { ...options, fetchImpl: async () => new Response('down', { status: 500 }) }), OllamaUnavailableError)
   await assert.rejects(requestJobMatches('S', [frontend], { ...options, fetchImpl: async () => new Response('<html>') }), OllamaInvalidResponseError)
   await assert.rejects(requestJobMatches('S', [frontend], { ...options, fetchImpl: reply('{"wrong":true}') }), OllamaInvalidResponseError)
-})
-
-test('only postings with no deadline or a deadline of today or later are matched', () => {
-  assert.equal(openDeadlineFilter('2026-11-19'), 'application_deadline.is.null,application_deadline.gte.2026-11-19')
-  assert.match(openDeadlineFilter(), /^application_deadline\.is\.null,application_deadline\.gte\.\d{4}-\d{2}-\d{2}$/)
 })

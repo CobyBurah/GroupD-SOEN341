@@ -318,10 +318,10 @@ export async function startPreview({ paginateJobs = false, notificationSeed = []
         const [operator, ...pattern] = location.split('.')
         rows = rows.filter(row => matchesJobSearch(row.location, { operator, pattern: pattern.join('.') }))
       }
-      const keyword = url.searchParams.get('or')
-      if (keyword) {
+      // PostgREST ANDs repeated or= groups (keyword search and open deadline).
+      for (const group of url.searchParams.getAll('or')) {
         try {
-          const conditions = parseJobSearchFilter(keyword)
+          const conditions = parseJobSearchFilter(group)
           rows = rows.filter(row => matchesJobSearchFilter(row, conditions))
         } catch {
           res.statusCode = 400

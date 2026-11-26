@@ -1,7 +1,7 @@
 // Get jobs from the Supabase "jobs" table
 
 import { createClient } from '@/lib/supabase/server'
-import { EMPLOYMENT_TYPES, WORKPLACE_TYPES } from '@/lib/job-posting'
+import { EMPLOYMENT_TYPES, WORKPLACE_TYPES, todayUtc } from '@/lib/job-posting'
 import { normalizeSearchText, escapeLikePattern, escapeRegexPattern, locationWordPatterns } from '@/lib/job-search'
 
 export { normalizeSearchText, escapeLikePattern } from '@/lib/job-search'
@@ -42,6 +42,13 @@ export type Job = {
   updated_at: string
 }
 
+// PostgREST or() filter for postings that are still open: no deadline, or a
+// deadline of today or later (UTC). A posting leaves the listings the day after
+// its deadline, matching isPastDeadline() in job-posting.ts.
+export function openDeadlineFilter(today: string = todayUtc()): string {
+  return `application_deadline.is.null,application_deadline.gte.${today}`
+}
+
 export type JobFilterOptions = {
   locations: string[]
   categories: string[]
@@ -56,6 +63,7 @@ export async function getJobFilterOptions(): Promise<JobFilterOptions> {
     .select('location, location_region, location_country, category')
     .is('deleted_at', null)
     .is('archived_at', null)
+    .or(openDeadlineFilter())
 
   if (result.error) {
     throw new Error('Could not load job filters: ' + result.error.message)
@@ -89,7 +97,7 @@ export async function getJobs(keyword = '', location = '', categories: string[] 
   //connecting to the supabase
   const supabase = await createClient()
 
-  //only jobs that haven't been deleted or archived (closed) by the recruiter
+  //only jobs that haven't been deleted, archived (closed) or passed their deadline
   let query = supabase.from('jobs').select('*', {count: 'exact'}).is('deleted_at', null).is('archived_at', null)
 
   // Every keyword term is required, but each can match a different field.
@@ -138,6 +146,9 @@ export async function getJobs(keyword = '', location = '', categories: string[] 
   // Build one logical filter so keyword and location groups stay ANDed.
   if (searchFilters.length === 1) query = query.or(searchFilters[0].slice(3, -1))
   else if (searchFilters.length > 1) query = query.or('and(' + searchFilters.join(',') + ')')
+
+  // PostgREST ANDs separate or= parameters, so this cannot widen the search.
+  query = query.or(openDeadlineFilter())
 
   //if employment types are selected, keep jobs matching any of those types
   if(employmentTypes.length > 0){

@@ -50,11 +50,6 @@ export const MAX_JOB_DESCRIPTION_CHARS = 1200
 // scores clearly unrelated postings 0-20 instead of leaving them out.
 export const MIN_MATCH_SCORE = 40
 
-// PostgREST or() filter for postings that are still open: no deadline, or a
-// deadline of today or later (UTC). Expired postings are never suggested.
-export function openDeadlineFilter(today: string = new Date().toISOString().slice(0, 10)): string {
-  return `application_deadline.is.null,application_deadline.gte.${today}`
-}
 const MAX_REASONS = 3
 const MAX_MISSING = 4
 const MAX_ITEM_CHARS = 300

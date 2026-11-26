@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 import { getJob } from '@/lib/jobs'
 import { getJobReturnLink } from '@/lib/job-navigation'
-import { WORKPLACE_TYPES } from '@/lib/job-posting'
+import { WORKPLACE_TYPES, isPastDeadline } from '@/lib/job-posting'
 import { createClient } from '@/lib/supabase/server'
 import styles from '@/app/ui.module.css'
 
@@ -46,9 +46,10 @@ export default async function JobDetailsPage({
     ? await supabase.from('applications').select('status').eq('job_id', id).eq('user_id', userId).maybeSingle()
     : { data: null, error: null }
   const applicationsUrl = returnTo.startsWith('/applications') ? returnTo : '/applications'
+  const deadlinePassed = isPastDeadline(job.application_deadline)
   const applicationAction = application ? (
     <Link href={applicationsUrl} className={styles.primary}>View my applications</Link>
-  ) : applicationError || job.archived_at ? null : (
+  ) : applicationError || job.archived_at || deadlinePassed ? null : (
     <Link href={`/jobs/${job.id}/apply?returnTo=${encodeURIComponent(returnTo)}`} className={styles.primary}>Apply Now</Link>
   )
 
@@ -94,6 +95,9 @@ export default async function JobDetailsPage({
 
       {job.archived_at && (
         <p className={styles.notice} role="status">This posting is closed and no longer accepts applications.</p>
+      )}
+      {!job.archived_at && deadlinePassed && (
+        <p className={styles.notice} role="status">The application deadline for this posting has passed.</p>
       )}
 
       {application && (
