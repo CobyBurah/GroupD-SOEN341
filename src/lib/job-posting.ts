@@ -49,7 +49,17 @@ export const EMPTY_JOB: JobValues = {
   title: '', company: '', location: '', location_city: '', location_region: '', location_country: '', category: '', employment_type: '', workplace_type: '', salary: '', description: '', application_deadline: '',
 }
 
-export function validateJob(formData: FormData) {
+// Deadlines are stored and shown as UTC calendar dates (YYYY-MM-DD).
+export function todayUtc(now: Date = new Date()): string {
+  return now.toISOString().slice(0, 10)
+}
+
+// A posting stays open through its deadline day and closes the day after.
+export function isPastDeadline(deadline: string | null | undefined, today: string = todayUtc()): boolean {
+  return Boolean(deadline) && (deadline as string) < today
+}
+
+export function validateJob(formData: FormData, today: string = todayUtc()) {
   const values = { ...EMPTY_JOB }
   const errors: JobErrors = {}
 
@@ -99,6 +109,9 @@ export function validateJob(formData: FormData) {
     !Number.isFinite(Date.parse(values.application_deadline)) ||
     new Date(values.application_deadline).toISOString().slice(0, 10) !== values.application_deadline
   )) errors.application_deadline = 'Enter a valid deadline date.'
+  else if (isPastDeadline(values.application_deadline, today)) {
+    errors.application_deadline = 'Choose today or a later date, or leave the deadline empty.'
+  }
 
   return { values, errors, valid: Object.keys(errors).length === 0 }
 }

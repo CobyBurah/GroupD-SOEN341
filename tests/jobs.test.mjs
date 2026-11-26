@@ -17,7 +17,7 @@ source = `const { createClient } = globalThis.__jobsTest;\n${source}`
 const postingSource = await readFile(new URL('../src/lib/job-posting.ts', import.meta.url), 'utf8')
 const searchSource = await readFile(new URL('../src/lib/job-search.ts', import.meta.url), 'utf8')
 const compiled = ts.transpileModule(postingSource + '\n' + searchSource + '\n' + source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
-const { getJobs, getJobFilterOptions, JOBS_PER_PAGE } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`)
+const { getJobs, getJobFilterOptions, openDeadlineFilter, JOBS_PER_PAGE } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`)
 
 function mockQuery(...results) {
   const calls = []
@@ -57,6 +57,22 @@ test('job search applies keyword, location and selected filters', async () => {
   assert.ok(calls.some((call) => call[0] === 'in' && call[1] === 'employment_type' && call[2][0] === 'full_time'))
   assert.ok(calls.some((call) => call[0] === 'in' && call[1] === 'workplace_type' && call[2][0] === 'hybrid'))
 })
+test('listings and filter options only include postings that are still open', async () => {
+  assert.equal(openDeadlineFilter('2026-11-19'), 'application_deadline.is.null,application_deadline.gte.2026-11-19')
+  assert.match(openDeadlineFilter(), /^application_deadline\.is\.null,application_deadline\.gte\.\d{4}-\d{2}-\d{2}$/)
+
+  const deadlineFilter = openDeadlineFilter()
+  let calls = mockQuery({ data: [], count: 0, error: null })
+  await getJobs('developer', '', [], [], [], 1)
+  assert.ok(calls.some(([name, value]) => name === 'or' && value === deadlineFilter), 'search keeps the deadline filter')
+  calls = mockQuery({ data: [], count: 0, error: null })
+  await getJobs()
+  assert.ok(calls.some(([name, value]) => name === 'or' && value === deadlineFilter), 'unfiltered listing keeps the deadline filter')
+  calls = mockQuery({ data: [], error: null })
+  await getJobFilterOptions()
+  assert.ok(calls.some(([name, value]) => name === 'or' && value === deadlineFilter), 'filter options skip expired postings')
+})
+
 test('keyword search also matches the workplace type', async () => {
   for (const [keyword, saved] of [['Hybrid', 'hybrid'], ['remote', 'remote'], ['On-site', 'onsite'], ['on site', 'onsite']]) {
     const calls = mockQuery({ data: [{ id: 'job-1' }], count: 1, error: null })

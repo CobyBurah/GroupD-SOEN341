@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { isJobId } from '@/lib/job-posting'
+import { isJobId, isPastDeadline } from '@/lib/job-posting'
 
 export async function submitApplication(jobId: string, _state: { error?: string; success?: boolean }, formData: FormData): Promise<{ error?: string; success?: boolean }> {
   const resumeId = formData.get('resumeId')
@@ -15,8 +15,9 @@ export async function submitApplication(jobId: string, _state: { error?: string;
   if (!userId) return { error: 'Sign in to apply.' }
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).single()
   if (profile?.role !== 'job_seeker') return { error: 'Only job seekers can apply.' }
-  const { data: job } = await supabase.from('jobs').select('archived_at').eq('id', jobId).maybeSingle()
+  const { data: job } = await supabase.from('jobs').select('archived_at, application_deadline').eq('id', jobId).maybeSingle()
   if (job?.archived_at) return { error: 'This posting is closed and no longer accepts applications.' }
+  if (isPastDeadline(job?.application_deadline)) return { error: 'The application deadline for this posting has passed.' }
   const { error } = await supabase.from('applications').insert({ job_id: jobId, user_id: userId, resume_id: resumeId })
   if (error && error.code !== '23505') return { error: 'Could not submit your application. Please try again later.' }
   revalidatePath(`/jobs/${jobId}`)
